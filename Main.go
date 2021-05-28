@@ -1,6 +1,7 @@
 package main
 
 import (
+	"DHT-16/api"
 	"flag"
 	"fmt"
 	"gopkg.in/ini.v1"
@@ -63,6 +64,7 @@ func parseConfig() *configuraton {
 func main() {
 	fmt.Println("Program started...")
 	Conf = parseConfig()
+	api.Listen(Conf.apiAddressDHT)
 
 }
 
