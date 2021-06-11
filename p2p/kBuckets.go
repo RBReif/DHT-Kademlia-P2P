@@ -119,7 +119,7 @@ func (thisNode *localNode) findNumberOfClosestPeersOnNode(key id, number int) []
 }
 
 //returns whether there was any new peer added in newPeers that has not been there before in oldPeers
-func wasNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
+func wasAnyNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
 	for i := 0; i < len(newPeers); i++ {
 		isThere := false
 		for j := 0; j < len(oldPeers); j++ {
@@ -136,6 +136,15 @@ func wasNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
 	return false
 }
 
+func wasANewPeerAdded(oldPeers []peer, newPeer peer) bool {
+	for j := 0; j < len(oldPeers); j++ {
+		if bytes.Compare(newPeer.id[:], oldPeers[j].id[:]) == 0 {
+			return false
+		}
+	}
+	return true
+}
+
 func (thisNode *localNode) updateKBucketPeer(p peer) {
 	//first we need to find out which is the responsible Bucket
 	indexResponsibleBucket := thisNode.findIndexOfResponsibleBucket(p.id)
@@ -144,7 +153,7 @@ func (thisNode *localNode) updateKBucketPeer(p peer) {
 	if index, inBucket := isIdInKBucket(thisNode.kBuckets[0], p.id); inBucket {
 		moveToTail(thisNode.kBuckets[0], index)
 	} else {
-		// if kBuckets has fewer than k entries, insert id to kBuckets
+		// if kBuckets has fewer than the maximum size of the bucket allows, insert id to kBuckets
 		if len(thisNode.kBuckets[indexResponsibleBucket]) < maxSizeOfBucket(indexResponsibleBucket) {
 			thisNode.kBuckets[indexResponsibleBucket] = append(thisNode.kBuckets[indexResponsibleBucket], p)
 		} else {

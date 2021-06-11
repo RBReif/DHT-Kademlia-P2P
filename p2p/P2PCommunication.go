@@ -171,19 +171,21 @@ func (thisNode *localNode) nodeLookup(key id) {
 	var closestPeersOld []peer
 	for {
 		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, a)
-		if !wasNewPeerAdded(closestPeersOld, closestPeersNew) {
+		if !wasAnyNewPeerAdded(closestPeersOld, closestPeersNew) {
 			break
 		}
 
 		for _, p := range closestPeersNew {
-			m := message{
-				sender:      thisNode.peer,
-				receiver:    p,
-				size:        uint16(SIZE_OF_ID + SIZE_OF_IP + SIZE_OF_PORT + 4 + SIZE_OF_KEY),
-				messageType: KDM_FIND_NODE,
-				data:        makeFIND_NODEmessage(key),
+			if wasANewPeerAdded(closestPeersOld, p) {
+				m := message{
+					sender:      thisNode.peer,
+					receiver:    p,
+					size:        uint16(SIZE_OF_ID + SIZE_OF_IP + SIZE_OF_PORT + 4 + SIZE_OF_KEY),
+					messageType: KDM_FIND_NODE,
+					data:        makeFIND_NODEmessage(key),
+				}
+				sendMessage(m)
 			}
-			sendMessage(m)
 		}
 		closestPeersOld = closestPeersNew
 	}
