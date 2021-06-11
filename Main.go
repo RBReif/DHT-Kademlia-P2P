@@ -40,6 +40,16 @@ func parseConfig() *configuraton {
 		fmt.Println("Wrong configuration: maxReplication is not an Integer")
 		os.Exit(1)
 	}
+	k, err := config.Section("dht").Key("k").Int()
+	if err != nil {
+		fmt.Println("Wrong configuration: maxReplication is not an Integer")
+		os.Exit(1)
+	}
+	a, err := config.Section("dht").Key("a").Int()
+	if err != nil {
+		fmt.Println("Wrong configuration: maxReplication is not an Integer")
+		os.Exit(1)
+	}
 	conf := &configuraton{
 		HostkeyDirectory: config.Section("").Key("hostkey").String(),
 		apiAddressDHT:    config.Section("dht").Key("api_address").String(),
@@ -52,6 +62,8 @@ func parseConfig() *configuraton {
 		preConfPeer2:   config.Section("dht").Key("preConfPeer2").String(),
 		preConfPeer3:   config.Section("dht").Key("preConfPeer3").String(),
 		apiAddressRPS:  config.Section("rps").Key("api_address").String(),
+		k:              k,
+		a:              a,
 	}
 	if !conf.checkConfig() {
 		fmt.Println("Wrong configuration: an address is wrongly configured")
@@ -80,6 +92,9 @@ type configuraton struct {
 	preConfPeer1   string
 	preConfPeer2   string
 	preConfPeer3   string
+	//kademlia specific
+	k int
+	a int
 	//rps
 	apiAddressRPS string
 }
