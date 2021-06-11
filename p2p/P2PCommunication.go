@@ -9,25 +9,35 @@ import (
 // TODO: move k to singleton or something
 var k int
 var a int
-var n peer
+var n localNode
 
 const KDM_PING uint16 = 654
 const KDM_PONG uint16 = 655
 const KDM_STORE uint16 = 656
 const KDM_FIND_NODE uint16 = 657
-const KDM_FIND_VALUE uint16 = 658
+const KDM_FIND_NODE_ANSWER uint16 = 658
+const KDM_FIND_VALUE uint16 = 659
+const KDM_FIND_VALUE_ANSWER uint16 = 660
+
+const SIZE_OF_IP int = 16
+const SIZE_OF_PORT int = 4
+const SIZE_OF_ID int = 20
+const SIZE_OF_KEY int = 20
 
 type id [20]byte
 
 type peer struct {
 	ip   string
-	port int
+	port uint32
 	id   id
+}
 
+type localNode struct {
+	peer     peer
 	kBuckets [160][]peer
 }
 
-func startMessageDispatcher() {
+func (thisNode *localNode) startMessageDispatcher() {
 
 	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -39,20 +49,20 @@ func startMessageDispatcher() {
 			// TODO: handle error
 		}
 
-		go handleConnection(conn)
+		go thisNode.handleConnection(conn)
 
 	}
 
 }
 
-func handleConnection(conn net.Conn) {
+func (thisNode *localNode) handleConnection(conn net.Conn) {
 
-	var message message
-	readHeader(conn, &message)
-	n.onMessageReceived(message)
+	var m message
+	readHeader(conn, &m) //todo read whole message
+	n.updateKBucketPeer(m.sender)
 
-	// switch according to message type
-	switch message.messageType {
+	// switch according to m type
+	switch m.messageType {
 	case KDM_PING: // ping
 		// respond with KDM_PONG
 		pongNode(conn)
@@ -64,40 +74,29 @@ func handleConnection(conn net.Conn) {
 		// TODO
 		return
 	case KDM_FIND_NODE:
-		// TODO
+		var key id
+		copy(key[:], m.data[44:64])
+		answerData := thisNode.FIND_NODE(key)
+		answer := message{
+			data:        answerData,
+			sender:      thisNode.peer,
+			receiver:    m.sender,
+			size:        uint16(len(answerData)),
+			messageType: KDM_FIND_NODE_ANSWER,
+		}
+		sendMessage(answer)
 		return
+
+	case KDM_FIND_NODE_ANSWER:
+		newPeers := parseFIND_NODE_ANSWER(m)
+		for i := 0; i < len(newPeers); i++ {
+			thisNode.updateKBucketPeer(newPeers[i])
+		}
+		return
+
 	case KDM_FIND_VALUE:
 		// TODO
 		return
-	}
-
-}
-
-func (node *peer) onMessageReceived(message message) {
-	//first we need to find out which is the responsible Bucket
-	indexResponsibleBucket := node.findIndexOfResponsibleBucket(message.sender.id)
-
-	// if id of sender exists in kBuckets, move to tail of kBuckets
-	if index, inBucket := isIdInKBucket(node.kBuckets[0], message.sender.id); inBucket {
-		moveToTail(node.kBuckets[0], index)
-	} else {
-		// if kBuckets has fewer than k entries, insert id to kBuckets
-		if len(node.kBuckets[indexResponsibleBucket]) < maxSizeOfBucket(indexResponsibleBucket) {
-			node.kBuckets[indexResponsibleBucket] = append(node.kBuckets[indexResponsibleBucket], message.sender)
-		} else {
-			// else ping least-recently seen node
-			nodeActive := pingNode(message.sender)
-
-			// if node not responding, remove node and insert the new one
-			if !nodeActive {
-				node.kBuckets[indexResponsibleBucket] = append(node.kBuckets[indexResponsibleBucket][:index], node.kBuckets[indexResponsibleBucket][index+1:]...)
-				node.kBuckets[indexResponsibleBucket] = append(node.kBuckets[indexResponsibleBucket], message.sender)
-			} else {
-				// else move node to tail and discard the new one
-				moveToTail(node.kBuckets[indexResponsibleBucket], index)
-			}
-		}
-
 	}
 
 }
@@ -168,23 +167,31 @@ func pongNode(c net.Conn) {
 
 }
 
-func (p *peer) nodeLookup(key id) {
+func (thisNode *localNode) nodeLookup(key id) {
 	var closestPeersOld []peer
 	for {
-		closestPeersNew := p.findNumberOfClosestPeersOnNode(key, a)
+		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, a)
 		if !wasNewPeerAdded(closestPeersOld, closestPeersNew) {
 			break
 		}
 
 		for _, p := range closestPeersNew {
-			p.FIND_NODE(key)
+			m := message{
+				sender:      thisNode.peer,
+				receiver:    p,
+				size:        uint16(SIZE_OF_ID + SIZE_OF_IP + SIZE_OF_PORT + 4 + SIZE_OF_KEY),
+				messageType: KDM_FIND_NODE,
+				data:        makeFIND_NODEmessage(key),
+			}
+			sendMessage(m)
 		}
 		closestPeersOld = closestPeersNew
 	}
 }
 
-func (p *peer) FIND_NODE(key id) {
-	closestPeers := p.findNumberOfClosestPeersOnNode(key, a)
-	answerMessage := makeFIND_NODEanswer(closestPeers)
-	fmt.Println(answerMessage) //todo replace with sending the answer
+func (thisNode *localNode) FIND_NODE(key id) []byte {
+	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, a)
+	answerMessage := makeFIND_NODE_ANSWERmessage(closestPeers)
+	fmt.Println(answerMessage)
+	return answerMessage
 }

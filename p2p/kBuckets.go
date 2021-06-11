@@ -43,8 +43,8 @@ func maxSizeOfBucket(index int) int {
 }
 
 //returns index of the bucket that contains/is responsible for a given key
-func (n *peer) findIndexOfResponsibleBucket(key id) int {
-	d := distance(n.id, key)
+func (thisNode *localNode) findIndexOfResponsibleBucket(key id) int {
+	d := distance(thisNode.peer.id, key)
 
 	indexFirstRelevantByte := 19 //
 	for i := 0; i < 20; i++ {
@@ -91,10 +91,11 @@ func findNumberOfClosestPeersInOneBucket(kBucket []peer, key id, number int) []p
 	return result
 }
 
-func (n *peer) findNumberOfClosestPeersOnNode(key id, number int) []peer {
+//returns a specified amount of peers that are the closest to a specified id on a node
+func (thisNode *localNode) findNumberOfClosestPeersOnNode(key id, number int) []peer {
 	result := make([]peer, 0, number)
-	indexOfResponsibleBucket := n.findIndexOfResponsibleBucket(key)
-	result = append(result, findNumberOfClosestPeersInOneBucket(n.kBuckets[indexOfResponsibleBucket], key, number)...)
+	indexOfResponsibleBucket := thisNode.findIndexOfResponsibleBucket(key)
+	result = append(result, findNumberOfClosestPeersInOneBucket(thisNode.kBuckets[indexOfResponsibleBucket], key, number)...)
 	if len(result) == number {
 		return result
 	}
@@ -102,8 +103,8 @@ func (n *peer) findNumberOfClosestPeersOnNode(key id, number int) []peer {
 	toBeFilled := number - len(result)
 	tempResult := make([]peer, 0, 2*toBeFilled)
 	for i := 0; i < 80; i++ {
-		tempResult = append(tempResult, findNumberOfClosestPeersInOneBucket(n.kBuckets[(indexOfResponsibleBucket-i+160)%160], key, toBeFilled)...)
-		tempResult = append(tempResult, findNumberOfClosestPeersInOneBucket(n.kBuckets[(indexOfResponsibleBucket+i)%160], key, toBeFilled)...)
+		tempResult = append(tempResult, findNumberOfClosestPeersInOneBucket(thisNode.kBuckets[(indexOfResponsibleBucket-i+160)%160], key, toBeFilled)...)
+		tempResult = append(tempResult, findNumberOfClosestPeersInOneBucket(thisNode.kBuckets[(indexOfResponsibleBucket+i)%160], key, toBeFilled)...)
 		if len(tempResult) >= number {
 			break
 		}
@@ -117,6 +118,7 @@ func (n *peer) findNumberOfClosestPeersOnNode(key id, number int) []peer {
 	return result
 }
 
+//returns whether there was any new peer added in newPeers that has not been there before in oldPeers
 func wasNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
 	for i := 0; i < len(newPeers); i++ {
 		isThere := false
@@ -132,4 +134,33 @@ func wasNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
 
 	}
 	return false
+}
+
+func (thisNode *localNode) updateKBucketPeer(p peer) {
+	//first we need to find out which is the responsible Bucket
+	indexResponsibleBucket := thisNode.findIndexOfResponsibleBucket(p.id)
+
+	// if id of sender exists in kBuckets, move to tail of kBuckets
+	if index, inBucket := isIdInKBucket(thisNode.kBuckets[0], p.id); inBucket {
+		moveToTail(thisNode.kBuckets[0], index)
+	} else {
+		// if kBuckets has fewer than k entries, insert id to kBuckets
+		if len(thisNode.kBuckets[indexResponsibleBucket]) < maxSizeOfBucket(indexResponsibleBucket) {
+			thisNode.kBuckets[indexResponsibleBucket] = append(thisNode.kBuckets[indexResponsibleBucket], p)
+		} else {
+			// else ping least-recently seen thisNode
+			nodeActive := pingNode(p)
+
+			// if thisNode not responding, remove thisNode and insert the new one
+			if !nodeActive {
+				thisNode.kBuckets[indexResponsibleBucket] = append(thisNode.kBuckets[indexResponsibleBucket][:index], thisNode.kBuckets[indexResponsibleBucket][index+1:]...)
+				thisNode.kBuckets[indexResponsibleBucket] = append(thisNode.kBuckets[indexResponsibleBucket], p)
+			} else {
+				// else move thisNode to tail and discard the new one
+				moveToTail(thisNode.kBuckets[indexResponsibleBucket], index)
+			}
+		}
+
+	}
+
 }
