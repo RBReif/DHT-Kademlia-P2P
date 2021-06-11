@@ -21,17 +21,20 @@ type message struct {
 	data []byte
 }
 
-func readHeader(conn net.Conn, message *message) {
+func readMessage(conn net.Conn, message *message) {
 
 	//   get message size
 	messageSize := make([]byte, 2)
 	conn.Read(messageSize)
 	message.size = binary.BigEndian.Uint16(messageSize)
 
-	// get message type
-	messageType := make([]byte, 2)
-	conn.Read(messageType)
-	message.messageType = binary.BigEndian.Uint16(messageType)
+	messageData := make([]byte, 0, message.size)
+	messageData = append(messageData, messageSize...)
+	conn.Read(messageData[2:])
+	message.data = messageData
+	message.messageType = binary.BigEndian.Uint16(messageData[2:4])
+
+	message.sender = parseByteToPeer(messageData[4:44])
 
 }
 
@@ -124,15 +127,20 @@ func parseFIND_NODE_ANSWER(m message) []peer {
 	var result []peer
 	numberOfPeers := int((m.size - 44) / 40)
 	for i := 0; i < numberOfPeers; i++ {
-		var id [20]byte
-		copy(id[:], m.data[:20])
-
-		p := peer{
-			id:   id,
-			ip:   string(m.data[20:36]),
-			port: binary.BigEndian.Uint32(m.data[36:]),
-		}
+		p := parseByteToPeer(m.data[44+40*i : 44+40*(i+1)])
 		result = append(result, p)
 	}
 	return result
+}
+
+func parseByteToPeer(data []byte) peer {
+	var id [20]byte
+	copy(id[:], data[:20])
+
+	p := peer{
+		id:   id,
+		ip:   string(data[20:36]),
+		port: binary.BigEndian.Uint32(data[36:]),
+	}
+	return p
 }

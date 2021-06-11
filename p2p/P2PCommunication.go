@@ -58,7 +58,7 @@ func (thisNode *localNode) startMessageDispatcher() {
 func (thisNode *localNode) handleConnection(conn net.Conn) {
 
 	var m message
-	readHeader(conn, &m) //todo read whole message
+	readMessage(conn, &m) //todo read whole message
 	n.updateKBucketPeer(m.sender)
 
 	// switch according to m type
@@ -139,7 +139,7 @@ func pingNode(node peer) bool {
 
 	// receive KDM_PONG
 	var message message
-	readHeader(c, &message)
+	readMessage(c, &message)
 	if message.messageType == KDM_PONG {
 		return true
 	}
@@ -174,7 +174,7 @@ func (thisNode *localNode) nodeLookup(key id) {
 		if !wasAnyNewPeerAdded(closestPeersOld, closestPeersNew) {
 			break
 		}
-
+		//todo maybe change procedure to also call rpc on newly added nodes, that are farer away then the ones queried in round before
 		for _, p := range closestPeersNew {
 			if wasANewPeerAdded(closestPeersOld, p) {
 				m := message{
