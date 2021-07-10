@@ -46,7 +46,7 @@ func maxSizeOfBucket(index int) int {
 func (thisNode *localNode) findIndexOfResponsibleBucket(key id) int {
 	d := distance(thisNode.peer.id, key)
 
-	indexFirstRelevantByte := 19 //
+	indexFirstRelevantByte := 19 // [0 0 0 0 0 0 0 ... 0 0 0 9 3 23]
 	for i := 0; i < 20; i++ {
 		if d[i] > 0 {
 			indexFirstRelevantByte = i //this means we have 19-i trailing bytes after key[i]
@@ -102,15 +102,15 @@ func (thisNode *localNode) findNumberOfClosestPeersOnNode(key id, number int) []
 
 	toBeFilled := number - len(result)
 	tempResult := make([]peer, 0, 2*toBeFilled)
-	for i := 0; i < 80; i++ {
+	for i := 1; i < 80; i++ { //todo check
 		tempResult = append(tempResult, findNumberOfClosestPeersInOneBucket(thisNode.kBuckets[(indexOfResponsibleBucket-i+160)%160], key, toBeFilled)...)
 		tempResult = append(tempResult, findNumberOfClosestPeersInOneBucket(thisNode.kBuckets[(indexOfResponsibleBucket+i)%160], key, toBeFilled)...)
-		if len(tempResult) >= number {
+		if len(tempResult) >= toBeFilled {
 			break
 		}
-		toBeFilled = number - len(result)
+		toBeFilled = toBeFilled - len(tempResult) //todo check again
 	}
-	for len(tempResult) > number {
+	for len(tempResult) > number { //todo change number to original ToBeFilled
 		indexOfFarest := findIndexOfFarestPeerInSlice(tempResult, key)
 		tempResult = append(tempResult[:indexOfFarest], tempResult[indexOfFarest+1:]...)
 	}

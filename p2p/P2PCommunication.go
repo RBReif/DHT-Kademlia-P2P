@@ -27,9 +27,10 @@ const SIZE_OF_KEY int = 20
 type id [20]byte
 
 type peer struct {
-	ip   string
-	port uint32
-	id   id
+	ip     string
+	isIpv4 bool
+	port   uint32
+	id     id
 }
 
 type localNode struct {
@@ -175,6 +176,7 @@ func (thisNode *localNode) nodeLookup(key id) {
 			break
 		}
 		//todo maybe change procedure to also call rpc on newly added nodes, that are farer away then the ones queried in round before
+		//todo maybe collect the answers first and use them during nodeLookup before updating the kBuckets
 		for _, p := range closestPeersNew {
 			if wasANewPeerAdded(closestPeersOld, p) {
 				m := message{
@@ -188,11 +190,12 @@ func (thisNode *localNode) nodeLookup(key id) {
 			}
 		}
 		closestPeersOld = closestPeersNew
+		//todo wait , for how long?
 	}
 }
 
 func (thisNode *localNode) FIND_NODE(key id) []byte {
-	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, a)
+	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, k)
 	answerMessage := makeFIND_NODE_ANSWERmessage(closestPeers)
 	fmt.Println(answerMessage)
 	return answerMessage

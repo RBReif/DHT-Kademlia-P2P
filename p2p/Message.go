@@ -15,7 +15,7 @@ type message struct {
 	// header
 	size        uint16
 	messageType uint16
-	responseTo  uint32
+	// responseTo  uint32
 
 	// body
 	data []byte
@@ -139,7 +139,7 @@ func parseByteToPeer(data []byte) peer {
 
 	p := peer{
 		id:   id,
-		ip:   string(data[20:36]),
+		ip:   string(data[20:36]), //todo maybe add . / :
 		port: binary.BigEndian.Uint32(data[36:]),
 	}
 	return p
