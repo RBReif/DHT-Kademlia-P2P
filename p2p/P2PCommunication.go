@@ -11,6 +11,9 @@ var k int
 var a int
 var n localNode
 
+// TODO: which maximum size should data have?
+var hashTable map[id][]byte
+
 const KDM_PING uint16 = 654
 const KDM_PONG uint16 = 655
 const KDM_STORE uint16 = 656
@@ -36,6 +39,11 @@ type peer struct {
 type localNode struct {
 	peer     peer
 	kBuckets [160][]peer
+}
+
+func (thisNode *localNode) init() {
+	thisNode.startMessageDispatcher()
+	hashTable = make(map[id][]byte)
 }
 
 func (thisNode *localNode) startMessageDispatcher() {
@@ -72,7 +80,15 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 			return
 		}
 	case KDM_STORE:
+		// get key
+		var key id
+		copy(key[:], m.data[:20])
+		// get data
 		// TODO
+		var data []byte
+
+		// write (key, data) to hashTable
+		hashTable[key] = data
 		return
 	case KDM_FIND_NODE:
 		var key id
