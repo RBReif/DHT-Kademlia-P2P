@@ -76,7 +76,7 @@ func parseConfig() *configuraton {
 func main() {
 	fmt.Println("Program started...")
 	Conf = parseConfig()
-	api.Listen(Conf.apiAddressDHT)
+	api.StartAPIDispatcher(Conf.apiAddressDHT)
 
 }
 

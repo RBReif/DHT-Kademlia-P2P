@@ -42,14 +42,14 @@ func maxSizeOfBucket(index int) int {
 	return max
 }
 
-//returns index of the bucket that contains/is responsible for a given key
+//returns index of the bucket that contains/is responsible for a given id
 func (thisNode *localNode) findIndexOfResponsibleBucket(key id) int {
 	d := distance(thisNode.peer.id, key)
 
 	indexFirstRelevantByte := 19 // [0 0 0 0 0 0 0 ... 0 0 0 9 3 23]
 	for i := 0; i < 20; i++ {
 		if d[i] > 0 {
-			indexFirstRelevantByte = i //this means we have 19-i trailing bytes after key[i]
+			indexFirstRelevantByte = i //this means we have 19-i trailing bytes after id[i]
 			break
 		}
 	}
@@ -58,7 +58,7 @@ func (thisNode *localNode) findIndexOfResponsibleBucket(key id) int {
 	return i
 }
 
-//returns index of the peer from a slice of peers that is the farest away from a given key
+//returns index of the peer from a slice of peers that is the farest away from a given id
 func findIndexOfFarestPeerInSlice(peers []peer, key id) int {
 	var maxDistance [20]byte
 	index := -1
@@ -72,7 +72,7 @@ func findIndexOfFarestPeerInSlice(peers []peer, key id) int {
 	return index
 }
 
-//returns a number of the closest peers in a given bucket to a given key
+//returns a number of the closest peers in a given bucket to a given id
 func findNumberOfClosestPeersInOneBucket(kBucket []peer, key id, number int) []peer {
 	result := make([]peer, 0, number)
 

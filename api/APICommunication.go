@@ -21,7 +21,7 @@ type DhtAnswer struct {
 }
 
 //listens for TCP connections
-func Listen(apiAddressDHT string) {
+func StartAPIDispatcher(apiAddressDHT string) {
 	l, err := net.Listen("tcp", apiAddressDHT)
 	if err != nil {
 		custError := "[FAILURE] Error while listening for connection at" + apiAddressDHT + ": " + err.Error()
@@ -39,12 +39,12 @@ func Listen(apiAddressDHT string) {
 		}
 		con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
 
-		go listenAtConnection(con)
+		go handleAPIconnection(con)
 	}
 }
 
 //listens on one connection for new messages
-func listenAtConnection(con net.Conn) {
+func handleAPIconnection(con net.Conn) {
 	receivedMessage := make([]byte, maxMessageLength)
 	msgSize, err := con.Read(receivedMessage)
 	if err != nil {

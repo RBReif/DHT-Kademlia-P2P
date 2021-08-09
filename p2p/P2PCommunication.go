@@ -1,7 +1,7 @@
 package p2p
 
 import (
-	"encoding/binary"
+	//"encoding/binary"
 	"fmt"
 	"net"
 )
@@ -14,25 +14,20 @@ var n localNode
 // TODO: which maximum size should data have?
 var hashTable map[id][]byte
 
-const KDM_PING uint16 = 654
-const KDM_PONG uint16 = 655
-const KDM_STORE uint16 = 656
-const KDM_FIND_NODE uint16 = 657
-const KDM_FIND_NODE_ANSWER uint16 = 658
-const KDM_FIND_VALUE uint16 = 659
-const KDM_FIND_VALUE_ANSWER uint16 = 660
+type id [SIZE_OF_ID]byte
 
-const SIZE_OF_IP int = 16
-const SIZE_OF_PORT int = 4
-const SIZE_OF_ID int = 20
-const SIZE_OF_KEY int = 20
-
-type id [20]byte
+func (id id) toByte() []byte {
+	var result []byte
+	for i := 0; i < SIZE_OF_ID; i++ {
+		result = append(result, id[i])
+	}
+	return result
+}
 
 type peer struct {
 	ip     string
 	isIpv4 bool
-	port   uint32
+	port   uint16
 	id     id
 }
 
@@ -66,46 +61,34 @@ func (thisNode *localNode) startMessageDispatcher() {
 
 func (thisNode *localNode) handleConnection(conn net.Conn) {
 
-	var m message
-	readMessage(conn, &m) //todo read whole message
-	n.updateKBucketPeer(m.sender)
+	m := readMessage(conn) //todo read whole message
+	n.updateKBucketPeer(m.header.senderPeer)
 
 	// switch according to m type
-	switch m.messageType {
+	switch m.header.messageType {
 	case KDM_PING: // ping
 		// respond with KDM_PONG
-		pongNode(conn)
+		pongMessage := makeMessage(nil, KDM_PONG)
+		sendMessage(pongMessage, m.header.senderPeer)
 		err := conn.Close()
 		if err != nil {
 			return
 		}
 	case KDM_STORE:
-		// get key
-		var key id
-		copy(key[:], m.data[:20])
-		// get data
-		// TODO
-		var data []byte
-
-		// write (key, data) to hashTable
-		hashTable[key] = data
+		// write (key, value) to hashTable
+		hashTable[m.body.(*kdmStoreBody).key] = m.body.(*kdmStoreBody).value
 		return
 	case KDM_FIND_NODE:
 		var key id
 		copy(key[:], m.data[44:64])
-		answerData := thisNode.FIND_NODE(key)
-		answer := message{
-			data:        answerData,
-			sender:      thisNode.peer,
-			receiver:    m.sender,
-			size:        uint16(len(answerData)),
-			messageType: KDM_FIND_NODE_ANSWER,
-		}
-		sendMessage(answer)
+		answerBody := thisNode.FIND_NODE(key)
+		answer := makeMessage(&answerBody, KDM_FIND_NODE_ANSWER)
+
+		sendMessage(answer, m.header.senderPeer)
 		return
 
 	case KDM_FIND_NODE_ANSWER:
-		newPeers := parseFIND_NODE_ANSWER(m)
+		newPeers := m.body.(*kdmFindNodeAnswerBody).answerPeers
 		for i := 0; i < len(newPeers); i++ {
 			thisNode.updateKBucketPeer(newPeers[i])
 		}
@@ -138,49 +121,15 @@ func pingNode(node peer) bool {
 		fmt.Println(err)
 		return false
 	}
-
-	var pingRequest [4]byte
-
-	// write size
-	binary.BigEndian.PutUint16(pingRequest[0:], uint16(4))
-
-	// write KDM_PING
-	binary.BigEndian.PutUint16(pingRequest[2:], KDM_PING)
-
-	// send KDM_PING
-	_, err = c.Write(pingRequest[:])
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-
+	pingMessage := makeMessage(nil, KDM_PING)
+	sendMessage(pingMessage, node)
 	// receive KDM_PONG
-	var message message
-	readMessage(c, &message)
-	if message.messageType == KDM_PONG {
+	answer := readMessage(c)
+	if answer.header.messageType == KDM_PONG {
 		return true
 	}
 
 	return false
-
-}
-
-func pongNode(c net.Conn) {
-
-	var pongResponse [4]byte
-
-	// write size
-	binary.BigEndian.PutUint16(pongResponse[0:], uint16(4))
-
-	// write KDM_PING
-	binary.BigEndian.PutUint16(pongResponse[2:], KDM_PONG)
-
-	// send KDM_PING
-	_, err := c.Write(pongResponse[:])
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
 }
 
@@ -195,14 +144,11 @@ func (thisNode *localNode) nodeLookup(key id) {
 		//todo maybe collect the answers first and use them during nodeLookup before updating the kBuckets
 		for _, p := range closestPeersNew {
 			if wasANewPeerAdded(closestPeersOld, p) {
-				m := message{
-					sender:      thisNode.peer,
-					receiver:    p,
-					size:        uint16(SIZE_OF_ID + SIZE_OF_IP + SIZE_OF_PORT + 4 + SIZE_OF_KEY),
-					messageType: KDM_FIND_NODE,
-					data:        makeFIND_NODEmessage(key),
+				msgBody := kdmFindNodeBody{
+					id: key,
 				}
-				sendMessage(m)
+				m := makeMessage(&msgBody, KDM_FIND_NODE)
+				sendMessage(m, p)
 			}
 		}
 		closestPeersOld = closestPeersNew
@@ -210,9 +156,9 @@ func (thisNode *localNode) nodeLookup(key id) {
 	}
 }
 
-func (thisNode *localNode) FIND_NODE(key id) []byte {
+func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
 	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, k)
-	answerMessage := makeFIND_NODE_ANSWERmessage(closestPeers)
-	fmt.Println(answerMessage)
-	return answerMessage
+	answerBody := kdmFindNodeAnswerBody{answerPeers: closestPeers}
+	fmt.Println(answerBody)
+	return answerBody
 }
