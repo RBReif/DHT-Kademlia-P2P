@@ -4,6 +4,7 @@ import (
 	//"encoding/binary"
 	"fmt"
 	"net"
+	"strconv"
 )
 
 // TODO: move k to singleton or something
@@ -29,6 +30,10 @@ type peer struct {
 	isIpv4 bool
 	port   uint16
 	id     id
+}
+
+func (p *peer) toString() string {
+	return "" + p.ip + ":" + strconv.Itoa(int(p.port)) + " (" + bytesToString(p.id.toByte()) + ")"
 }
 
 type localNode struct {
@@ -61,14 +66,15 @@ func (thisNode *localNode) startMessageDispatcher() {
 
 func (thisNode *localNode) handleConnection(conn net.Conn) {
 
-	m := readMessage(conn) //todo read whole message
+	mRaw := readMessage(conn) //todo read whole message
+	m := makeMessageOutOfBytes(mRaw)
 	n.updateKBucketPeer(m.header.senderPeer)
 
 	// switch according to m type
 	switch m.header.messageType {
 	case KDM_PING: // ping
 		// respond with KDM_PONG
-		pongMessage := makeMessage(nil, KDM_PONG)
+		pongMessage := makeMessageOutOfBody(nil, KDM_PONG)
 		sendMessage(pongMessage, m.header.senderPeer)
 		err := conn.Close()
 		if err != nil {
@@ -82,7 +88,7 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 		var key id
 		copy(key[:], m.data[44:64])
 		answerBody := thisNode.FIND_NODE(key)
-		answer := makeMessage(&answerBody, KDM_FIND_NODE_ANSWER)
+		answer := makeMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
 
 		sendMessage(answer, m.header.senderPeer)
 		return
@@ -121,10 +127,11 @@ func pingNode(node peer) bool {
 		fmt.Println(err)
 		return false
 	}
-	pingMessage := makeMessage(nil, KDM_PING)
+	pingMessage := makeMessageOutOfBody(nil, KDM_PING)
 	sendMessage(pingMessage, node)
 	// receive KDM_PONG
-	answer := readMessage(c)
+	answerRaw := readMessage(c)
+	answer := makeMessageOutOfBytes(answerRaw)
 	if answer.header.messageType == KDM_PONG {
 		return true
 	}
@@ -147,7 +154,7 @@ func (thisNode *localNode) nodeLookup(key id) {
 				msgBody := kdmFindNodeBody{
 					id: key,
 				}
-				m := makeMessage(&msgBody, KDM_FIND_NODE)
+				m := makeMessageOutOfBody(&msgBody, KDM_FIND_NODE)
 				sendMessage(m, p)
 			}
 		}
