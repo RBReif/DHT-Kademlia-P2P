@@ -41,6 +41,7 @@ type dhtHeader struct {
 	nonce       []byte
 }
 
+// TODO: unify "decode" and "parse"
 func (h *dhtHeader) decodeHeaderToBytes() []byte {
 	result := make([]byte, 0, SIZE_OF_HEADER)
 	binary.BigEndian.PutUint16(result[0:2], h.size)
@@ -231,6 +232,7 @@ func sendMessage(m dhtMessage, receiverPeer peer) {
 }
 
 //parses a peer into byte representation
+// TODO: peerToByte and parseByteToPeer correct naming
 func peerToByte(peer peer) []byte {
 
 	result := make([]byte, 0, SIZE_OF_PEER)
