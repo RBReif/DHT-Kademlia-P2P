@@ -26,7 +26,8 @@ const SIZE_OF_ID int = 20
 const SIZE_OF_PEER int = SIZE_OF_ID + SIZE_OF_IP + SIZE_OF_PORT
 const SIZE_OF_NONCE int = 20
 const SIZE_OF_HEADER = 4 + SIZE_OF_PEER + SIZE_OF_NONCE
-const SIZE_OF_KEY int = 20
+
+//const SIZE_OF_KEY int = 20     //size of key equals size of id
 
 type dhtMessage struct {
 	header dhtHeader
@@ -38,6 +39,13 @@ func (m *dhtMessage) toString() string {
 	result := "[dhtMessage:] \n"
 	result = result + " Header: \n" + m.header.toString()
 	result = result + " Body: "
+	if m.body == nil {
+		result = result + " - "
+	} else {
+		result = result + m.body.toString()
+	}
+	result = result + "\n Data: " + bytesToString(m.data)
+
 	return result
 }
 
@@ -50,16 +58,10 @@ type dhtHeader struct {
 
 func (h *dhtHeader) decodeHeaderToBytes() []byte {
 	result := make([]byte, 4)
-	fmt.Println(result)
-	fmt.Println("size: ", h.size)
 	binary.BigEndian.PutUint16(result[0:2], h.size)
-	fmt.Println(result)
-	fmt.Println("type ", h.messageType)
 	binary.BigEndian.PutUint16(result[2:4], h.messageType)
-	fmt.Println(result)
 	result = append(result, peerToByte(h.senderPeer)...)
 	result = append(result, h.nonce...)
-	fmt.Println(result)
 	return result
 }
 func (h *dhtHeader) toString() string {
@@ -73,6 +75,7 @@ func (h *dhtHeader) toString() string {
 type dhtBody interface {
 	decodeBodyFromBytes(m *dhtMessage)
 	decodeBodyToBytes() []byte
+	toString() string
 }
 
 type kdmFindValueBody struct {
@@ -87,6 +90,9 @@ func (b *kdmFindValueBody) decodeBodyFromBytes(m *dhtMessage) {
 func (b *kdmFindValueBody) decodeBodyToBytes() []byte {
 	return b.id.toByte()
 }
+func (b *kdmFindValueBody) toString() string {
+	return "[ID: " + bytesToString(b.id.toByte()) + "]"
+}
 
 type kdmFindNodeBody struct {
 	id id
@@ -99,6 +105,9 @@ func (b *kdmFindNodeBody) decodeBodyFromBytes(m *dhtMessage) {
 }
 func (b *kdmFindNodeBody) decodeBodyToBytes() []byte {
 	return b.id.toByte()
+}
+func (b *kdmFindNodeBody) toString() string {
+	return "[ID: " + bytesToString(b.id.toByte()) + "]"
 }
 
 type kdmFoundValueBody struct {
@@ -113,6 +122,9 @@ func (b *kdmFoundValueBody) decodeBodyFromBytes(m *dhtMessage) {
 func (b *kdmFoundValueBody) decodeBodyToBytes() []byte {
 	return b.value
 }
+func (b *kdmFoundValueBody) toString() string {
+	return "[value: " + bytesToString(b.value) + "]"
+}
 
 type kdmStoreBody struct {
 	key   id
@@ -121,9 +133,11 @@ type kdmStoreBody struct {
 
 func (b *kdmStoreBody) decodeBodyFromBytes(m *dhtMessage) {
 	//	valueSize := int(m.header.size)- SIZE_OF_HEADER - SIZE_OF_ID
-	var id [SIZE_OF_ID]byte
-	copy(id[:], m.data[SIZE_OF_HEADER:SIZE_OF_HEADER+SIZE_OF_ID])
-	b.key = id
+	idHelp := make([]byte, SIZE_OF_ID)
+	copy(idHelp[:], m.data[SIZE_OF_HEADER:SIZE_OF_HEADER+SIZE_OF_ID])
+	var i id
+	copy(i[:], idHelp)
+	b.key = i
 	b.value = m.data[SIZE_OF_HEADER+SIZE_OF_ID:]
 }
 func (b *kdmStoreBody) decodeBodyToBytes() []byte {
@@ -131,6 +145,9 @@ func (b *kdmStoreBody) decodeBodyToBytes() []byte {
 	result = append(result, b.key.toByte()...)
 	result = append(result, b.value...)
 	return result
+}
+func (b *kdmStoreBody) toString() string {
+	return "[Key: " + bytesToString(b.key.toByte()) + "]\n     [value:" + bytesToString(b.value) + "]"
 }
 
 type kdmFindNodeAnswerBody struct {
@@ -149,6 +166,15 @@ func (b *kdmFindNodeAnswerBody) decodeBodyToBytes() []byte {
 	for i := 0; i < len(b.answerPeers); i++ {
 		result = append(result, peerToByte(b.answerPeers[i])...)
 	}
+	return result
+}
+
+func (b *kdmFindNodeAnswerBody) toString() string {
+	result := "[closestPeers: \n"
+	for i := 0; i < len(b.answerPeers); i++ {
+		result = result + b.answerPeers[i].toString() + "\n"
+	}
+	result = result + "]"
 	return result
 }
 
@@ -175,6 +201,9 @@ func makeMessageOutOfBytes(messageData []byte) dhtMessage {
 	msg.header.messageType = binary.BigEndian.Uint16(messageData[2:4])
 	msg.header.senderPeer = parseByteToPeer(messageData[4 : 4+SIZE_OF_PEER])
 	msg.header.nonce = messageData[4+SIZE_OF_PEER : 4+SIZE_OF_PEER+SIZE_OF_NONCE]
+
+	//store data in raw
+	msg.data = messageData
 
 	//extract body
 	switch msg.header.messageType {
@@ -218,9 +247,10 @@ func makeMessageOutOfBody(body dhtBody, msgType uint16) dhtMessage {
 		bodyData := body.decodeBodyToBytes()
 		result.body = body
 		result.header.size = uint16(SIZE_OF_HEADER + len(bodyData))
-		data := make([]byte, result.header.size)
+		var data []byte
 		data = append(data, result.header.decodeHeaderToBytes()...)
 		data = append(data, bodyData...)
+		result.data = data
 	}
 
 	return result
@@ -256,25 +286,19 @@ func sendMessage(m dhtMessage, receiverPeer peer) {
 
 //parses a peer into byte representation
 func peerToByte(peer peer) []byte {
-	fmt.Println("Starting conversion peer to byte")
-	fmt.Println("peer = ", peer.toString())
 
 	result := make([]byte, 0, SIZE_OF_PEER)
-	fmt.Println(result)
 
 	//first field = IP
 	ip := net.ParseIP(peer.ip).To16()
 	result = append(result, ip...)
 
-	fmt.Println("after adding ip ", result)
 	//second field = port
 	port := make([]byte, 2)
 	binary.BigEndian.PutUint16(port, peer.port)
 	result = append(result, port...)
-	fmt.Println("after adding port", result)
-
-	result = append(result, peer.id.toByte()...) //
-	fmt.Println(" after id ", result)
+	//third field ID
+	result = append(result, peer.id.toByte()...)
 	return result
 
 }
