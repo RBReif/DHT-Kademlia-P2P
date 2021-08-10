@@ -95,7 +95,21 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 		return
 
 	case KDM_FIND_VALUE:
-		// TODO
+		var key id
+		copy(key[:], m.data[44:64])
+		var value, existing = hashTable[key]
+		if existing {
+			// reply with value
+			answerBody := kdmFoundValueBody{value: value}
+			answer := makeMessage(&answerBody, KDM_FOUND_VALUE)
+			sendMessage(answer, m.header.senderPeer)
+		} else {
+			// same behavior as KDM_FIND_NODE
+			answerBody := thisNode.FIND_NODE(key)
+			answer := makeMessage(&answerBody, KDM_FIND_NODE_ANSWER)
+
+			sendMessage(answer, m.header.senderPeer)
+		}
 		return
 	}
 
