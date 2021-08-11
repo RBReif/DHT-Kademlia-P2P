@@ -12,9 +12,6 @@ var k int
 var a int
 var n localNode
 
-// TODO: which maximum size should data have?
-var hashTable map[id][]byte
-
 type id [SIZE_OF_ID]byte
 
 func (id id) toByte() []byte {
@@ -39,11 +36,13 @@ func (p *peer) toString() string {
 type localNode struct {
 	peer     peer
 	kBuckets [160][]peer
+	// TODO: which maximum size should data have?
+	hashTable map[id][]byte
 }
 
 func (thisNode *localNode) init() {
-	thisNode.startMessageDispatcher()
-	hashTable = make(map[id][]byte)
+	// TODO: is starting of MessageDispatcher sensible here? thisNode.startMessageDispatcher()
+	thisNode.hashTable = make(map[id][]byte)
 }
 
 func (thisNode *localNode) startMessageDispatcher() {
@@ -82,7 +81,7 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 		}
 	case KDM_STORE:
 		// write (key, value) to hashTable
-		hashTable[m.body.(*kdmStoreBody).key] = m.body.(*kdmStoreBody).value
+		thisNode.hashTable[m.body.(*kdmStoreBody).key] = m.body.(*kdmStoreBody).value
 		return
 	case KDM_FIND_NODE:
 		var key id
@@ -103,7 +102,7 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 	case KDM_FIND_VALUE:
 		var key id
 		copy(key[:], m.data[44:64])
-		var value, existing = hashTable[key]
+		var value, existing = thisNode.hashTable[key]
 		if existing {
 			// reply with value
 			answerBody := kdmFoundValueBody{value: value}
@@ -136,7 +135,7 @@ func distance(id1 id, id2 id) id {
 // probes a node to check if it is online
 func pingNode(node peer) bool {
 
-	c, err := net.Dial("tcp", node.ip+"node.port")
+	c, err := net.Dial("tcp", node.ip+":"+fmt.Sprint(node.port))
 	if err != nil {
 		fmt.Println(err)
 		return false

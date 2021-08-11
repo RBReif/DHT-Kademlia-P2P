@@ -405,14 +405,14 @@ func TestParsePeerToByte(t *testing.T) {
 
 	var bytes = peerToByte(peer)
 
-	if len(bytes) != 38 {
-		t.Errorf("Peer has to have length 38")
+	if len(bytes) != 50 {
+		t.Errorf("Peer has to have length 50")
 	}
 
-	// check if first 20 bytes are equal to id
-	for i := 0; i < 20; i++ {
+	// check if first SIZE_OF_ID bytes are equal to id
+	for i := 0; i < SIZE_OF_ID; i++ {
 		if bytes[i] != randIdBytes[i] {
-			t.Errorf("First 20 Bytes have to be equal to Id")
+			t.Errorf("First " + fmt.Sprint(SIZE_OF_ID) + " Bytes have to be equal to Id")
 		}
 	}
 
