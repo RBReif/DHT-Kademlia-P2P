@@ -1,5 +1,6 @@
-package p2p
+package main
 
+import "C"
 import (
 	"crypto/rand"
 	"encoding/binary"
@@ -22,7 +23,7 @@ const KDM_FOUND_VALUE uint16 = 661
 
 const SIZE_OF_IP int = 16
 const SIZE_OF_PORT int = 2
-const SIZE_OF_ID int = 20
+const SIZE_OF_ID int = 32
 const SIZE_OF_PEER int = SIZE_OF_ID + SIZE_OF_IP + SIZE_OF_PORT
 const SIZE_OF_NONCE int = 20
 const SIZE_OF_HEADER = 4 + SIZE_OF_PEER + SIZE_OF_NONCE
@@ -232,7 +233,8 @@ func makeMessageOutOfBytes(messageData []byte) dhtMessage {
 func makeMessageOutOfBody(body dhtBody, msgType uint16) dhtMessage {
 	result := dhtMessage{}
 	result.header.messageType = msgType
-	result.header.senderPeer = n.peer
+
+	result.header.senderPeer = thisNode.thisPeer
 	nonce := make([]byte, 20)
 	if _, err := rand.Read(nonce); err != nil {
 		panic(err.Error())

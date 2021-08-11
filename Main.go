@@ -1,7 +1,8 @@
 package main
 
 import (
-	"DHT-16/api"
+	//"DHT-16/api"
+	//"DHT-16/p2p"
 	"flag"
 	"fmt"
 	"gopkg.in/ini.v1"
@@ -11,9 +12,9 @@ import (
 	"sync"
 )
 
-var Conf *configuraton
+var Conf configuraton
 
-func parseConfig() *configuraton {
+func parseConfig() configuraton {
 	var pathToConfigFile string
 	flag.StringVar(&pathToConfigFile, "c", "config/config1.ini", "Specify the path to the config file")
 	config, err := ini.Load(pathToConfigFile)
@@ -50,10 +51,25 @@ func parseConfig() *configuraton {
 		fmt.Println("Wrong configuration: maxReplication is not an Integer")
 		os.Exit(1)
 	}
-	conf := &configuraton{
+
+	apiPort, err := strconv.Atoi(strings.Split(config.Section("dht").Key("api_address").String(), ":")[1])
+	if err != nil {
+		fmt.Println("Wrong configuration: the port of the apiAdress is not an Integer")
+		os.Exit(1)
+	}
+	p2pPort, err := strconv.Atoi(strings.Split(config.Section("dht").Key("p2p_address").String(), ":")[1])
+	if err != nil {
+		fmt.Println("Wrong configuration: the port of the p2pAdress is not an Integer")
+		os.Exit(1)
+	}
+
+	conf := configuraton{
 		HostkeyDirectory: config.Section("").Key("hostkey").String(),
-		apiAddressDHT:    config.Section("dht").Key("api_address").String(),
-		p2pAddressDHT:    config.Section("dht").Key("p2p_address").String(),
+		apiIP:            strings.Split(config.Section("dht").Key("api_address").String(), ":")[0],
+		apiPort:          uint16(apiPort),
+		p2pIP:            strings.Split(config.Section("dht").Key("p2p_address").String(), ":")[0],
+		p2pPort:          uint16(p2pPort),
+
 		//minTTL:           time.Duration(),
 		maxTTL:         tmpMaxTtl,
 		minReplication: tmpMinRep,
@@ -61,9 +77,9 @@ func parseConfig() *configuraton {
 		preConfPeer1:   config.Section("dht").Key("preConfPeer1").String(),
 		preConfPeer2:   config.Section("dht").Key("preConfPeer2").String(),
 		preConfPeer3:   config.Section("dht").Key("preConfPeer3").String(),
-		apiAddressRPS:  config.Section("rps").Key("api_address").String(),
-		k:              k,
-		a:              a,
+		//apiAddressRPS:  config.Section("rps").Key("api_address").String(),
+		k: k,
+		a: a,
 	}
 	if !conf.checkConfig() {
 		fmt.Println("Wrong configuration: an address is wrongly configured")
@@ -76,7 +92,7 @@ func parseConfig() *configuraton {
 func main() {
 	fmt.Println("Program started...")
 	Conf = parseConfig()
-	api.StartAPIDispatcher(Conf.apiAddressDHT)
+	startAPIDispatcher(Conf.apiIP)
 
 }
 
@@ -84,8 +100,10 @@ type configuraton struct {
 	//general
 	HostkeyDirectory string
 	//dht
-	apiAddressDHT  string
-	p2pAddressDHT  string
+	apiIP          string
+	apiPort        uint16
+	p2pIP          string
+	p2pPort        uint16
 	maxTTL         int
 	minReplication int
 	maxReplication int
@@ -102,20 +120,22 @@ type configuraton struct {
 func (c *configuraton) toString() string {
 	str := "Configuration file: "
 	str = str + "   HostkeyDirectory: " + c.HostkeyDirectory + "\n"
-	str = str + "   apiAddressDHT: " + c.apiAddressDHT + "\n"
-	str = str + "   p2pAddressDHT: " + c.p2pAddressDHT + "\n"
+	str = str + "   apiIP: " + c.apiIP + "\n"
+	str = str + "   apiPort: " + strconv.Itoa(int(c.apiPort)) + "\n"
+	str = str + "   p2pIP: " + c.p2pIP + "\n"
+	str = str + "   p2pPort: " + strconv.Itoa(int(c.p2pPort)) + "\n"
 	str = str + "   maxTTL: " + strconv.Itoa(c.maxTTL) + "\n"
 	str = str + "   minReplication: " + strconv.Itoa(c.minReplication) + "\n"
 	str = str + "   maxReplication: " + strconv.Itoa(c.maxReplication) + "\n"
 	str = str + "   preConfPeer1: " + c.preConfPeer1 + "\n"
 	str = str + "   preConfPeer2: " + c.preConfPeer2 + "\n"
 	str = str + "   preConfPeer3: " + c.preConfPeer3 + "\n"
-	str = str + "   apiAddressRPS: " + c.apiAddressRPS + "\n"
+	//str = str + "   apiAddressRPS: " + c.apiAddressRPS + "\n"
 	return str
 }
 func (c *configuraton) checkConfig() bool {
 	everythingAlright := true
-	if !strings.Contains(c.apiAddressDHT, ":") || !strings.Contains(c.p2pAddressDHT, ":") {
+	if strings.Contains(c.apiIP, ":") || strings.Contains(c.p2pIP, ":") {
 		everythingAlright = false
 	}
 	return everythingAlright

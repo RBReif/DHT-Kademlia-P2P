@@ -1,4 +1,4 @@
-package p2p
+package main
 
 import (
 	"bytes"
@@ -31,8 +31,8 @@ func isIdInKBucket(kBucket []peer, id id) (int, bool) {
 
 //returns maximum Size of the bucket at specified index
 func maxSizeOfBucket(index int) int {
-	max := k
-	if index < k {
+	max := Conf.k
+	if index < Conf.k {
 		rangeLimit := math.Pow(2, float64(index+1)) - math.Pow(2, float64(index))
 		if rangeLimit < float64(max) {
 			max = int(rangeLimit)
@@ -44,7 +44,7 @@ func maxSizeOfBucket(index int) int {
 
 //returns index of the bucket that contains/is responsible for a given id
 func (thisNode *localNode) findIndexOfResponsibleBucket(key id) int {
-	d := distance(thisNode.peer.id, key)
+	d := distance(thisNode.thisPeer.id, key)
 
 	indexFirstRelevantByte := 19 // [0 0 0 0 0 0 0 ... 0 0 0 9 3 23]
 	for i := 0; i < 20; i++ {
@@ -60,7 +60,7 @@ func (thisNode *localNode) findIndexOfResponsibleBucket(key id) int {
 
 //returns index of the peer from a slice of peers that is the farest away from a given id
 func findIndexOfFarestPeerInSlice(peers []peer, key id) int {
-	var maxDistance [20]byte
+	var maxDistance [SIZE_OF_ID]byte
 	index := -1
 	for i := 0; i < len(peers); i++ {
 		d := distance(key, peers[i].id)

@@ -1,4 +1,4 @@
-package p2p
+package main
 
 import (
 	"crypto/rand"
@@ -9,15 +9,15 @@ import (
 )
 
 func TestPingCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 	ping1 := makeMessageOutOfBody(nil, KDM_PING)
 	fmt.Println("Ping1: ", ping1.toString())
 	if ping1.body != nil {
@@ -51,15 +51,15 @@ func TestPingCodingAndDecoding(t *testing.T) {
 }
 
 func TestPongCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 	pong1 := makeMessageOutOfBody(nil, KDM_PONG)
 	fmt.Println("Pong1: ", pong1.toString())
 	if pong1.body != nil {
@@ -93,15 +93,15 @@ func TestPongCodingAndDecoding(t *testing.T) {
 }
 
 func TestStoreCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	idy := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idy); err != nil {
@@ -155,15 +155,15 @@ func TestStoreCodingAndDecoding(t *testing.T) {
 }
 
 func TestFindNodeCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	idy := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idy); err != nil {
@@ -212,15 +212,15 @@ func TestFindNodeCodingAndDecoding(t *testing.T) {
 }
 
 func TestFindNodeAnswerCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	var ps []peer
 	for i := 0; i < 5; i++ {
@@ -282,15 +282,15 @@ func TestFindNodeAnswerCodingAndDecoding(t *testing.T) {
 }
 
 func TestFindValueCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	idy := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idy); err != nil {
@@ -339,15 +339,15 @@ func TestFindValueCodingAndDecoding(t *testing.T) {
 }
 
 func TestFoundValueCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	value := make([]byte, 10)
 	if _, err := rand.Read(value); err != nil {

@@ -1,4 +1,4 @@
-package p2p
+package main
 
 import (
 	//"encoding/binary"
@@ -7,10 +7,23 @@ import (
 	"strconv"
 )
 
-// TODO: move k to singleton or something
-var k int
-var a int
-var n localNode
+var thisNode localNode
+
+type localNode struct {
+	thisPeer peer
+	kBuckets [160][]peer
+}
+
+type peer struct {
+	ip     string
+	isIpv4 bool
+	port   uint16
+	id     id
+}
+
+func (p *peer) toString() string {
+	return "" + p.ip + ":" + strconv.Itoa(int(p.port)) + " (" + bytesToString(p.id.toByte()) + ")"
+}
 
 // TODO: which maximum size should data have?
 var hashTable map[id][]byte
@@ -25,23 +38,8 @@ func (id id) toByte() []byte {
 	return result
 }
 
-type peer struct {
-	ip     string
-	isIpv4 bool
-	port   uint16
-	id     id
-}
-
-func (p *peer) toString() string {
-	return "" + p.ip + ":" + strconv.Itoa(int(p.port)) + " (" + bytesToString(p.id.toByte()) + ")"
-}
-
-type localNode struct {
-	peer     peer
-	kBuckets [160][]peer
-}
-
 func (thisNode *localNode) init() {
+
 	thisNode.startMessageDispatcher()
 	hashTable = make(map[id][]byte)
 }
@@ -68,7 +66,7 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 
 	mRaw := readMessage(conn) //todo read whole message
 	m := makeMessageOutOfBytes(mRaw)
-	n.updateKBucketPeer(m.header.senderPeer)
+	thisNode.updateKBucketPeer(m.header.senderPeer)
 
 	// switch according to m type
 	switch m.header.messageType {
@@ -143,7 +141,7 @@ func pingNode(node peer) bool {
 func (thisNode *localNode) nodeLookup(key id) {
 	var closestPeersOld []peer
 	for {
-		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, a)
+		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, Conf.a)
 		if !wasAnyNewPeerAdded(closestPeersOld, closestPeersNew) {
 			break
 		}
@@ -164,7 +162,7 @@ func (thisNode *localNode) nodeLookup(key id) {
 }
 
 func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
-	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, k)
+	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, Conf.k)
 	answerBody := kdmFindNodeAnswerBody{answerPeers: closestPeers}
 	fmt.Println(answerBody)
 	return answerBody

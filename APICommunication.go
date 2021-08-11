@@ -1,4 +1,4 @@
-package api
+package main
 
 import (
 	"encoding/binary"
@@ -21,8 +21,8 @@ type DhtAnswer struct {
 }
 
 //listens for TCP connections
-func StartAPIDispatcher(apiAddressDHT string) {
-	l, err := net.Listen("tcp", apiAddressDHT)
+func startAPIDispatcher(apiAddressDHT string) {
+	l, err := net.Listen("tcp", apiAddressDHT+":"+strconv.Itoa(int(Conf.apiPort)))
 	if err != nil {
 		custError := "[FAILURE] Error while listening for connection at" + apiAddressDHT + ": " + err.Error()
 		fmt.Println(custError)
