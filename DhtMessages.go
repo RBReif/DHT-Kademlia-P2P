@@ -240,8 +240,8 @@ func makeMessageOutOfBody(body dhtBody, msgType uint16) dhtMessage {
 		panic(err.Error())
 	}
 	result.header.nonce = nonce
-	fmt.Println(result.header.messageType, result.header.nonce)
-	fmt.Println(result.header.senderPeer)
+	//	fmt.Println(result.header.messageType, result.header.nonce)
+	//	fmt.Println(result.header.senderPeer)
 	if msgType == KDM_PING || msgType == KDM_PONG {
 		result.header.size = uint16(SIZE_OF_HEADER)
 		result.data = result.header.decodeHeaderToBytes()
