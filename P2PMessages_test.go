@@ -349,12 +349,20 @@ func TestFoundValueCodingAndDecoding(t *testing.T) {
 	copy(i[:], idx)
 	thisNode.thisPeer.id = i
 
+	idy := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(idy); err != nil {
+		panic(err.Error())
+	}
+	var key id
+	copy(key[:], idy)
+
 	value := make([]byte, 10)
 	if _, err := rand.Read(value); err != nil {
 		panic(err.Error())
 	}
 
 	foundValueBdy := kdmFoundValueBody{
+		key:   key,
 		value: value,
 	}
 

@@ -24,6 +24,20 @@ type apiMessage struct {
 	data   []byte
 }
 
+func (m *apiMessage) toString() string {
+	result := "[apiMessage:] \n"
+	result = result + " Header: \n" + m.header.toString()
+	result = result + " Body: "
+	if m.body == nil {
+		result = result + " - "
+	} else {
+		result = result + m.body.toString()
+	}
+	result = result + "\n Data: " + bytesToString(m.data)
+
+	return result
+}
+
 type apiHeader struct {
 	size        uint16
 	messageType uint16
@@ -56,7 +70,7 @@ type putBody struct {
 }
 
 func (b *putBody) toString() string {
-	result := "[ttl: " + strconv.Itoa(int(b.ttl)) + ", replication" + strconv.Itoa(int(b.replication)) + ", reserved" + strconv.Itoa(int(b.reserved)) + "\n"
+	result := "[ttl: " + strconv.Itoa(int(b.ttl)) + ", replication: " + strconv.Itoa(int(b.replication)) + ", reserved: " + strconv.Itoa(int(b.reserved)) + "\n"
 	result = result + "     Key: " + bytesToString(b.key.toByte()) + "]\n,     value:" + bytesToString(b.value) + "]"
 	return result
 }
@@ -89,7 +103,7 @@ func (b *getBody) toString() string {
 }
 func (b *getBody) decodeBodyFromBytes(m *apiMessage) {
 	var key [SIZE_OF_ID]byte
-	copy(key[:], m.data[4:SIZE_OF_ID])
+	copy(key[:], m.data[4:4+SIZE_OF_ID])
 	b.key = key
 }
 func (b *getBody) decodeBodyToBytes() []byte {
@@ -106,12 +120,12 @@ func (b *successBody) toString() string {
 }
 func (b *successBody) decodeBodyFromBytes(m *apiMessage) {
 	//decodeBodyFromBytes of successBody is only needed for testing
+	fmt.Println(m.data[4+SIZE_OF_ID:])
 	var key [SIZE_OF_ID]byte
-	copy(key[:], m.data[4:SIZE_OF_ID])
+	copy(key[:], m.data[4:4+SIZE_OF_ID])
 	b.key = key
-	var value []byte
-	copy(value[:], m.data[4+SIZE_OF_ID:])
-	b.value = value
+
+	b.value = m.data[4+SIZE_OF_ID:]
 }
 func (b *successBody) decodeBodyToBytes() []byte {
 	result := b.key.toByte()
@@ -129,7 +143,7 @@ func (b *failureBody) toString() string {
 func (b *failureBody) decodeBodyFromBytes(m *apiMessage) {
 	//decodeBodyFromBytes of failureBody is only needed for testing
 	var key [SIZE_OF_ID]byte
-	copy(key[:], m.data[4:SIZE_OF_ID])
+	copy(key[:], m.data[4:4+SIZE_OF_ID])
 	b.key = key
 }
 func (b *failureBody) decodeBodyToBytes() []byte {
@@ -157,11 +171,21 @@ func makeApiMessageOutOfBytes(messageData []byte) apiMessage {
 	case dhtGET:
 		msg.body = &getBody{}
 		msg.body.decodeBodyFromBytes(&msg)
+
+	//dhtSuccess and dhtFailure are only here for testing purposes
+	case dhtSUCCESS:
+		msg.body = &successBody{}
+		msg.body.decodeBodyFromBytes(&msg)
+	case dhtFAILURE:
+		msg.body = &failureBody{}
+		msg.body.decodeBodyFromBytes(&msg)
+
 	default:
 		custError := "[FAILURE] Received Message with unknown Type " + strconv.Itoa(int(msg.header.messageType))
 		fmt.Println(custError)
 		//panic(custError)
 	}
+
 	return msg
 }
 

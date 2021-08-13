@@ -112,19 +112,25 @@ func (b *kdmFindNodeBody) toString() string {
 }
 
 type kdmFoundValueBody struct {
-	//id id
+	key   id
 	value []byte
 }
 
 func (b *kdmFoundValueBody) decodeBodyFromBytes(m *p2pMessage) {
 	//	valueSize := int(m.header.size)- SIZE_OF_HEADER
-	b.value = m.data[SIZE_OF_HEADER:]
+	var key id
+	copy(key[:], m.data[SIZE_OF_HEADER:SIZE_OF_HEADER+SIZE_OF_ID])
+	b.key = key
+	b.value = m.data[SIZE_OF_HEADER+SIZE_OF_ID:]
+
 }
 func (b *kdmFoundValueBody) decodeBodyToBytes() []byte {
-	return b.value
+	result := b.key.toByte()
+	result = append(result, b.value...)
+	return result
 }
 func (b *kdmFoundValueBody) toString() string {
-	return "[value: " + bytesToString(b.value) + "]"
+	return "[key: " + bytesToString(b.key.toByte()) + ", value: " + bytesToString(b.value) + "]"
 }
 
 type kdmStoreBody struct {

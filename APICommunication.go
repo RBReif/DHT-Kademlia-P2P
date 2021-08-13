@@ -91,7 +91,12 @@ func handleAPIconnection(con net.Conn) {
 
 //TODO Replace Dummy in p2p
 func handleGet(body *getBody) DhtAnswer {
-	return DhtAnswer{}
+	fmt.Println("handleGet has received :", body.toString())
+	return DhtAnswer{
+		success: false,
+		key:     body.key,
+		value:   nil,
+	}
 }
 
 //TODO Replace Dummy in p2p
