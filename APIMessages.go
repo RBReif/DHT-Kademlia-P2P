@@ -120,7 +120,6 @@ func (b *successBody) toString() string {
 }
 func (b *successBody) decodeBodyFromBytes(m *apiMessage) {
 	//decodeBodyFromBytes of successBody is only needed for testing
-	fmt.Println(m.data[4+SIZE_OF_ID:])
 	var key [SIZE_OF_ID]byte
 	copy(key[:], m.data[4:4+SIZE_OF_ID])
 	b.key = key

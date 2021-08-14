@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
+	ran "math/rand"
 	"net"
 	"os"
 	"reflect"
@@ -200,10 +201,14 @@ func TestPutCodingAndDecoding(t *testing.T) {
 	}
 }
 
+//this test function sends a dhtPUT request and then a dhtGET request to receive the fitting dhtSUCCESS message
+//afterwards it sends a second dhtGET request for a (probably) not exiting/stored key to retreive a dhtFailure message
 func TestAPICommunication(t *testing.T) {
 	go main()
 	testMap = make(map[id][]byte)
 	time.Sleep(1 * time.Second)
+
+	waitingTime := time.Duration(ran.Intn(1000))
 
 	testAddr := Conf.apiIP + ":" + strconv.Itoa(int(Conf.apiPort))
 
@@ -252,7 +257,7 @@ func TestAPICommunication(t *testing.T) {
 	}
 	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...")
 	fmt.Println()
-	time.Sleep(1 * time.Second)
+	time.Sleep(time.Duration(waitingTime * time.Millisecond))
 
 	getBdy := getBody{key: i}
 	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
@@ -263,7 +268,7 @@ func TestAPICommunication(t *testing.T) {
 		println("[TEST] Write to dhtInstance failed:", err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("[TEST] Wrote  a dhtGet request to dht Instance...")
+	fmt.Println("[TEST] Wrote a dhtGet request to dht Instance...")
 	//time.Sleep(1 * time.Second)
 	fmt.Println()
 
@@ -278,11 +283,43 @@ func TestAPICommunication(t *testing.T) {
 	fmt.Println("[TEST] received this answer: ", answerMsg.toString())
 
 	if answerMsg.header.messageType != dhtSUCCESS {
-		t.Errorf("We did not receive a dhtSUCCESS answer")
+		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer")
 	}
 	if !reflect.DeepEqual(answerMsg.body.(*successBody).value, putMsg.body.(*putBody).value) {
-		t.Errorf("returned answer value is not what we asked to be stored")
+		t.Errorf("[FAILURE] Returned answer value is not what we asked to be stored")
 
+	} else {
+		fmt.Println("[TEST] SUCCESS - we received the right value back")
+	}
+
+	time.Sleep(waitingTime * time.Millisecond)
+	fmt.Println()
+	getBdy.key[1] = 0
+	getBdy.key[4] = 0
+	getBdy.key[20] = 0
+	getMsg2 := makeApiMessageOutOfBody(&getBdy, dhtGET)
+	_, err = conn.Write(getMsg2.data)
+
+	if err != nil {
+		println("[TEST] Write to dhtInstance failed:", err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("[TEST] Wrote a dhtGet request (for non-existing key to dht Instance)...")
+	//time.Sleep(1 * time.Second)
+	fmt.Println()
+
+	reply2 := make([]byte, maxMessageLength)
+	msgSize2, err := conn.Read(reply2)
+	if err != nil {
+		fmt.Println("[TEST] Write to server failed:", err.Error())
+		os.Exit(1)
+	}
+	answerMsg2 := makeApiMessageOutOfBytes(reply2[:msgSize2])
+	fmt.Println()
+	fmt.Println("[TEST] received this answer: ", answerMsg2.toString())
+
+	if answerMsg2.header.messageType != dhtFAILURE {
+		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer. (there is a small probability that the sent out key equals the randomly generated key from the first run)")
 	}
 
 }

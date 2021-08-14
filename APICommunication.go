@@ -12,20 +12,20 @@ import (
 func startAPIDispatcher() {
 	l, err := net.Listen("tcp", Conf.apiIP+":"+strconv.Itoa(int(Conf.apiPort)))
 	if err != nil {
-		custError := "[FAILURE] Error while listening for connection at" + Conf.apiIP + ": " + strconv.Itoa(int(Conf.apiPort)) + " - " + err.Error()
+		custError := "[FAILURE] MAIN: Error while listening for connection at" + Conf.apiIP + ": " + strconv.Itoa(int(Conf.apiPort)) + " - " + err.Error()
 		fmt.Println(custError)
 		panic(custError)
 	}
 	defer l.Close()
-	fmt.Println("[SUCCESS] Listening on ", Conf.apiIP, ": ", Conf.apiPort)
+	fmt.Println("[SUCCESS] MAIN: Listening on ", Conf.apiIP, ": ", Conf.apiPort)
 	for {
 		con, err := l.Accept()
 		if err != nil {
-			custError := "[FAILURE] Error while accepting: " + err.Error()
+			custError := "[FAILURE] MAIN: Error while accepting: " + err.Error()
 			fmt.Println(custError)
 			panic(custError)
 		}
-		fmt.Println("New Connection established, ", con)
+		fmt.Println("[SUCCESS] MAIN: New Connection established, ", con)
 		con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
 
 		go handleAPIconnection(con)
@@ -37,29 +37,29 @@ func handleAPIconnection(con net.Conn) {
 	for {
 		receivedMessageRaw := make([]byte, maxMessageLength)
 		msgSize, err := con.Read(receivedMessageRaw)
-		fmt.Println("received message: ", receivedMessageRaw[:30], " ...")
+		//	fmt.Println("received message: ", receivedMessageRaw[:30], " ...")
 		if err != nil {
-			custError := "[FAILURE] Error while reading from connection: " + err.Error()
+			custError := "[FAILURE] MAIN: Error while reading from connection: " + err.Error()
 			fmt.Println(custError)
 			con.Close()
 			return
 		}
 		if msgSize > maxMessageLength {
-			custError := "[FAILURE] Too much data was sent to us: " + strconv.Itoa(msgSize)
+			custError := "[FAILURE] MAIN: Too much data was sent to us: " + strconv.Itoa(msgSize)
 			fmt.Println(custError)
 			con.Close()
 			return
 		}
 		size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
-		fmt.Println("Received message has size: ", size)
+		//	fmt.Println("Received message has size: ", size)
 		if uint16(msgSize) != size {
-			custError := "[FAILURE] Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
+			custError := "[FAILURE] MAIN: Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
 			fmt.Println(custError)
 			con.Close()
 			return
 		}
 		receivedMsg := makeApiMessageOutOfBytes(receivedMessageRaw[:msgSize])
-		fmt.Println("Parsed message into : ", receivedMsg.toString())
+		//		fmt.Println("Parsed message into : ", receivedMsg.toString())
 
 		switch receivedMsg.header.messageType {
 		case dhtPUT:
@@ -67,7 +67,7 @@ func handleAPIconnection(con net.Conn) {
 
 		case dhtGET:
 			if receivedMsg.header.size != 36 {
-				custError := "[FAILURE] Message size (" + strconv.Itoa(msgSize) + ") does not match expected size for a GET message"
+				custError := "[FAILURE] MAIN: Message size (" + strconv.Itoa(msgSize) + ") does not match expected size for a GET message"
 				fmt.Println(custError)
 				con.Close()
 				return
@@ -77,15 +77,14 @@ func handleAPIconnection(con net.Conn) {
 
 			_, err := con.Write(answerMessage.data)
 			if err != nil {
-				custError := "[FAILURE] Error while writing to connection: " + err.Error()
+				custError := "[FAILURE] MAIN:  Error while writing to connection: " + err.Error()
 				fmt.Println(custError)
 				panic(custError)
 			}
-			fmt.Println("[SUCCESS] Written answer to connection")
+			fmt.Println("[SUCCESS] MAIN: Written answer to connection")
 
-		//todo add customized cases if needed
 		default:
-			custError := "[FAILURE] Message was of not specified type: " + strconv.Itoa(int(receivedMsg.header.messageType))
+			custError := "[FAILURE] MAIN: Message was of not specified type: " + strconv.Itoa(int(receivedMsg.header.messageType))
 			fmt.Println(custError)
 			con.Close()
 			return
@@ -96,7 +95,7 @@ func handleAPIconnection(con net.Conn) {
 }
 
 func handleGet(body *getBody) DhtAnswer {
-	fmt.Println("handleGet has received :", body.toString())
+	//fmt.Println("handleGet has received :", body.toString())
 	time.Sleep(1 * time.Second)
 	v, ok := testMap[body.key]
 	if ok {
@@ -115,7 +114,7 @@ func handleGet(body *getBody) DhtAnswer {
 }
 
 func handlePut(body *putBody) {
-	fmt.Println("handlePut has received :", body.toString())
+	//fmt.Println("handlePut has received :", body.toString())
 	testMap[body.key] = body.value
 }
 
