@@ -9,15 +9,15 @@ import (
 )
 
 //listens for TCP connections
-func startAPIDispatcher(apiAddressDHT string) {
-	l, err := net.Listen("tcp", apiAddressDHT+":"+strconv.Itoa(int(Conf.apiPort)))
+func startAPIDispatcher() {
+	l, err := net.Listen("tcp", Conf.apiIP+":"+strconv.Itoa(int(Conf.apiPort)))
 	if err != nil {
-		custError := "[FAILURE] Error while listening for connection at" + apiAddressDHT + ": " + err.Error()
+		custError := "[FAILURE] Error while listening for connection at" + Conf.apiIP + ": " + strconv.Itoa(int(Conf.apiPort)) + " - " + err.Error()
 		fmt.Println(custError)
 		panic(custError)
 	}
 	defer l.Close()
-	fmt.Println("[SUCCESS] Listening on ", apiAddressDHT)
+	fmt.Println("[SUCCESS] Listening on ", Conf.apiIP, ": ", Conf.apiPort)
 	for {
 		con, err := l.Accept()
 		if err != nil {
@@ -25,6 +25,7 @@ func startAPIDispatcher(apiAddressDHT string) {
 			fmt.Println(custError)
 			panic(custError)
 		}
+		fmt.Println("New Connection established, ", con)
 		con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
 
 		go handleAPIconnection(con)
@@ -33,72 +34,89 @@ func startAPIDispatcher(apiAddressDHT string) {
 
 //listens on one connection for new messages
 func handleAPIconnection(con net.Conn) {
-	receivedMessageRaw := make([]byte, maxMessageLength)
-	msgSize, err := con.Read(receivedMessageRaw)
-	if err != nil {
-		custError := "[FAILURE] Error while reading from connection: " + err.Error()
-		fmt.Println(custError)
-		con.Close()
-		return
-	}
-	if msgSize > maxMessageLength {
-		custError := "[FAILURE] Too much data was sent to us: " + strconv.Itoa(msgSize)
-		fmt.Println(custError)
-		con.Close()
-		return
-	}
-	size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
-	if uint16(msgSize) != size {
-		custError := "[FAILURE] Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
-		fmt.Println(custError)
-		con.Close()
-		return
-	}
-	receivedMsg := makeApiMessageOutOfBytes(receivedMessageRaw[:msgSize])
-
-	switch receivedMsg.header.messageType {
-	case dhtPUT:
-		handlePut(receivedMsg.body.(*putBody))
-
-	case dhtGET:
-		if receivedMsg.header.size != 12 {
-			custError := "[FAILURE] Message size (" + strconv.Itoa(msgSize) + ") does not match expected size for a GET message"
+	for {
+		receivedMessageRaw := make([]byte, maxMessageLength)
+		msgSize, err := con.Read(receivedMessageRaw)
+		fmt.Println("received message: ", receivedMessageRaw[:30], " ...")
+		if err != nil {
+			custError := "[FAILURE] Error while reading from connection: " + err.Error()
 			fmt.Println(custError)
 			con.Close()
 			return
 		}
-		answer := handleGet(receivedMsg.body.(*getBody))
-		answerMessage := makeApiMessageOutOfAnswer(answer)
-
-		_, err := con.Write(answerMessage.data)
-		if err != nil {
-			custError := "[FAILURE] Error while writing to connection: " + err.Error()
+		if msgSize > maxMessageLength {
+			custError := "[FAILURE] Too much data was sent to us: " + strconv.Itoa(msgSize)
 			fmt.Println(custError)
-			panic(custError)
+			con.Close()
+			return
 		}
-		fmt.Println("[SUCCESS] Written answer to connection")
+		size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
+		fmt.Println("Received message has size: ", size)
+		if uint16(msgSize) != size {
+			custError := "[FAILURE] Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
+			fmt.Println(custError)
+			con.Close()
+			return
+		}
+		receivedMsg := makeApiMessageOutOfBytes(receivedMessageRaw[:msgSize])
+		fmt.Println("Parsed message into : ", receivedMsg.toString())
 
-	//todo add customized cases if needed
-	default:
-		custError := "[FAILURE] Message was of not specified type: " + strconv.Itoa(int(receivedMsg.header.messageType))
-		fmt.Println(custError)
-		con.Close()
-		return
+		switch receivedMsg.header.messageType {
+		case dhtPUT:
+			handlePut(receivedMsg.body.(*putBody))
+
+		case dhtGET:
+			if receivedMsg.header.size != 36 {
+				custError := "[FAILURE] Message size (" + strconv.Itoa(msgSize) + ") does not match expected size for a GET message"
+				fmt.Println(custError)
+				con.Close()
+				return
+			}
+			answer := handleGet(receivedMsg.body.(*getBody))
+			answerMessage := makeApiMessageOutOfAnswer(answer)
+
+			_, err := con.Write(answerMessage.data)
+			if err != nil {
+				custError := "[FAILURE] Error while writing to connection: " + err.Error()
+				fmt.Println(custError)
+				panic(custError)
+			}
+			fmt.Println("[SUCCESS] Written answer to connection")
+
+		//todo add customized cases if needed
+		default:
+			custError := "[FAILURE] Message was of not specified type: " + strconv.Itoa(int(receivedMsg.header.messageType))
+			fmt.Println(custError)
+			con.Close()
+			return
+		}
+
+		con.SetDeadline(time.Now().Add(time.Minute * 20)) //Timeout restarted
 	}
-
-	con.SetDeadline(time.Now().Add(time.Minute * 20)) //Timeout restarted
 }
 
-//TODO Replace Dummy in p2p
 func handleGet(body *getBody) DhtAnswer {
 	fmt.Println("handleGet has received :", body.toString())
-	return DhtAnswer{
-		success: false,
-		key:     body.key,
-		value:   nil,
+	time.Sleep(1 * time.Second)
+	v, ok := testMap[body.key]
+	if ok {
+		return DhtAnswer{
+			success: true,
+			key:     body.key,
+			value:   v,
+		}
+	} else {
+		return DhtAnswer{
+			success: false,
+			key:     body.key,
+			value:   nil,
+		}
 	}
 }
 
-//TODO Replace Dummy in p2p
 func handlePut(body *putBody) {
+	fmt.Println("handlePut has received :", body.toString())
+	testMap[body.key] = body.value
 }
+
+var testMap map[id][]byte

@@ -4,8 +4,12 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
+	"net"
+	"os"
 	"reflect"
+	"strconv"
 	"testing"
+	"time"
 )
 
 func makeApiMessageOutOfBody(msgBody apiBody, msgType uint16) apiMessage {
@@ -194,4 +198,91 @@ func TestPutCodingAndDecoding(t *testing.T) {
 	if !reflect.DeepEqual(put1.body, put2.body) {
 		t.Errorf("Parsing of Body (put)  does not work")
 	}
+}
+
+func TestAPICommunication(t *testing.T) {
+	go main()
+	testMap = make(map[id][]byte)
+	time.Sleep(1 * time.Second)
+
+	testAddr := Conf.apiIP + ":" + strconv.Itoa(int(Conf.apiPort))
+
+	fmt.Println("[TEST] Start of API Test-Programm...")
+	tcpAddr, err := net.ResolveTCPAddr("tcp", testAddr)
+	if err != nil {
+		fmt.Println("Resolving of TCP Address failed:", err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("[TEST] Resolved TCP Address: ", tcpAddr)
+
+	conn, err := net.DialTCP("tcp", nil, tcpAddr)
+	if err != nil {
+		fmt.Println("[TEST] Dial failed:", err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("[TEST] Connection established...")
+
+	idx := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(idx); err != nil {
+		panic(err.Error())
+	}
+	var i id
+	copy(i[:], idx)
+	thisNode.thisPeer.id = i
+
+	value := make([]byte, 10)
+	if _, err := rand.Read(value); err != nil {
+		panic(err.Error())
+	}
+	putBdy := putBody{
+		ttl:         20,
+		reserved:    2,
+		replication: 3,
+		key:         i,
+		value:       value,
+	}
+
+	putMsg := makeApiMessageOutOfBody(&putBdy, dhtPUT)
+
+	_, err = conn.Write(putMsg.data)
+
+	if err != nil {
+		println("[TEST] Write to dhtInstance failed:", err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...")
+	fmt.Println()
+	time.Sleep(1 * time.Second)
+
+	getBdy := getBody{key: i}
+	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
+
+	_, err = conn.Write(getMsg.data)
+
+	if err != nil {
+		println("[TEST] Write to dhtInstance failed:", err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("[TEST] Wrote  a dhtGet request to dht Instance...")
+	//time.Sleep(1 * time.Second)
+	fmt.Println()
+
+	reply := make([]byte, maxMessageLength)
+	msgSize, err := conn.Read(reply)
+	if err != nil {
+		fmt.Println("[TEST] Write to server failed:", err.Error())
+		os.Exit(1)
+	}
+	answerMsg := makeApiMessageOutOfBytes(reply[:msgSize])
+	fmt.Println()
+	fmt.Println("[TEST] received this answer: ", answerMsg.toString())
+
+	if answerMsg.header.messageType != dhtSUCCESS {
+		t.Errorf("We did not receive a dhtSUCCESS answer")
+	}
+	if !reflect.DeepEqual(answerMsg.body.(*successBody).value, putMsg.body.(*putBody).value) {
+		t.Errorf("returned answer value is not what we asked to be stored")
+
+	}
+
 }

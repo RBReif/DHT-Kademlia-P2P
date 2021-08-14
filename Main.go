@@ -92,7 +92,7 @@ func parseConfig() configuraton {
 func main() {
 	fmt.Println("Program started...")
 	Conf = parseConfig()
-	startAPIDispatcher(Conf.apiIP)
+	startAPIDispatcher()
 
 }
 
@@ -114,7 +114,7 @@ type configuraton struct {
 	k int
 	a int
 	//rps
-	apiAddressRPS string
+	//apiAddressRPS string
 }
 
 func (c *configuraton) toString() string {
