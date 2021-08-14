@@ -204,9 +204,12 @@ func TestPutCodingAndDecoding(t *testing.T) {
 //this test function sends a dhtPUT request and then a dhtGET request to receive the fitting dhtSUCCESS message
 //afterwards it sends a second dhtGET request for a (probably) not exiting/stored key to retreive a dhtFailure message
 func TestAPICommunication(t *testing.T) {
+	/* The following three lines of code are needed, if you want to run this Test function on its own
 	go main()
 	testMap = make(map[id][]byte)
 	time.Sleep(1 * time.Second)
+
+	*/
 
 	waitingTime := time.Duration(ran.Intn(1000))
 
@@ -255,10 +258,10 @@ func TestAPICommunication(t *testing.T) {
 		println("[TEST] Write to dhtInstance failed:", err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...")
+	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...", waitingTime, ": ", putMsg.body.(*putBody).value)
 	fmt.Println()
 	time.Sleep(time.Duration(waitingTime * time.Millisecond))
-
+	time.Sleep(100 * time.Millisecond)
 	getBdy := getBody{key: i}
 	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
 
@@ -268,7 +271,7 @@ func TestAPICommunication(t *testing.T) {
 		println("[TEST] Write to dhtInstance failed:", err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("[TEST] Wrote a dhtGet request to dht Instance...")
+	fmt.Println("[TEST] Wrote a dhtGet request to dht Instance...", waitingTime)
 	//time.Sleep(1 * time.Second)
 	fmt.Println()
 
@@ -280,7 +283,8 @@ func TestAPICommunication(t *testing.T) {
 	}
 	answerMsg := makeApiMessageOutOfBytes(reply[:msgSize])
 	fmt.Println()
-	fmt.Println("[TEST] received this answer: ", answerMsg.toString())
+	//fmt.Println("[TEST] received this answer: ", answerMsg.toString(), waitingTime)
+	fmt.Println("[TEST] received an answer: ", waitingTime)
 
 	if answerMsg.header.messageType != dhtSUCCESS {
 		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer")
@@ -289,7 +293,7 @@ func TestAPICommunication(t *testing.T) {
 		t.Errorf("[FAILURE] Returned answer value is not what we asked to be stored")
 
 	} else {
-		fmt.Println("[TEST] SUCCESS - we received the right value back")
+		fmt.Println("[TEST] SUCCESS - we received the right value back", waitingTime, ": ", answerMsg.body.(*successBody).value)
 	}
 
 	time.Sleep(waitingTime * time.Millisecond)
@@ -304,7 +308,7 @@ func TestAPICommunication(t *testing.T) {
 		println("[TEST] Write to dhtInstance failed:", err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("[TEST] Wrote a dhtGet request (for non-existing key to dht Instance)...")
+	fmt.Println("[TEST] Wrote a dhtGet request (for non-existing key to dht Instance)...", waitingTime)
 	//time.Sleep(1 * time.Second)
 	fmt.Println()
 
@@ -316,10 +320,22 @@ func TestAPICommunication(t *testing.T) {
 	}
 	answerMsg2 := makeApiMessageOutOfBytes(reply2[:msgSize2])
 	fmt.Println()
-	fmt.Println("[TEST] received this answer: ", answerMsg2.toString())
+	//fmt.Println("[TEST] received this answer: ", answerMsg2.toString())
+	fmt.Println("[TEST] received an answer (2nd): ", waitingTime)
 
 	if answerMsg2.header.messageType != dhtFAILURE {
 		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer. (there is a small probability that the sent out key equals the randomly generated key from the first run)")
 	}
 
+}
+
+func TestAPICommunicationConcurrency(t *testing.T) {
+	go main()
+	testMap = make(map[id][]byte)
+	time.Sleep(1 * time.Second)
+
+	for i := 0; i < 70; i++ {
+		go TestAPICommunication(t)
+	}
+	time.Sleep(15 * time.Second)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -51,12 +52,14 @@ func handleAPIconnection(con net.Conn) {
 			return
 		}
 		size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
-		//	fmt.Println("Received message has size: ", size)
+		fmt.Println("Received message has size: ", size)
+		fmt.Println("Received message, data: ", receivedMessageRaw[:size])
 		if uint16(msgSize) != size {
 			custError := "[FAILURE] MAIN: Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
 			fmt.Println(custError)
+			fmt.Println("!!!", receivedMessageRaw[:msgSize])
 			con.Close()
-			return
+			//return
 		}
 		receivedMsg := makeApiMessageOutOfBytes(receivedMessageRaw[:msgSize])
 		//		fmt.Println("Parsed message into : ", receivedMsg.toString())
@@ -97,7 +100,7 @@ func handleAPIconnection(con net.Conn) {
 func handleGet(body *getBody) DhtAnswer {
 	//fmt.Println("handleGet has received :", body.toString())
 	time.Sleep(1 * time.Second)
-	v, ok := testMap[body.key]
+	v, ok := readMap(body.key)
 	if ok {
 		return DhtAnswer{
 			success: true,
@@ -115,7 +118,22 @@ func handleGet(body *getBody) DhtAnswer {
 
 func handlePut(body *putBody) {
 	//fmt.Println("handlePut has received :", body.toString())
-	testMap[body.key] = body.value
+	writeMap(body.key, body.value)
+}
+
+var testLock = sync.RWMutex{}
+
+func readMap(key id) ([]byte, bool) {
+	testLock.RLock()
+	defer testLock.RUnlock()
+	v, ok := testMap[key]
+	return v, ok
+}
+
+func writeMap(key id, value []byte) {
+	testLock.Lock()
+	defer testLock.Unlock()
+	testMap[key] = value
 }
 
 var testMap map[id][]byte

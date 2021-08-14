@@ -64,7 +64,7 @@ func (thisNode *localNode) startMessageDispatcher() {
 
 func (thisNode *localNode) handleConnection(conn net.Conn) {
 
-	mRaw := readMessage(conn) //todo read whole message
+	mRaw := readMessage(conn) //todo readMap whole message
 	m := makeP2PMessageOutOfBytes(mRaw)
 	thisNode.updateKBucketPeer(m.header.senderPeer)
 
