@@ -40,7 +40,7 @@ func handleAPIconnection(con net.Conn) {
 		msgSize, err := con.Read(receivedMessageRaw)
 		//	fmt.Println("received message: ", receivedMessageRaw[:30], " ...")
 		if err != nil {
-			custError := "[FAILURE] MAIN: Error while reading from connection: " + err.Error()
+			custError := "[pot. FAILURE] MAIN: Error while reading from connection: " + err.Error() + " (This might be because no more data was sent)"
 			fmt.Println(custError)
 			con.Close()
 			return
@@ -59,7 +59,7 @@ func handleAPIconnection(con net.Conn) {
 			fmt.Println(custError)
 			fmt.Println("!!!", receivedMessageRaw[:msgSize])
 			con.Close()
-			//return
+			return
 		}
 		receivedMsg := makeApiMessageOutOfBytes(receivedMessageRaw[:msgSize])
 		//		fmt.Println("Parsed message into : ", receivedMsg.toString())

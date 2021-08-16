@@ -261,7 +261,7 @@ func TestAPICommunication(t *testing.T) {
 	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...", waitingTime, ": ", putMsg.body.(*putBody).value)
 	fmt.Println()
 	time.Sleep(time.Duration(waitingTime * time.Millisecond))
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(800 * time.Millisecond)
 	getBdy := getBody{key: i}
 	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
 
@@ -279,7 +279,8 @@ func TestAPICommunication(t *testing.T) {
 	msgSize, err := conn.Read(reply)
 	if err != nil {
 		fmt.Println("[TEST] Write to server failed:", err.Error())
-		os.Exit(1)
+		//os.Exit(1)
+		return
 	}
 	answerMsg := makeApiMessageOutOfBytes(reply[:msgSize])
 	fmt.Println()
@@ -294,6 +295,7 @@ func TestAPICommunication(t *testing.T) {
 
 	} else {
 		fmt.Println("[TEST] SUCCESS - we received the right value back", waitingTime, ": ", answerMsg.body.(*successBody).value)
+		counter++
 	}
 
 	time.Sleep(waitingTime * time.Millisecond)
@@ -306,7 +308,8 @@ func TestAPICommunication(t *testing.T) {
 
 	if err != nil {
 		println("[TEST] Write to dhtInstance failed:", err.Error())
-		os.Exit(1)
+		//os.Exit(1)
+		return
 	}
 	fmt.Println("[TEST] Wrote a dhtGet request (for non-existing key to dht Instance)...", waitingTime)
 	//time.Sleep(1 * time.Second)
@@ -316,7 +319,8 @@ func TestAPICommunication(t *testing.T) {
 	msgSize2, err := conn.Read(reply2)
 	if err != nil {
 		fmt.Println("[TEST] Write to server failed:", err.Error())
-		os.Exit(1)
+		//os.Exit(1)
+		return
 	}
 	answerMsg2 := makeApiMessageOutOfBytes(reply2[:msgSize2])
 	fmt.Println()
@@ -325,6 +329,8 @@ func TestAPICommunication(t *testing.T) {
 
 	if answerMsg2.header.messageType != dhtFAILURE {
 		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer. (there is a small probability that the sent out key equals the randomly generated key from the first run)")
+	} else {
+		counter++
 	}
 
 }
@@ -333,9 +339,12 @@ func TestAPICommunicationConcurrency(t *testing.T) {
 	go main()
 	testMap = make(map[id][]byte)
 	time.Sleep(1 * time.Second)
-
-	for i := 0; i < 70; i++ {
+	numberOfConcurrentTests := 1000
+	for i := 0; i < numberOfConcurrentTests; i++ {
 		go TestAPICommunication(t)
 	}
-	time.Sleep(15 * time.Second)
+	time.Sleep(25 * time.Second)
+	fmt.Println(counter, "out of ", numberOfConcurrentTests*2, " tests did work")
 }
+
+var counter int
