@@ -1,4 +1,4 @@
-package p2p
+package main
 
 import (
 	"crypto/rand"

@@ -1,5 +1,6 @@
-package p2p
+package main
 
+import "C"
 import (
 	"crypto/rand"
 	"encoding/binary"
@@ -22,21 +23,21 @@ const KDM_FOUND_VALUE uint16 = 661
 
 const SIZE_OF_IP int = 16
 const SIZE_OF_PORT int = 2
-const SIZE_OF_ID int = 20
+const SIZE_OF_ID int = 32
 const SIZE_OF_PEER int = SIZE_OF_ID + SIZE_OF_IP + SIZE_OF_PORT
 const SIZE_OF_NONCE int = 20
 const SIZE_OF_HEADER = 4 + SIZE_OF_PEER + SIZE_OF_NONCE
 
 //const SIZE_OF_KEY int = 20     //size of key equals size of id
 
-type dhtMessage struct {
-	header dhtHeader
-	body   dhtBody
+type p2pMessage struct {
+	header p2pHeader
+	body   p2pBody
 	data   []byte
 }
 
-func (m *dhtMessage) toString() string {
-	result := "[dhtMessage:] \n"
+func (m *p2pMessage) toString() string {
+	result := "[p2pMessage:] \n"
 	result = result + " Header: \n" + m.header.toString()
 	result = result + " Body: "
 	if m.body == nil {
@@ -49,7 +50,7 @@ func (m *dhtMessage) toString() string {
 	return result
 }
 
-type dhtHeader struct {
+type p2pHeader struct {
 	size        uint16
 	messageType uint16
 	senderPeer  peer
@@ -57,7 +58,7 @@ type dhtHeader struct {
 }
 
 // TODO: unify "decode" and "parse"
-func (h *dhtHeader) decodeHeaderToBytes() []byte {
+func (h *p2pHeader) decodeHeaderToBytes() []byte {
 	result := make([]byte, 4)
 	binary.BigEndian.PutUint16(result[0:2], h.size)
 	binary.BigEndian.PutUint16(result[2:4], h.messageType)
@@ -65,7 +66,7 @@ func (h *dhtHeader) decodeHeaderToBytes() []byte {
 	result = append(result, h.nonce...)
 	return result
 }
-func (h *dhtHeader) toString() string {
+func (h *p2pHeader) toString() string {
 	result := "      [size = " + strconv.Itoa(int(h.size)) + "]"
 	result = result + " [type = " + strconv.Itoa(int(h.messageType)) + "] \n"
 	result = result + "      [senderPeer: " + h.senderPeer.toString() + "] \n"
@@ -73,8 +74,8 @@ func (h *dhtHeader) toString() string {
 	return result
 }
 
-type dhtBody interface {
-	decodeBodyFromBytes(m *dhtMessage)
+type p2pBody interface {
+	decodeBodyFromBytes(m *p2pMessage)
 	decodeBodyToBytes() []byte
 	toString() string
 }
@@ -83,7 +84,7 @@ type kdmFindValueBody struct {
 	id id
 }
 
-func (b *kdmFindValueBody) decodeBodyFromBytes(m *dhtMessage) {
+func (b *kdmFindValueBody) decodeBodyFromBytes(m *p2pMessage) {
 	var id [SIZE_OF_ID]byte
 	copy(id[:], m.data[SIZE_OF_HEADER:SIZE_OF_HEADER+SIZE_OF_ID])
 	b.id = id
@@ -99,7 +100,7 @@ type kdmFindNodeBody struct {
 	id id
 }
 
-func (b *kdmFindNodeBody) decodeBodyFromBytes(m *dhtMessage) {
+func (b *kdmFindNodeBody) decodeBodyFromBytes(m *p2pMessage) {
 	var id [SIZE_OF_ID]byte
 	copy(id[:], m.data[SIZE_OF_HEADER:SIZE_OF_HEADER+SIZE_OF_ID])
 	b.id = id
@@ -112,19 +113,25 @@ func (b *kdmFindNodeBody) toString() string {
 }
 
 type kdmFoundValueBody struct {
-	//id id
+	key   id
 	value []byte
 }
 
-func (b *kdmFoundValueBody) decodeBodyFromBytes(m *dhtMessage) {
+func (b *kdmFoundValueBody) decodeBodyFromBytes(m *p2pMessage) {
 	//	valueSize := int(m.header.size)- SIZE_OF_HEADER
-	b.value = m.data[SIZE_OF_HEADER:]
+	var key id
+	copy(key[:], m.data[SIZE_OF_HEADER:SIZE_OF_HEADER+SIZE_OF_ID])
+	b.key = key
+	b.value = m.data[SIZE_OF_HEADER+SIZE_OF_ID:]
+
 }
 func (b *kdmFoundValueBody) decodeBodyToBytes() []byte {
-	return b.value
+	result := b.key.toByte()
+	result = append(result, b.value...)
+	return result
 }
 func (b *kdmFoundValueBody) toString() string {
-	return "[value: " + bytesToString(b.value) + "]"
+	return "[key: " + bytesToString(b.key.toByte()) + ", value: " + bytesToString(b.value) + "]"
 }
 
 type kdmStoreBody struct {
@@ -132,7 +139,7 @@ type kdmStoreBody struct {
 	value []byte
 }
 
-func (b *kdmStoreBody) decodeBodyFromBytes(m *dhtMessage) {
+func (b *kdmStoreBody) decodeBodyFromBytes(m *p2pMessage) {
 	//	valueSize := int(m.header.size)- SIZE_OF_HEADER - SIZE_OF_ID
 	idHelp := make([]byte, SIZE_OF_ID)
 	copy(idHelp[:], m.data[SIZE_OF_HEADER:SIZE_OF_HEADER+SIZE_OF_ID])
@@ -155,7 +162,7 @@ type kdmFindNodeAnswerBody struct {
 	answerPeers []peer
 }
 
-func (b *kdmFindNodeAnswerBody) decodeBodyFromBytes(m *dhtMessage) {
+func (b *kdmFindNodeAnswerBody) decodeBodyFromBytes(m *p2pMessage) {
 	//	valueSize := int(m.header.size)- SIZE_OF_HEADER - SIZE_OF_ID
 	var numberOfAnswerPeers = (int(m.header.size) - SIZE_OF_HEADER) / SIZE_OF_PEER
 	for i := 0; i < numberOfAnswerPeers; i++ {
@@ -191,9 +198,9 @@ func readMessage(conn net.Conn) []byte {
 	return messageData
 }
 
-func makeMessageOutOfBytes(messageData []byte) dhtMessage {
-	hdr := dhtHeader{}
-	msg := dhtMessage{
+func makeP2PMessageOutOfBytes(messageData []byte) p2pMessage {
+	hdr := p2pHeader{}
+	msg := p2pMessage{
 		header: hdr,
 	}
 
@@ -230,17 +237,18 @@ func makeMessageOutOfBytes(messageData []byte) dhtMessage {
 	return msg
 }
 
-func makeMessageOutOfBody(body dhtBody, msgType uint16) dhtMessage {
-	result := dhtMessage{}
+func makeP2PMessageOutOfBody(body p2pBody, msgType uint16) p2pMessage {
+	result := p2pMessage{}
 	result.header.messageType = msgType
-	result.header.senderPeer = n.peer
-	nonce := make([]byte, 20)
+
+	result.header.senderPeer = thisNode.thisPeer
+	nonce := make([]byte, SIZE_OF_NONCE)
 	if _, err := rand.Read(nonce); err != nil {
 		panic(err.Error())
 	}
 	result.header.nonce = nonce
-	fmt.Println(result.header.messageType, result.header.nonce)
-	fmt.Println(result.header.senderPeer)
+	//	fmt.Println(result.header.messageType, result.header.nonce)
+	//	fmt.Println(result.header.senderPeer)
 	if msgType == KDM_PING || msgType == KDM_PONG {
 		result.header.size = uint16(SIZE_OF_HEADER)
 		result.data = result.header.decodeHeaderToBytes()
@@ -258,7 +266,7 @@ func makeMessageOutOfBody(body dhtBody, msgType uint16) dhtMessage {
 }
 
 //sends the data of message m to the receiver peer
-func sendMessage(m dhtMessage, receiverPeer peer) {
+func sendP2PMessage(m p2pMessage, receiverPeer peer) {
 	senderTCPaddr, err := net.ResolveTCPAddr("tcp", m.header.senderPeer.ip+":"+strconv.Itoa(int(m.header.senderPeer.port)))
 	if err != nil {
 		custError := "[FAILURE] Error while parsing to TCP addr: " + err.Error()

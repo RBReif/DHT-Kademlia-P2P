@@ -1,4 +1,4 @@
-package p2p
+package main
 
 import (
 	//"encoding/binary"
@@ -7,19 +7,11 @@ import (
 	"strconv"
 )
 
-// TODO: move k to singleton or something
-var k int
-var a int
-var n localNode
+var thisNode localNode
 
-type id [SIZE_OF_ID]byte
-
-func (id id) toByte() []byte {
-	var result []byte
-	for i := 0; i < SIZE_OF_ID; i++ {
-		result = append(result, id[i])
-	}
-	return result
+type localNode struct {
+	thisPeer peer
+	kBuckets [160][]peer
 }
 
 type peer struct {
@@ -33,14 +25,18 @@ func (p *peer) toString() string {
 	return "" + p.ip + ":" + strconv.Itoa(int(p.port)) + " (" + bytesToString(p.id.toByte()) + ")"
 }
 
-type localNode struct {
-	peer     peer
-	kBuckets [160][]peer
-	// TODO: which maximum size should data have?
-	hashTable map[id][]byte
+type id [SIZE_OF_ID]byte
+
+func (id id) toByte() []byte {
+	var result []byte
+	for i := 0; i < SIZE_OF_ID; i++ {
+		result = append(result, id[i])
+	}
+	return result
 }
 
 func (thisNode *localNode) init() {
+
 	// TODO: is starting of MessageDispatcher sensible here? thisNode.startMessageDispatcher()
 	thisNode.hashTable = make(map[id][]byte)
 }
@@ -65,16 +61,16 @@ func (thisNode *localNode) startMessageDispatcher() {
 
 func (thisNode *localNode) handleConnection(conn net.Conn) {
 
-	mRaw := readMessage(conn) //todo read whole message
-	m := makeMessageOutOfBytes(mRaw)
-	n.updateKBucketPeer(m.header.senderPeer)
+	mRaw := readMessage(conn) //todo readMap whole message
+	m := makeP2PMessageOutOfBytes(mRaw)
+	thisNode.updateKBucketPeer(m.header.senderPeer)
 
 	// switch according to m type
 	switch m.header.messageType {
 	case KDM_PING: // ping
 		// respond with KDM_PONG
-		pongMessage := makeMessageOutOfBody(nil, KDM_PONG)
-		sendMessage(pongMessage, m.header.senderPeer)
+		pongMessage := makeP2PMessageOutOfBody(nil, KDM_PONG)
+		sendP2PMessage(pongMessage, m.header.senderPeer)
 		err := conn.Close()
 		if err != nil {
 			return
@@ -87,9 +83,9 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 		var key id
 		copy(key[:], m.data[44:64])
 		answerBody := thisNode.FIND_NODE(key)
-		answer := makeMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
+		answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
 
-		sendMessage(answer, m.header.senderPeer)
+		sendP2PMessage(answer, m.header.senderPeer)
 		return
 
 	case KDM_FIND_NODE_ANSWER:
@@ -140,11 +136,11 @@ func pingNode(node peer) bool {
 		fmt.Println(err)
 		return false
 	}
-	pingMessage := makeMessageOutOfBody(nil, KDM_PING)
-	sendMessage(pingMessage, node)
+	pingMessage := makeP2PMessageOutOfBody(nil, KDM_PING)
+	sendP2PMessage(pingMessage, node)
 	// receive KDM_PONG
 	answerRaw := readMessage(c)
-	answer := makeMessageOutOfBytes(answerRaw)
+	answer := makeP2PMessageOutOfBytes(answerRaw)
 	if answer.header.messageType == KDM_PONG {
 		return true
 	}
@@ -156,7 +152,7 @@ func pingNode(node peer) bool {
 func (thisNode *localNode) nodeLookup(key id) {
 	var closestPeersOld []peer
 	for {
-		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, a)
+		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, Conf.a)
 		if !wasAnyNewPeerAdded(closestPeersOld, closestPeersNew) {
 			break
 		}
@@ -167,8 +163,8 @@ func (thisNode *localNode) nodeLookup(key id) {
 				msgBody := kdmFindNodeBody{
 					id: key,
 				}
-				m := makeMessageOutOfBody(&msgBody, KDM_FIND_NODE)
-				sendMessage(m, p)
+				m := makeP2PMessageOutOfBody(&msgBody, KDM_FIND_NODE)
+				sendP2PMessage(m, p)
 			}
 		}
 		closestPeersOld = closestPeersNew
@@ -177,7 +173,7 @@ func (thisNode *localNode) nodeLookup(key id) {
 }
 
 func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
-	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, k)
+	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, Conf.k)
 	answerBody := kdmFindNodeAnswerBody{answerPeers: closestPeers}
 	fmt.Println(answerBody)
 	return answerBody

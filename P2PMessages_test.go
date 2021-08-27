@@ -1,4 +1,4 @@
-package p2p
+package main
 
 import (
 	"crypto/rand"
@@ -9,16 +9,16 @@ import (
 )
 
 func TestPingCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
-	ping1 := makeMessageOutOfBody(nil, KDM_PING)
+	thisNode.thisPeer.id = i
+	ping1 := makeP2PMessageOutOfBody(nil, KDM_PING)
 	fmt.Println("Ping1: ", ping1.toString())
 	if ping1.body != nil {
 		t.Errorf("Body of KDM_PING message is not nil")
@@ -26,7 +26,7 @@ func TestPingCodingAndDecoding(t *testing.T) {
 
 	fmt.Println(ping1.data)
 
-	ping2 := makeMessageOutOfBytes(ping1.data)
+	ping2 := makeP2PMessageOutOfBytes(ping1.data)
 	fmt.Println("Ping2: ", ping2.toString())
 
 	if ping1.header.size != ping2.header.size {
@@ -51,16 +51,16 @@ func TestPingCodingAndDecoding(t *testing.T) {
 }
 
 func TestPongCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
-	pong1 := makeMessageOutOfBody(nil, KDM_PONG)
+	thisNode.thisPeer.id = i
+	pong1 := makeP2PMessageOutOfBody(nil, KDM_PONG)
 	fmt.Println("Pong1: ", pong1.toString())
 	if pong1.body != nil {
 		t.Errorf("Body of KDM_PING message is not nil")
@@ -68,7 +68,7 @@ func TestPongCodingAndDecoding(t *testing.T) {
 
 	fmt.Println(pong1.data)
 
-	pong2 := makeMessageOutOfBytes(pong1.data)
+	pong2 := makeP2PMessageOutOfBytes(pong1.data)
 	fmt.Println("Pong2: ", pong2.toString())
 
 	if pong1.header.size != pong2.header.size {
@@ -93,15 +93,15 @@ func TestPongCodingAndDecoding(t *testing.T) {
 }
 
 func TestStoreCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	idy := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idy); err != nil {
@@ -119,7 +119,7 @@ func TestStoreCodingAndDecoding(t *testing.T) {
 		value: value,
 	}
 
-	kdmStore1 := makeMessageOutOfBody(&storeBdy, KDM_STORE)
+	kdmStore1 := makeP2PMessageOutOfBody(&storeBdy, KDM_STORE)
 	fmt.Println("KDM_Store1: ", kdmStore1.toString())
 	if kdmStore1.body == nil {
 		t.Errorf("Body of KDM_Store message is  nil")
@@ -127,7 +127,7 @@ func TestStoreCodingAndDecoding(t *testing.T) {
 
 	fmt.Println(kdmStore1.data)
 
-	kdmStore2 := makeMessageOutOfBytes(kdmStore1.data)
+	kdmStore2 := makeP2PMessageOutOfBytes(kdmStore1.data)
 	fmt.Println("KDM_Store2: ", kdmStore2.toString())
 
 	if kdmStore1.header.size != kdmStore2.header.size {
@@ -155,15 +155,15 @@ func TestStoreCodingAndDecoding(t *testing.T) {
 }
 
 func TestFindNodeCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	idy := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idy); err != nil {
@@ -176,7 +176,7 @@ func TestFindNodeCodingAndDecoding(t *testing.T) {
 		id: i2,
 	}
 
-	findNode1 := makeMessageOutOfBody(&findNodeBdy, KDM_FIND_NODE)
+	findNode1 := makeP2PMessageOutOfBody(&findNodeBdy, KDM_FIND_NODE)
 	fmt.Println("FindNode1: ", findNode1.toString())
 	if findNode1.body == nil {
 		t.Errorf("Body of FindNode message is  nil")
@@ -184,7 +184,7 @@ func TestFindNodeCodingAndDecoding(t *testing.T) {
 
 	fmt.Println(findNode1.data)
 
-	findNode2 := makeMessageOutOfBytes(findNode1.data)
+	findNode2 := makeP2PMessageOutOfBytes(findNode1.data)
 	fmt.Println("FindNode2: ", findNode2.toString())
 
 	if findNode1.header.size != findNode2.header.size {
@@ -212,15 +212,15 @@ func TestFindNodeCodingAndDecoding(t *testing.T) {
 }
 
 func TestFindNodeAnswerCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	var ps []peer
 	for i := 0; i < 5; i++ {
@@ -246,7 +246,7 @@ func TestFindNodeAnswerCodingAndDecoding(t *testing.T) {
 		answerPeers: ps,
 	}
 
-	findNodeAnswer := makeMessageOutOfBody(&findNodeBdy, KDM_FIND_NODE_ANSWER)
+	findNodeAnswer := makeP2PMessageOutOfBody(&findNodeBdy, KDM_FIND_NODE_ANSWER)
 	fmt.Println("FindNodeAnswer1: ", findNodeAnswer.toString())
 	if findNodeAnswer.body == nil {
 		t.Errorf("Body of FindNodeAnswer message is  nil")
@@ -254,7 +254,7 @@ func TestFindNodeAnswerCodingAndDecoding(t *testing.T) {
 
 	fmt.Println(findNodeAnswer.data)
 
-	findNodeAnswer2 := makeMessageOutOfBytes(findNodeAnswer.data)
+	findNodeAnswer2 := makeP2PMessageOutOfBytes(findNodeAnswer.data)
 	fmt.Println("FindNodeAnswer2: ", findNodeAnswer2.toString())
 
 	if findNodeAnswer.header.size != findNodeAnswer2.header.size {
@@ -282,15 +282,15 @@ func TestFindNodeAnswerCodingAndDecoding(t *testing.T) {
 }
 
 func TestFindValueCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
 
 	idy := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idy); err != nil {
@@ -303,7 +303,7 @@ func TestFindValueCodingAndDecoding(t *testing.T) {
 		id: i2,
 	}
 
-	findValue1 := makeMessageOutOfBody(&findValueBody, KDM_FIND_VALUE)
+	findValue1 := makeP2PMessageOutOfBody(&findValueBody, KDM_FIND_VALUE)
 	fmt.Println("FindValue1: ", findValue1.toString())
 	if findValue1.body == nil {
 		t.Errorf("Body of FindValue message is  nil")
@@ -311,7 +311,7 @@ func TestFindValueCodingAndDecoding(t *testing.T) {
 
 	fmt.Println(findValue1.data)
 
-	findValue2 := makeMessageOutOfBytes(findValue1.data)
+	findValue2 := makeP2PMessageOutOfBytes(findValue1.data)
 	fmt.Println("FindValue2: ", findValue2.toString())
 
 	if findValue1.header.size != findValue2.header.size {
@@ -339,15 +339,22 @@ func TestFindValueCodingAndDecoding(t *testing.T) {
 }
 
 func TestFoundValueCodingAndDecoding(t *testing.T) {
-	n.peer.ip = "1.4.2.3"
-	n.peer.port = 30
+	thisNode.thisPeer.ip = "1.4.2.3"
+	thisNode.thisPeer.port = 30
 	idx := make([]byte, SIZE_OF_ID)
 	if _, err := rand.Read(idx); err != nil {
 		panic(err.Error())
 	}
 	var i id
 	copy(i[:], idx)
-	n.peer.id = i
+	thisNode.thisPeer.id = i
+
+	idy := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(idy); err != nil {
+		panic(err.Error())
+	}
+	var key id
+	copy(key[:], idy)
 
 	value := make([]byte, 10)
 	if _, err := rand.Read(value); err != nil {
@@ -355,10 +362,11 @@ func TestFoundValueCodingAndDecoding(t *testing.T) {
 	}
 
 	foundValueBdy := kdmFoundValueBody{
+		key:   key,
 		value: value,
 	}
 
-	foundValue1 := makeMessageOutOfBody(&foundValueBdy, KDM_FOUND_VALUE)
+	foundValue1 := makeP2PMessageOutOfBody(&foundValueBdy, KDM_FOUND_VALUE)
 	fmt.Println("FoundValue1: ", foundValue1.toString())
 	if foundValue1.body == nil {
 		t.Errorf("Body of FoundValue message is  nil")
@@ -366,7 +374,7 @@ func TestFoundValueCodingAndDecoding(t *testing.T) {
 
 	fmt.Println(foundValue1.data)
 
-	foundValue2 := makeMessageOutOfBytes(foundValue1.data)
+	foundValue2 := makeP2PMessageOutOfBytes(foundValue1.data)
 	fmt.Println("FindNode2: ", foundValue2.toString())
 
 	if foundValue1.header.size != foundValue2.header.size {
