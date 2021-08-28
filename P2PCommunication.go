@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"sync"
 )
 
 var thisNode localNode
@@ -14,6 +15,24 @@ type localNode struct {
 	kBuckets [160][]peer
 	// TODO: which maximum size should data have?
 	hashTable hashTable
+}
+
+type hashTable struct {
+	values map[id][]byte
+	sync.RWMutex
+}
+
+func (hashTable *hashTable) read(key id) ([]byte, bool) {
+	hashTable.RLock()
+	defer hashTable.RUnlock()
+	var value, existing = hashTable.values[key]
+	return value, existing
+}
+
+func (hashTable *hashTable) write(key id, value []byte) {
+	hashTable.Lock()
+	defer hashTable.Unlock()
+	hashTable.values[key] = value
 }
 
 type peer struct {
@@ -40,7 +59,7 @@ func (id id) toByte() []byte {
 func (thisNode *localNode) init() {
 
 	// TODO: is starting of MessageDispatcher sensible here? thisNode.startMessageDispatcher()
-	thisNode.hashTable = make(map[id][]byte)
+	thisNode.hashTable.values = make(map[id][]byte)
 }
 
 func (thisNode *localNode) startMessageDispatcher() {
@@ -79,7 +98,7 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 		}
 	case KDM_STORE:
 		// write (key, value) to hashTable
-		thisNode.hashTable[m.body.(*kdmStoreBody).key] = m.body.(*kdmStoreBody).value
+		thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value)
 		return
 	case KDM_FIND_NODE:
 		var key id
@@ -100,7 +119,7 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 	case KDM_FIND_VALUE:
 		var key id
 		copy(key[:], m.data[44:64])
-		var value, existing = thisNode.hashTable[key]
+		var value, existing = thisNode.hashTable.read(key)
 		if existing {
 			// reply with value
 			answerBody := kdmFoundValueBody{value: value}
