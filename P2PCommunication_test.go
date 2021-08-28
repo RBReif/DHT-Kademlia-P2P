@@ -36,13 +36,13 @@ func TestToByte(t *testing.T) {
 }
 
 func TestInitMakeHashtable(t *testing.T) {
-	if n.hashTable != nil {
+	if thisNode.hashTable != nil {
 		t.Errorf("Hashtable must not be initialized before init function called")
 	}
 
-	n.init()
+	thisNode.init()
 
-	if n.hashTable == nil {
+	if thisNode.hashTable == nil {
 		t.Errorf("Hashtable must not be nil after init function called")
 	}
 
@@ -50,7 +50,7 @@ func TestInitMakeHashtable(t *testing.T) {
 
 func TestPingNode(t *testing.T) {
 
-	if pingNode(n.peer) != false {
+	if pingNode(thisNode.thisPeer) != false {
 		t.Errorf("Ping of unavailable Node has to be false")
 	}
 
@@ -60,11 +60,11 @@ func TestPingNode(t *testing.T) {
 		t.Errorf("Error while listening for tcp connection")
 	}
 
-	n.peer.ip = "127.0.0.1"
-	n.peer.port = 8080
+	thisNode.thisPeer.ip = "127.0.0.1"
+	thisNode.thisPeer.port = 8080
 
 	// send Ping request
-	go pingNode(n.peer)
+	go pingNode(thisNode.thisPeer)
 
 	_, err = ln.Accept()
 	if err != nil {
@@ -77,22 +77,22 @@ func TestPingNode(t *testing.T) {
 
 func TestKDM_PING(t *testing.T) {
 
-	n.peer.ip = "127.0.0.1"
-	n.peer.port = 8080
+	thisNode.thisPeer.ip = "127.0.0.1"
+	thisNode.thisPeer.port = 8080
 
-	go n.startMessageDispatcher()
+	go thisNode.startMessageDispatcher()
 
-	c, err := net.Dial("tcp", n.peer.ip+":"+fmt.Sprint(n.peer.port))
+	c, err := net.Dial("tcp", thisNode.thisPeer.ip+":"+fmt.Sprint(thisNode.thisPeer.port))
 	if err != nil {
 		t.Errorf("Error opening TCP Connection")
 	}
-	pingMessage := makeMessageOutOfBody(nil, KDM_PING)
+	pingMessage := makeP2PMessageOutOfBody(nil, KDM_PING)
 	pingMessage.header.senderPeer.port = 8081 // change port to port of test case
-	sendMessage(pingMessage, n.peer)
+	sendP2PMessage(pingMessage, thisNode.thisPeer)
 
 	// receive KDM_PONG
 	answerRaw := readMessage(c)
-	answer := makeMessageOutOfBytes(answerRaw)
+	answer := makeP2PMessageOutOfBytes(answerRaw)
 	if answer.header.messageType == KDM_PONG {
 		// success
 	} else {

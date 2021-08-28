@@ -12,6 +12,8 @@ var thisNode localNode
 type localNode struct {
 	thisPeer peer
 	kBuckets [160][]peer
+	// TODO: which maximum size should data have?
+	hashTable hashTable
 }
 
 type peer struct {
@@ -102,14 +104,14 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 		if existing {
 			// reply with value
 			answerBody := kdmFoundValueBody{value: value}
-			answer := makeMessageOutOfBody(&answerBody, KDM_FOUND_VALUE)
-			sendMessage(answer, m.header.senderPeer)
+			answer := makeP2PMessageOutOfBody(&answerBody, KDM_FOUND_VALUE)
+			sendP2PMessage(answer, m.header.senderPeer)
 		} else {
 			// same behavior as KDM_FIND_NODE
 			answerBody := thisNode.FIND_NODE(key)
-			answer := makeMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
+			answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
 
-			sendMessage(answer, m.header.senderPeer)
+			sendP2PMessage(answer, m.header.senderPeer)
 		}
 		return
 	}
