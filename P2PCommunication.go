@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"time"
 )
 
 var thisNode localNode
@@ -18,7 +19,8 @@ type localNode struct {
 }
 
 type hashTable struct {
-	values map[id][]byte
+	values      map[id][]byte
+	expirations map[id]time.Time
 	sync.RWMutex
 }
 
@@ -29,10 +31,23 @@ func (hashTable *hashTable) read(key id) ([]byte, bool) {
 	return value, existing
 }
 
-func (hashTable *hashTable) write(key id, value []byte) {
+func (hashTable *hashTable) write(key id, value []byte, expiration time.Time) {
 	hashTable.Lock()
 	defer hashTable.Unlock()
 	hashTable.values[key] = value
+	hashTable.expirations[key] = expiration
+}
+
+// Deletes all key/value-pairs which are expired
+func (hashTable *hashTable) expireKeys() {
+	hashTable.Lock()
+	defer hashTable.Unlock()
+	for key, value := range hashTable.expirations {
+		if time.Now().After(value) {
+			delete(hashTable.values, key)
+			delete(hashTable.expirations, key)
+		}
+	}
 }
 
 type peer struct {
@@ -98,7 +113,7 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 		}
 	case KDM_STORE:
 		// write (key, value) to hashTable
-		thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value)
+		thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(Conf.maxTTL)*time.Millisecond))
 		return
 	case KDM_FIND_NODE:
 		var key id

@@ -36,13 +36,13 @@ func TestToByte(t *testing.T) {
 }
 
 func TestInitMakeHashtable(t *testing.T) {
-	if thisNode.hashTable != nil {
+	if thisNode.hashTable.values != nil || thisNode.hashTable.expirations != nil {
 		t.Errorf("Hashtable must not be initialized before init function called")
 	}
 
 	thisNode.init()
 
-	if thisNode.hashTable == nil {
+	if thisNode.hashTable.values == nil || thisNode.hashTable.expirations == nil {
 		t.Errorf("Hashtable must not be nil after init function called")
 	}
 
