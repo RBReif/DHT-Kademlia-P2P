@@ -19,8 +19,9 @@ type localNode struct {
 }
 
 type hashTable struct {
-	values      map[id][]byte
-	expirations map[id]time.Time
+	values            map[id][]byte
+	expirations       map[id]time.Time
+	republishingTimes map[id]time.Time
 	sync.RWMutex
 }
 
@@ -31,11 +32,23 @@ func (hashTable *hashTable) read(key id) ([]byte, bool) {
 	return value, existing
 }
 
-func (hashTable *hashTable) write(key id, value []byte, expiration time.Time) {
+func (hashTable *hashTable) write(key id, value []byte, expiration time.Time, republishingTime time.Time) {
 	hashTable.Lock()
 	defer hashTable.Unlock()
 	hashTable.values[key] = value
 	hashTable.expirations[key] = expiration
+	hashTable.republishingTimes[key] = republishingTime
+}
+
+func (hashTable *hashTable) republishKeys() {
+	hashTable.Lock()
+	defer hashTable.Unlock()
+	for key, value := range hashTable.republishingTimes {
+		if time.Now().After(value) {
+			// TODO replicate keys
+			print(key) // TODO: delete this line
+		}
+	}
 }
 
 // Deletes all key/value-pairs which are expired
@@ -73,11 +86,11 @@ func (id id) toByte() []byte {
 
 func (thisNode *localNode) init() {
 
-	// TODO: is starting of MessageDispatcher sensible here? thisNode.startMessageDispatcher()
+	// TODO: is starting of MessageDispatcher sensible here? thisNode.startP2PMessageDispatcher()
 	thisNode.hashTable.values = make(map[id][]byte)
 }
 
-func (thisNode *localNode) startMessageDispatcher() {
+func (thisNode *localNode) startP2PMessageDispatcher() {
 
 	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -113,7 +126,7 @@ func (thisNode *localNode) handleConnection(conn net.Conn) {
 		}
 	case KDM_STORE:
 		// write (key, value) to hashTable
-		thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(Conf.maxTTL)*time.Millisecond))
+		thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(Conf.maxTTL)*time.Second), time.Now().Add(time.Duration(Conf.republishingTime)*time.Second))
 		return
 	case KDM_FIND_NODE:
 		var key id
