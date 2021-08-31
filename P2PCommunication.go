@@ -227,3 +227,18 @@ func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
 	fmt.Println(answerBody)
 	return answerBody
 }
+
+// checks every second if keys are expired or should be republished
+func startTimers() {
+	ticker := time.NewTicker(time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			// expire keys
+			thisNode.hashTable.expireKeys()
+
+			// republish keys
+			thisNode.hashTable.republishKeys()
+		}
+	}
+}

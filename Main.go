@@ -99,6 +99,7 @@ func main() {
 	fmt.Println("Program started...")
 	Conf = parseConfig()
 	startAPIDispatcher()
+	go startTimers()
 
 }
 
