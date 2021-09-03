@@ -45,8 +45,8 @@ func (hashTable *hashTable) republishKeys() {
 	defer hashTable.Unlock()
 	for key, value := range hashTable.republishingTimes {
 		if time.Now().After(value) {
-			// TODO replicate keys
-			print(key) // TODO: delete this line
+			// TODO republish keys
+			print("DEBUG: Republishing" + fmt.Sprint(key)) // TODO: delete this line
 		}
 	}
 }
@@ -85,30 +85,37 @@ func (id id) toByte() []byte {
 }
 
 func (thisNode *localNode) init() {
-
-	// TODO: is starting of MessageDispatcher sensible here? thisNode.startP2PMessageDispatcher()
 	thisNode.hashTable.values = make(map[id][]byte)
 }
 
-func (thisNode *localNode) startP2PMessageDispatcher() {
+func startP2PMessageDispatcher(wg *sync.WaitGroup) {
+	defer wg.Done()
 
-	ln, err := net.Listen("tcp", ":8080")
+	l, err := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(int(Conf.p2pPort)))
 	if err != nil {
-		// TODO: handle error
+		custError := "[FAILURE] MAIN: Error while listening for connection at" + Conf.p2pIP + ": " + strconv.Itoa(int(Conf.p2pPort)) + " - " + err.Error()
+		fmt.Println(custError)
+		panic(custError)
 	}
+	defer l.Close()
+	fmt.Println("[SUCCESS] MAIN: P2PMessageDispatcher Listening on ", Conf.p2pIP, ": ", Conf.p2pPort)
 	for {
-		conn, err := ln.Accept()
+		conn, err := l.Accept()
 		if err != nil {
-			// TODO: handle error
+			custError := "[FAILURE] MAIN: Error while accepting: " + err.Error()
+			fmt.Println(custError)
+			panic(custError)
 		}
+		fmt.Println("[SUCCESS] MAIN: New Connection established, ", conn)
+		conn.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
 
-		go thisNode.handleConnection(conn)
+		go handleP2PConnection(conn)
 
 	}
 
 }
 
-func (thisNode *localNode) handleConnection(conn net.Conn) {
+func handleP2PConnection(conn net.Conn) {
 
 	mRaw := readMessage(conn) //todo readMap whole message
 	m := makeP2PMessageOutOfBytes(mRaw)

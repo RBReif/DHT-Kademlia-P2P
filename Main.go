@@ -96,11 +96,21 @@ func parseConfig() configuraton {
 }
 
 func main() {
-	fmt.Println("Program started...")
+
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
 	Conf = parseConfig()
-	startAPIDispatcher()
+	go startAPIMessageDispatcher(&wg)
+	go startP2PMessageDispatcher(&wg)
 	go startTimers()
 
+	fmt.Println("Program started...")
+
+	wg.Wait()
+
+	fmt.Println("Program stopped")
 }
 
 type configuraton struct {

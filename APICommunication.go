@@ -10,7 +10,9 @@ import (
 )
 
 //listens for TCP connections
-func startAPIDispatcher() {
+func startAPIMessageDispatcher(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	l, err := net.Listen("tcp", Conf.apiIP+":"+strconv.Itoa(int(Conf.apiPort)))
 	if err != nil {
 		custError := "[FAILURE] MAIN: Error while listening for connection at" + Conf.apiIP + ": " + strconv.Itoa(int(Conf.apiPort)) + " - " + err.Error()

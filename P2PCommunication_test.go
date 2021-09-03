@@ -4,6 +4,9 @@ import (
 	"crypto/rand"
 	"fmt"
 	"net"
+	"strconv"
+	"strings"
+	"sync"
 	"testing"
 )
 
@@ -48,6 +51,7 @@ func TestInitMakeHashtable(t *testing.T) {
 
 }
 
+// Test if pingNode successfully sends a PING request
 func TestPingNode(t *testing.T) {
 
 	if pingNode(thisNode.thisPeer) != false {
@@ -75,19 +79,25 @@ func TestPingNode(t *testing.T) {
 
 }
 
+// Test if node reacts correctly to PING message
 func TestKDM_PING(t *testing.T) {
 
 	thisNode.thisPeer.ip = "127.0.0.1"
 	thisNode.thisPeer.port = 8080
 
-	go thisNode.startMessageDispatcher()
+	Conf.p2pIP = "127.0.0.1"
+	Conf.p2pPort = 8080
+
+	var wg sync.WaitGroup
+	go startP2PMessageDispatcher(&wg)
 
 	c, err := net.Dial("tcp", thisNode.thisPeer.ip+":"+fmt.Sprint(thisNode.thisPeer.port))
 	if err != nil {
-		t.Errorf("Error opening TCP Connection")
+		t.Errorf("Error opening TCP Connection: " + err.Error())
 	}
 	pingMessage := makeP2PMessageOutOfBody(nil, KDM_PING)
-	pingMessage.header.senderPeer.port = 8081 // change port to port of test case
+	tmp, _ := strconv.Atoi(strings.Split(c.LocalAddr().String(), ":")[1])
+	pingMessage.header.senderPeer.port = uint16(tmp) // change port to port of test case
 	sendP2PMessage(pingMessage, thisNode.thisPeer)
 
 	// receive KDM_PONG
