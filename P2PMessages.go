@@ -57,6 +57,7 @@ type p2pHeader struct {
 	nonce       []byte
 }
 
+// TODO: unify "decode" and "parse"
 func (h *p2pHeader) decodeHeaderToBytes() []byte {
 	result := make([]byte, 4)
 	binary.BigEndian.PutUint16(result[0:2], h.size)
@@ -293,6 +294,7 @@ func sendP2PMessage(m p2pMessage, receiverPeer peer) {
 }
 
 //parses a peer into byte representation
+// TODO: peerToByte and parseByteToPeer correct naming
 func peerToByte(peer peer) []byte {
 
 	result := make([]byte, 0, SIZE_OF_PEER)
