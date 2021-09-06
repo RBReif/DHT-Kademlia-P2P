@@ -83,9 +83,20 @@ func initializeP2Pcomm() {
 	newID := h.Sum(nil)
 	fmt.Println("Our ID: ", newID)
 
+	var initialPeers []peer
+	initialPeers = make([]peer, 3)
+	initialPeers[0] = extractPeerAddressFromString(Conf.preConfPeer1)
+	initialPeers[1] = extractPeerAddressFromString(Conf.preConfPeer2)
+	initialPeers[2] = extractPeerAddressFromString(Conf.preConfPeer3)
+
+	for _, p := range initialPeers {
+		msg := makeP2PMessageOutOfBody(nil, KDM_PING)
+		sendP2PMessage(msg, p)
+	}
+
 }
 
-func extractPeer(line string) peer {
+func extractPeerAddressFromString(line string) peer {
 	result := peer{}
 	var ip string
 	var port int

@@ -65,8 +65,8 @@ func parseConfig() configuraton {
 
 	*/
 
-	apiAddr := extractPeer(config.Section("dht").Key("api_address").String())
-	p2pAddr := extractPeer(config.Section("dht").Key("p2p_address").String())
+	apiAddr := extractPeerAddressFromString(config.Section("dht").Key("api_address").String())
+	p2pAddr := extractPeerAddressFromString(config.Section("dht").Key("p2p_address").String())
 
 	conf := configuraton{
 		HostKeyFile: config.Section("").Key("hostkey").String(),
