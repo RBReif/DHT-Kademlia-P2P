@@ -6,6 +6,8 @@ import (
 	"encoding/pem"
 	"io/ioutil"
 	"log"
+	"os"
+	"strings"
 
 	//"encoding/binary"
 	"fmt"
@@ -21,10 +23,10 @@ type localNode struct {
 }
 
 type peer struct {
-	ip     string
-	isIpv4 bool
-	port   uint16
-	id     id
+	ip string
+	//isIpv4 bool
+	port uint16
+	id   id
 }
 
 func (p *peer) toString() string {
@@ -44,12 +46,13 @@ func (id id) toByte() []byte {
 	return result
 }
 
-func initialize() {
+func initializeP2Pcomm() {
+	//first we read the private key
 	priv, err := ioutil.ReadFile(Conf.HostKeyFile)
 	if err != nil {
 		fmt.Println("Error while reading File: ", err)
 	}
-	fmt.Println(priv)
+	fmt.Println("Bytes from private key pem file: ", priv)
 	block, _ := pem.Decode([]byte(priv))
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		log.Fatal("failed to decode PEM block containing public key")
@@ -58,29 +61,49 @@ func initialize() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Private Key extracted:", key)
 
+	//now we generate the corresponding public key
 	publicKeyDer, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
 	if err != nil {
 		log.Fatal(err)
 	}
-	/*
-		pubKeyBlock := pem.Block{
-				Type:    "PUBLIC KEY",
-				Headers: nil,
-				Bytes:   publicKeyDer,
-			}
-			pubKeyPem := string(pem.EncodeToMemory(&pubKeyBlock))
-			fmt.Println(pubKeyPem)
+	pubKeyBlock := pem.Block{
+		Type:    "PUBLIC KEY",
+		Headers: nil,
+		Bytes:   publicKeyDer,
+	}
+	pubKeyPem := string(pem.EncodeToMemory(&pubKeyBlock))
+	fmt.Println("public key generated: ", pubKeyPem)
 
-	*/
+	fmt.Println("Public Key as bytes: ", publicKeyDer)
 
-	fmt.Println("Public Key generated: ", publicKeyDer)
-
+	//now we calculate the sha256 hash sum to retreive our ID
 	h := sha256.New()
 	h.Write(publicKeyDer)
 	newID := h.Sum(nil)
 	fmt.Println("Our ID: ", newID)
+
+}
+
+func extractPeer(line string) peer {
+	result := peer{}
+	var ip string
+	var port int
+	var err error
+	if strings.Contains(line, "[") {
+		ip = strings.Split(line, "]:")[0][1:]
+		port, err = strconv.Atoi(strings.Split(line, "]:")[1])
+	} else {
+		ip = strings.Split(line, ":")[0]
+		port, err = strconv.Atoi(strings.Split(line, ":")[1])
+	}
+	if err != nil {
+		fmt.Println("Wrong configuration: the port of ", line, " is not an Integer")
+		os.Exit(1)
+	}
+	result.ip = ip
+	result.port = uint16(port)
+	return result
 }
 
 func (thisNode *localNode) init() {

@@ -52,23 +52,29 @@ func parseConfig() configuraton {
 		os.Exit(1)
 	}
 
-	apiPort, err := strconv.Atoi(strings.Split(config.Section("dht").Key("api_address").String(), ":")[1])
-	if err != nil {
-		fmt.Println("Wrong configuration: the port of the apiAdress is not an Integer")
-		os.Exit(1)
-	}
-	p2pPort, err := strconv.Atoi(strings.Split(config.Section("dht").Key("p2p_address").String(), ":")[1])
-	if err != nil {
-		fmt.Println("Wrong configuration: the port of the p2pAdress is not an Integer")
-		os.Exit(1)
-	}
+	/*
+		apiPort, err := strconv.Atoi(strings.Split(config.Section("dht").Key("api_address").String(), ":")[1])
+		if err != nil {
+			fmt.Println("Wrong configuration: the port of the apiAdress is not an Integer")
+			os.Exit(1)
+		}
+		p2pPort, err := strconv.Atoi(strings.Split(config.Section("dht").Key("p2p_address").String(), ":")[1])
+		if err != nil {
+			fmt.Println("Wrong configuration: the port of the p2pAdress is not an Integer")
+			os.Exit(1)
+		}
+
+	*/
+
+	apiAddr := extractPeer(config.Section("dht").Key("api_address").String())
+	p2pAddr := extractPeer(config.Section("dht").Key("p2p_address").String())
 
 	conf := configuraton{
 		HostKeyFile: config.Section("").Key("hostkey").String(),
-		apiIP:       strings.Split(config.Section("dht").Key("api_address").String(), ":")[0],
-		apiPort:     uint16(apiPort),
-		p2pIP:       strings.Split(config.Section("dht").Key("p2p_address").String(), ":")[0],
-		p2pPort:     uint16(p2pPort),
+		apiIP:       apiAddr.ip,
+		apiPort:     apiAddr.port,
+		p2pIP:       p2pAddr.ip,
+		p2pPort:     p2pAddr.port,
 
 		//minTTL:           time.Duration(),
 		maxTTL:         tmpMaxTtl,
@@ -92,8 +98,9 @@ func parseConfig() configuraton {
 func main() {
 	fmt.Println("Program started...")
 	Conf = parseConfig()
+	initializeP2Pcomm()
+
 	go startAPIDispatcher()
-	initialize()
 
 }
 
