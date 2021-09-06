@@ -64,11 +64,11 @@ func parseConfig() configuraton {
 	}
 
 	conf := configuraton{
-		HostkeyDirectory: config.Section("").Key("hostkey").String(),
-		apiIP:            strings.Split(config.Section("dht").Key("api_address").String(), ":")[0],
-		apiPort:          uint16(apiPort),
-		p2pIP:            strings.Split(config.Section("dht").Key("p2p_address").String(), ":")[0],
-		p2pPort:          uint16(p2pPort),
+		HostKeyFile: config.Section("").Key("hostkey").String(),
+		apiIP:       strings.Split(config.Section("dht").Key("api_address").String(), ":")[0],
+		apiPort:     uint16(apiPort),
+		p2pIP:       strings.Split(config.Section("dht").Key("p2p_address").String(), ":")[0],
+		p2pPort:     uint16(p2pPort),
 
 		//minTTL:           time.Duration(),
 		maxTTL:         tmpMaxTtl,
@@ -92,13 +92,14 @@ func parseConfig() configuraton {
 func main() {
 	fmt.Println("Program started...")
 	Conf = parseConfig()
-	startAPIDispatcher()
+	go startAPIDispatcher()
+	initialize()
 
 }
 
 type configuraton struct {
 	//general
-	HostkeyDirectory string
+	HostKeyFile string
 	//dht
 	apiIP          string
 	apiPort        uint16
@@ -119,7 +120,7 @@ type configuraton struct {
 
 func (c *configuraton) toString() string {
 	str := "Configuration file: "
-	str = str + "   HostkeyDirectory: " + c.HostkeyDirectory + "\n"
+	str = str + "   HostKeyFile: " + c.HostKeyFile + "\n"
 	str = str + "   apiIP: " + c.apiIP + "\n"
 	str = str + "   apiPort: " + strconv.Itoa(int(c.apiPort)) + "\n"
 	str = str + "   p2pIP: " + c.p2pIP + "\n"

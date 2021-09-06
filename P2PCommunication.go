@@ -1,6 +1,12 @@
 package main
 
 import (
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
+	"io/ioutil"
+	"log"
+
 	//"encoding/binary"
 	"fmt"
 	"net"
@@ -36,6 +42,45 @@ func (id id) toByte() []byte {
 		result = append(result, id[i])
 	}
 	return result
+}
+
+func initialize() {
+	priv, err := ioutil.ReadFile(Conf.HostKeyFile)
+	if err != nil {
+		fmt.Println("Error while reading File: ", err)
+	}
+	fmt.Println(priv)
+	block, _ := pem.Decode([]byte(priv))
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		log.Fatal("failed to decode PEM block containing public key")
+	}
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Private Key extracted:", key)
+
+	publicKeyDer, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	/*
+		pubKeyBlock := pem.Block{
+				Type:    "PUBLIC KEY",
+				Headers: nil,
+				Bytes:   publicKeyDer,
+			}
+			pubKeyPem := string(pem.EncodeToMemory(&pubKeyBlock))
+			fmt.Println(pubKeyPem)
+
+	*/
+
+	fmt.Println("Public Key generated: ", publicKeyDer)
+
+	h := sha256.New()
+	h.Write(publicKeyDer)
+	newID := h.Sum(nil)
+	fmt.Println("Our ID: ", newID)
 }
 
 func (thisNode *localNode) init() {

@@ -261,7 +261,7 @@ func TestAPICommunication(t *testing.T) {
 	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...", waitingTime, ": ", putMsg.body.(*putBody).value)
 	fmt.Println()
 	time.Sleep(time.Duration(waitingTime * time.Millisecond))
-	time.Sleep(800 * time.Millisecond)
+	time.Sleep(1000 * time.Millisecond)
 	getBdy := getBody{key: i}
 	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
 
