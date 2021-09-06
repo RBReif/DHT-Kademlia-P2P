@@ -90,7 +90,6 @@ func TestKDM_PING(t *testing.T) {
 
 	var wg sync.WaitGroup
 	go startP2PMessageDispatcher(&wg)
-
 	c, err := net.Dial("tcp", thisNode.thisPeer.ip+":"+fmt.Sprint(thisNode.thisPeer.port))
 	if err != nil {
 		t.Errorf("Error opening TCP Connection: " + err.Error())
@@ -99,10 +98,12 @@ func TestKDM_PING(t *testing.T) {
 	tmp, _ := strconv.Atoi(strings.Split(c.LocalAddr().String(), ":")[1])
 	pingMessage.header.senderPeer.port = uint16(tmp) // change port to port of test case
 	sendP2PMessage(pingMessage, thisNode.thisPeer)
+	fmt.Println("Sent Ping MEssage")
 
 	// receive KDM_PONG
-	answerRaw := readMessage(c)
-	answer := makeP2PMessageOutOfBytes(answerRaw)
+	answer := readMessage(c)
+	//answer := makeP2PMessageOutOfBytes(answerRaw)
+	fmt.Println("Received answer: ", answer)
 	if answer.header.messageType == KDM_PONG {
 		// success
 	} else {

@@ -98,7 +98,7 @@ func initializeP2Pcomm() {
 	if err != nil {
 		fmt.Println("Error while reading File: ", err)
 	}
-	fmt.Println("Bytes from private key pem file: ", priv)
+	fmt.Println("Bytes from private key pem file: ", priv[:10], "...")
 	block, _ := pem.Decode([]byte(priv))
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		log.Fatal("failed to decode PEM block containing public key")
@@ -119,25 +119,33 @@ func initializeP2Pcomm() {
 		Bytes:   publicKeyDer,
 	}
 	pubKeyPem := string(pem.EncodeToMemory(&pubKeyBlock))
-	fmt.Println("public key generated: ", pubKeyPem)
+	fmt.Println("public key generated: ", pubKeyPem[:50], "...")
 
-	fmt.Println("Public Key as bytes: ", publicKeyDer)
+	fmt.Println("Public Key as bytes: ", publicKeyDer[:10], "...")
 
 	//now we calculate the sha256 hash sum to retreive our ID
 	h := sha256.New()
 	h.Write(publicKeyDer)
-	newID := h.Sum(nil)
-	fmt.Println("Our ID: ", newID)
-
+	newIDbytes := h.Sum(nil)
+	var newID id
+	copy(newID[:], newIDbytes)
+	fmt.Println("Our ID: ", newIDbytes)
+	thisNode.thisPeer.ip = Conf.p2pIP
+	thisNode.thisPeer.port = Conf.p2pPort
+	thisNode.thisPeer.id = newID
+	fmt.Println("THIS PEER: ", thisNode.thisPeer.toString())
 	var initialPeers []peer
 	initialPeers = make([]peer, 3)
 	initialPeers[0] = extractPeerAddressFromString(Conf.preConfPeer1)
 	initialPeers[1] = extractPeerAddressFromString(Conf.preConfPeer2)
 	initialPeers[2] = extractPeerAddressFromString(Conf.preConfPeer3)
-
+	time.Sleep(1 * time.Second)
 	for _, p := range initialPeers {
 		msg := makeP2PMessageOutOfBody(nil, KDM_PING)
+		//	fmt.Println("MESSAGE: ", msg.toString())
 		sendP2PMessage(msg, p)
+		time.Sleep(1)
+
 	}
 
 }
@@ -196,57 +204,60 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 
 func handleP2PConnection(conn net.Conn) {
 
-	mRaw := readMessage(conn) //todo readMap whole message
-	m := makeP2PMessageOutOfBytes(mRaw)
-	thisNode.updateKBucketPeer(m.header.senderPeer)
+	m := readMessage(conn) //todo readMap whole message
+	//m := makeP2PMessageOutOfBytes(mRaw)
+	if m != nil {
+		fmt.Println(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString())
+		//	thisNode.updateKBucketPeer(m.header.senderPeer) //todo
 
-	// switch according to m type
-	switch m.header.messageType {
-	case KDM_PING: // ping
-		// respond with KDM_PONG
-		pongMessage := makeP2PMessageOutOfBody(nil, KDM_PONG)
-		sendP2PMessage(pongMessage, m.header.senderPeer)
-		err := conn.Close()
-		if err != nil {
+		// switch according to m type
+		switch m.header.messageType {
+		case KDM_PING: // ping
+			// respond with KDM_PONG
+			pongMessage := makeP2PMessageOutOfBody(nil, KDM_PONG)
+			sendP2PMessage(pongMessage, m.header.senderPeer)
+			err := conn.Close()
+			if err != nil {
+				return
+			}
+		case KDM_STORE:
+			// write (key, value) to hashTable
+			thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(Conf.maxTTL)*time.Second), time.Now().Add(time.Duration(Conf.republishingTime)*time.Second))
 			return
-		}
-	case KDM_STORE:
-		// write (key, value) to hashTable
-		thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(Conf.maxTTL)*time.Second), time.Now().Add(time.Duration(Conf.republishingTime)*time.Second))
-		return
-	case KDM_FIND_NODE:
-		var key id
-		copy(key[:], m.data[44:64])
-		answerBody := thisNode.FIND_NODE(key)
-		answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
-
-		sendP2PMessage(answer, m.header.senderPeer)
-		return
-
-	case KDM_FIND_NODE_ANSWER:
-		newPeers := m.body.(*kdmFindNodeAnswerBody).answerPeers
-		for i := 0; i < len(newPeers); i++ {
-			thisNode.updateKBucketPeer(newPeers[i])
-		}
-		return
-
-	case KDM_FIND_VALUE:
-		var key id
-		copy(key[:], m.data[44:64])
-		var value, existing = thisNode.hashTable.read(key)
-		if existing {
-			// reply with value
-			answerBody := kdmFoundValueBody{value: value}
-			answer := makeP2PMessageOutOfBody(&answerBody, KDM_FOUND_VALUE)
-			sendP2PMessage(answer, m.header.senderPeer)
-		} else {
-			// same behavior as KDM_FIND_NODE
+		case KDM_FIND_NODE:
+			var key id
+			copy(key[:], m.data[44:64])
 			answerBody := thisNode.FIND_NODE(key)
 			answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
 
 			sendP2PMessage(answer, m.header.senderPeer)
+			return
+
+		case KDM_FIND_NODE_ANSWER:
+			newPeers := m.body.(*kdmFindNodeAnswerBody).answerPeers
+			for i := 0; i < len(newPeers); i++ {
+				thisNode.updateKBucketPeer(newPeers[i])
+			}
+			return
+
+		case KDM_FIND_VALUE:
+			var key id
+			copy(key[:], m.data[44:64])
+			var value, existing = thisNode.hashTable.read(key)
+			if existing {
+				// reply with value
+				answerBody := kdmFoundValueBody{value: value}
+				answer := makeP2PMessageOutOfBody(&answerBody, KDM_FOUND_VALUE)
+				sendP2PMessage(answer, m.header.senderPeer)
+			} else {
+				// same behavior as KDM_FIND_NODE
+				answerBody := thisNode.FIND_NODE(key)
+				answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
+
+				sendP2PMessage(answer, m.header.senderPeer)
+			}
+			return
 		}
-		return
 	}
 
 }
@@ -274,8 +285,7 @@ func pingNode(node peer) bool {
 	pingMessage := makeP2PMessageOutOfBody(nil, KDM_PING)
 	sendP2PMessage(pingMessage, node)
 	// receive KDM_PONG
-	answerRaw := readMessage(c)
-	answer := makeP2PMessageOutOfBytes(answerRaw)
+	answer := readMessage(c)
 	if answer.header.messageType == KDM_PONG {
 		return true
 	}

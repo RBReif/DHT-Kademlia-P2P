@@ -232,10 +232,9 @@ func TestFindNodeAnswerCodingAndDecoding(t *testing.T) {
 		copy(i2[:], idx)
 
 		p := peer{
-			ip:     "1.1.1." + strconv.Itoa(i),
-			isIpv4: false,
-			port:   uint16(3 * i),
-			id:     i2,
+			ip:   "1.1.1." + strconv.Itoa(i),
+			port: uint16(3 * i),
+			id:   i2,
 		}
 
 		ps = append(ps, p)
@@ -409,7 +408,7 @@ func TestParsePeerToByte(t *testing.T) {
 		randId[i] = randIdBytes[i]
 	}
 
-	var peer = peer{"127.0.0.1", true, 1234, randId}
+	var peer = peer{"127.0.0.1", 1234, randId}
 
 	var bytes = peerToByte(peer)
 

@@ -1,0 +1,2 @@
+#!/bin/bash
+ go run . -c config/config1.ini & go run . -c config/config2.ini & go run . -c config/config3.ini & go run . -c config/config4.ini && fg

@@ -186,16 +186,36 @@ func (b *kdmFindNodeAnswerBody) toString() string {
 	return result
 }
 
-func readMessage(conn net.Conn) []byte {
-	//extract size
-	messageSize := make([]byte, 2)
-	conn.Read(messageSize)
+func readMessage(conn net.Conn) *p2pMessage {
+	receivedMessageRaw := make([]byte, maxMessageLength)
+	msgSize, err := conn.Read(receivedMessageRaw)
+	//	fmt.Println("received message: ", receivedMessageRaw[:30], " ...")
+	if err != nil {
+		custError := "[pot. FAILURE] MAIN: Error while reading from connection: " + err.Error() + " (This might be because no more data was sent)"
+		fmt.Println(custError)
+		conn.Close()
+		return nil
+	}
+	if msgSize > maxMessageLength {
+		custError := "[FAILURE] MAIN: Too much data was sent to us: " + strconv.Itoa(msgSize)
+		fmt.Println(custError)
+		conn.Close()
+		return nil
+	}
 
-	//extract all bytes of the message
-	messageData := make([]byte, 0, binary.BigEndian.Uint16(messageSize))
-	messageData = append(messageData, messageSize...)
-	conn.Read(messageData[2:])
-	return messageData
+	size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
+	//fmt.Println("Received message has size: ", size)
+	//fmt.Println("Received message, data: ", receivedMessageRaw[:size])
+	if uint16(msgSize) != size {
+		custError := "[FAILURE] MAIN: Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
+		fmt.Println(custError)
+		fmt.Println("!!!", receivedMessageRaw[:msgSize])
+		conn.Close()
+		return nil
+	}
+	receivedMsg := makeP2PMessageOutOfBytes(receivedMessageRaw[:msgSize])
+	//fmt.Println("Going to return: ", receivedMsg.toString())
+	return &receivedMsg
 }
 
 func makeP2PMessageOutOfBytes(messageData []byte) p2pMessage {
@@ -267,29 +287,32 @@ func makeP2PMessageOutOfBody(body p2pBody, msgType uint16) p2pMessage {
 
 //sends the data of message m to the receiver peer
 func sendP2PMessage(m p2pMessage, receiverPeer peer) {
-	senderTCPaddr, err := net.ResolveTCPAddr("tcp", m.header.senderPeer.ip+":"+strconv.Itoa(int(m.header.senderPeer.port)))
+	_, err := net.ResolveTCPAddr("tcp", m.header.senderPeer.ip+":"+strconv.Itoa(int(m.header.senderPeer.port)))
 	if err != nil {
 		custError := "[FAILURE] Error while parsing to TCP addr: " + err.Error()
 		fmt.Println(custError)
 		panic(custError)
 	}
-	receiverTCPaddr, err := net.ResolveTCPAddr("tcp", receiverPeer.ip+":"+strconv.Itoa(int(receiverPeer.port)))
+	_, err = net.ResolveTCPAddr("tcp", receiverPeer.ip+":"+strconv.Itoa(int(receiverPeer.port)))
 	if err != nil {
 		custError := "[FAILURE] Error while while parsing to TCP addr:" + err.Error()
 		fmt.Println(custError)
-		panic(custError)
+		return
+		//	panic(custError)
 	}
-	conn, err := net.DialTCP("tcp", senderTCPaddr, receiverTCPaddr)
+	conn, err := net.Dial("tcp", receiverPeer.ip+":"+strconv.Itoa(int(receiverPeer.port)))
 	if err != nil {
 		custError := "[FAILURE] Error while connecting via tcp:" + err.Error()
 		fmt.Println(custError)
-		panic(custError)
+		return
+		//	panic(custError)
 	}
 	_, err = conn.Write(m.data)
 	if err != nil {
 		custError := "[FAILURE] Writing to connection failed:" + err.Error()
 		fmt.Println(custError)
-		panic(custError)
+		return
+		//	panic(custError)
 	}
 }
 

@@ -16,6 +16,7 @@ var Conf configuraton
 func parseConfig() configuraton {
 	var pathToConfigFile string
 	flag.StringVar(&pathToConfigFile, "c", "config/config1.ini", "Specify the path to the config file")
+	flag.Parse()
 	config, err := ini.Load(pathToConfigFile)
 	if err != nil {
 		fmt.Println("Could not parse specified config file.")
@@ -112,12 +113,13 @@ func main() {
 	Conf = parseConfig()
 	go startAPIMessageDispatcher(&wg)
 	go startP2PMessageDispatcher(&wg)
+	initializeP2Pcomm()
+
 	go startTimers()
 
 	fmt.Println("Program started...")
 
 	wg.Wait()
-
 	fmt.Println("Program stopped")
 }
 
