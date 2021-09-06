@@ -98,7 +98,7 @@ func initializeP2Pcomm() {
 	if err != nil {
 		fmt.Println("Error while reading File: ", err)
 	}
-	fmt.Println("Bytes from private key pem file: ", priv[:10], "...")
+	fmt.Println("Bytes from private key pem file: ", priv[:10], "...", priv[140:150], "...")
 	block, _ := pem.Decode([]byte(priv))
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		log.Fatal("failed to decode PEM block containing public key")
@@ -121,7 +121,7 @@ func initializeP2Pcomm() {
 	pubKeyPem := string(pem.EncodeToMemory(&pubKeyBlock))
 	fmt.Println("public key generated: ", pubKeyPem[:50], "...")
 
-	fmt.Println("Public Key as bytes: ", publicKeyDer[:10], "...")
+	fmt.Println("Public Key as bytes: ", publicKeyDer[:10], "...", publicKeyDer[140:150], "...")
 
 	//now we calculate the sha256 hash sum to retreive our ID
 	h := sha256.New()
@@ -144,7 +144,7 @@ func initializeP2Pcomm() {
 		msg := makeP2PMessageOutOfBody(nil, KDM_PING)
 		//	fmt.Println("MESSAGE: ", msg.toString())
 		sendP2PMessage(msg, p)
-		time.Sleep(1)
+		//time.Sleep(1)
 
 	}
 
