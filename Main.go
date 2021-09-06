@@ -8,7 +8,6 @@ import (
 	"gopkg.in/ini.v1"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -87,10 +86,13 @@ func parseConfig() configuraton {
 		k: k,
 		a: a,
 	}
-	if !conf.checkConfig() {
-		fmt.Println("Wrong configuration: an address is wrongly configured")
-		os.Exit(1)
-	}
+	/*
+		if !conf.checkConfig() {
+			fmt.Println("Wrong configuration: an address is wrongly configured")
+			os.Exit(1)
+		}
+
+	*/
 	fmt.Println("Read and Parsed the following Configuration file: ", conf.toString())
 	return conf
 }
@@ -141,6 +143,8 @@ func (c *configuraton) toString() string {
 	//str = str + "   apiAddressRPS: " + c.apiAddressRPS + "\n"
 	return str
 }
+
+/*
 func (c *configuraton) checkConfig() bool {
 	everythingAlright := true
 	if strings.Contains(c.apiIP, ":") || strings.Contains(c.p2pIP, ":") {
@@ -148,3 +152,6 @@ func (c *configuraton) checkConfig() bool {
 	}
 	return everythingAlright
 }
+
+
+*/
