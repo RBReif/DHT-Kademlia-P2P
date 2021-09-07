@@ -2,9 +2,7 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"math"
-	"math/bits"
 )
 
 type kBucket []peer
@@ -19,31 +17,10 @@ type routingTree struct {
 	kBucket kBucket
 }
 
-func moveToTail(kBucket []peer, i int) []peer {
+// returns if kBucket contains id
+func (kBucket *kBucket) contains(id id) bool {
 
-	tmp := kBucket[i]
-	kBucket = append(kBucket[:i], kBucket[i+1:]...)
-	kBucket = append(kBucket, tmp)
-
-	return kBucket
-
-}
-
-func isIdInKBucket(kBucket []peer, id id) (int, bool) {
-
-	for index, element := range kBucket {
-		if element.id == id {
-			return index, true
-		}
-	}
-
-	return -1, false
-
-}
-
-func (kBucket *routingTree) contains(id id) bool {
-
-	for _, element := range kBucket.kBucket {
+	for _, element := range *kBucket {
 		if element.id == id {
 			return true
 		}
@@ -53,9 +30,14 @@ func (kBucket *routingTree) contains(id id) bool {
 
 }
 
-func (kBucket *routingTree) indexOf(id id) int {
+func (routingTable *routingTree) inRange(id id) bool {
+	return id.startsWith(routingTable.prefix)
+}
 
-	for i, element := range kBucket.kBucket {
+// returns index of id in k-Bucket or -1 if not containing
+func (kBucket *kBucket) indexOf(id id) int {
+
+	for i, element := range *kBucket {
 		if element.id == id {
 			return i
 		}
@@ -65,23 +47,25 @@ func (kBucket *routingTree) indexOf(id id) int {
 
 }
 
-func (kBucket *routingTree) moveToTail(id id) {
+func (kBucket *kBucket) moveToTail(id id) {
 
 	i := kBucket.indexOf(id)
 
-	tmp := kBucket.kBucket[i]
-	kBucket.kBucket = append(kBucket.kBucket[:i], kBucket.kBucket[i+1:]...)
-	kBucket.kBucket = append(kBucket.kBucket, tmp)
+	if i != -1 {
+		tmp := (*kBucket)[i]
+		*kBucket = append((*kBucket)[:i], (*kBucket)[i+1:]...)
+		*kBucket = append(*kBucket, tmp)
+	}
 
 }
 
-func (kBucket *routingTree) isFull() bool {
-	return len(kBucket.kBucket) == kBucket.maxSize()
+func (routingTable *routingTree) isFull() bool {
+	return len(routingTable.kBucket) == routingTable.maxSize()
 }
 
-func (kBucket *routingTree) maxSize() int {
+func (routingTable *routingTree) maxSize() int {
 
-	remainingBits := Conf.keySize - len(kBucket.prefix)
+	remainingBits := SIZE_OF_ID*8 - len(routingTable.prefix)
 	if remainingBits < Conf.k { // roughly evict obvious cases
 		rangeLimit := math.Pow(2, float64(remainingBits))
 		if rangeLimit < float64(Conf.k) {
@@ -93,25 +77,12 @@ func (kBucket *routingTree) maxSize() int {
 
 }
 
-//returns maximum Size of the bucket at specified index
-func maxSizeOfBucket(index int) int {
-	max := Conf.k
-	if index < Conf.k {
-		rangeLimit := math.Pow(2, float64(index+1)) - math.Pow(2, float64(index))
-		if rangeLimit < float64(max) {
-			max = int(rangeLimit)
-		}
-	}
-
-	return max
-}
-
-func (thisNode *localNode) findResponsibleBucket(key id) *routingTree {
-	var tmpTree = thisNode.routingTree
+func (thisNode *localNode) findResponsibleRoutingTree(key id) *routingTree {
+	var tmpTree = &thisNode.routingTree
 
 	for {
 		if tmpTree.kBucket != nil {
-			return &tmpTree
+			return tmpTree
 		} else {
 			var bitNumber = len(tmpTree.prefix) % 8
 			var byteNumber = len(tmpTree.prefix) / 8
@@ -119,87 +90,71 @@ func (thisNode *localNode) findResponsibleBucket(key id) *routingTree {
 			var bit = (byte & (128 >> bitNumber)) != 0
 
 			if bit == false {
-				tmpTree = *tmpTree.left
+				tmpTree = tmpTree.left
 			} else {
-				tmpTree = *tmpTree.right
+				tmpTree = tmpTree.right
 			}
 
 		}
 	}
 }
 
-func (kBucket *routingTree) insert(peer peer) {
+func (routingTable *routingTree) insert(peer peer) {
 	// TODO: only insert if not already in bucket
 	// only insert if not already full
-	if len(kBucket.kBucket) < kBucket.maxSize() {
-		kBucket.kBucket = append(kBucket.kBucket, peer)
+	if len(routingTable.kBucket) < routingTable.maxSize() {
+		routingTable.kBucket = append(routingTable.kBucket, peer)
 	}
 }
 
-func (kBucket *routingTree) remove(id id) {
+func (kBucket *kBucket) remove(id id) {
 	i := kBucket.indexOf(id)
-	kBucket.kBucket = append(kBucket.kBucket[:i], kBucket.kBucket[i+1:]...)
+	*kBucket = append((*kBucket)[:i], (*kBucket)[i+1:]...)
 }
 
-func (kBucket *routingTree) split() {
-	prefixLeft := kBucket.prefix + "0"
-	prefixRight := kBucket.prefix + "1"
+func (routingTable *routingTree) split() {
+	prefixLeft := routingTable.prefix + "0"
+	prefixRight := routingTable.prefix + "1"
 
-	kBucketLeft := routingTree{prefix: prefixLeft}
-	kBucketRight := routingTree{prefix: prefixRight}
+	routingTreeLeft := routingTree{prefix: prefixLeft, parent: routingTable}
+	routingTreeRight := routingTree{prefix: prefixRight, parent: routingTable}
 
-	kBucket.left = &kBucketLeft
-	kBucket.right = &kBucketRight
+	routingTable.left = &routingTreeLeft
+	routingTable.right = &routingTreeRight
 
-	for _, element := range kBucket.kBucket {
+	for _, element := range routingTable.kBucket {
 		if element.id.startsWith(prefixLeft) {
-			kBucket.left.insert(element)
+			routingTable.left.insert(element)
 		} else {
-			kBucket.right.insert(element)
+			routingTable.right.insert(element)
 		}
 	}
 
-	kBucket.kBucket = nil
+	routingTable.kBucket = nil
 
 }
 
 // returns the corresponding sibling (left child if routingTree is right child and vice versa)
 // or nil if current routingTree is root
-func (kBucket *routingTree) getSibling() *routingTree {
-	if kBucket.parent == nil {
+func (routingTable *routingTree) getSibling() *routingTree {
+	if routingTable.parent == nil {
 		return nil
 	}
-	if kBucket.parent.left == kBucket {
-		return kBucket.parent.right
+	if routingTable.parent.left == routingTable {
+		return routingTable.parent.right
 	} else {
-		return kBucket.parent.left
+		return routingTable.parent.left
 	}
 }
 
-func (kBucket *routingTree) getNumberOfClosestPeers(key id, number int) []peer {
-	if kBucket.kBucket != nil {
-		return findNumberOfClosestPeersInOneBucket(kBucket.kBucket, key, number)
+func (routingTable *routingTree) getNumberOfClosestPeers(key id, number int) []peer {
+	if routingTable.kBucket != nil {
+		return findNumberOfClosestPeersInOneBucket(routingTable.kBucket, key, number)
 	} else {
-		tmp := kBucket.left.getNumberOfClosestPeers(key, number)
-		tmp = append(tmp, kBucket.right.getNumberOfClosestPeers(key, number)...)
+		tmp := routingTable.left.getNumberOfClosestPeers(key, number)
+		tmp = append(tmp, routingTable.right.getNumberOfClosestPeers(key, number)...)
 		return findNumberOfClosestPeersInOneBucket(tmp, key, number)
 	}
-}
-
-//returns index of the bucket that contains/is responsible for a given id
-func (thisNode *localNode) findIndexOfResponsibleBucket(key id) int {
-	d := distance(thisNode.thisPeer.id, key)
-
-	indexFirstRelevantByte := 19 // [0 0 0 0 0 0 0 ... 0 0 0 9 3 23]
-	for i := 0; i < 20; i++ {
-		if d[i] > 0 {
-			indexFirstRelevantByte = i //this means we have 19-i trailing bytes after id[i]
-			break
-		}
-	}
-	i := 8*(19-indexFirstRelevantByte) + bits.Len8(d[indexFirstRelevantByte]) - 1
-	fmt.Println("Bucket: ", i)
-	return i
 }
 
 //returns index of the peer from a slice of peers that is the farest away from a given id
@@ -238,7 +193,7 @@ func findNumberOfClosestPeersInOneBucket(kBucket kBucket, key id, number int) []
 //returns a specified amount of peers that are the closest to a specified id on a node
 func (thisNode *localNode) findNumberOfClosestPeersOnNode(key id, number int) []peer {
 	result := make([]peer, 0, number)
-	responsibleBucket := thisNode.findResponsibleBucket(key)
+	responsibleBucket := thisNode.findResponsibleRoutingTree(key)
 
 	for {
 		result = responsibleBucket.getNumberOfClosestPeers(key, number)
@@ -279,32 +234,32 @@ func wasANewPeerAdded(oldPeers []peer, newPeer peer) bool {
 
 func (thisNode *localNode) updateKBucket(p peer) {
 	// find responsible k-Bucket
-	kBucket := thisNode.findResponsibleBucket(p.id)
+	routingTree := thisNode.findResponsibleRoutingTree(p.id)
 
 	// if peer already exists in k-Bucket, move it to the tail of the list
-	if kBucket.contains(p.id) {
-		kBucket.moveToTail(p.id)
+	if routingTree.kBucket.contains(p.id) {
+		routingTree.kBucket.moveToTail(p.id)
 	} else { // else
-		if !kBucket.isFull() {
+		if !routingTree.isFull() {
 			// if k-Bucket is not already full, insert peer
-			kBucket.insert(p)
+			routingTree.insert(p)
 		} else { // if k-Bucket is already full
-			// if k-Bucket includes own id, split bucket and repeat insertion attempt
-			if kBucket.contains(thisNode.thisPeer.id) {
-				kBucket.split()
+			// if range of k-Bucket includes own id, split bucket and repeat insertion attempt
+			if routingTree.inRange(thisNode.thisPeer.id) {
+				routingTree.split()
 				thisNode.updateKBucket(p)
 			} else {
 				// else ping least-recently seen node
-				nodeActive := pingNode(kBucket.kBucket[0])
+				nodeActive := pingNode(routingTree.kBucket[0])
 
 				if !nodeActive {
 					// if node is inactive, discard least-recently seen node and insert the new peer at the tail
-					kBucket.remove(kBucket.kBucket[0].id)
-					kBucket.insert(p)
+					routingTree.kBucket.remove(routingTree.kBucket[0].id)
+					routingTree.insert(p)
 
 				} else {
 					// if node is active, discard peer and move least-recently seen node to the tail
-					kBucket.moveToTail(kBucket.kBucket[0].id)
+					routingTree.kBucket.moveToTail(routingTree.kBucket[0].id)
 				}
 			}
 		}

@@ -79,7 +79,7 @@ type id [SIZE_OF_ID]byte
 
 func (id *id) startsWith(prefix string) bool {
 	idString := ""
-	for byte := range id {
+	for _, byte := range id {
 		idString += fmt.Sprintf("%08b", byte)
 	}
 	return strings.HasPrefix(idString, prefix)
