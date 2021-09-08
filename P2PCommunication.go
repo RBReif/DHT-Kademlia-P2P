@@ -217,7 +217,7 @@ func handleP2PConnection(conn net.Conn) {
 	//m := makeP2PMessageOutOfBytes(mRaw)
 	if m != nil {
 		fmt.Println(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString())
-		//thisNode.updateKBucketPeer(m.header.senderPeer) //todo
+		//thisNode.updateKBucket(m.header.senderPeer) //todo
 
 		// switch according to m type
 		switch m.header.messageType {
@@ -242,12 +242,12 @@ func handleP2PConnection(conn net.Conn) {
 			sendP2PMessage(answer, m.header.senderPeer)
 			return
 
-	case KDM_FIND_NODE_ANSWER:
-		newPeers := m.body.(*kdmFindNodeAnswerBody).answerPeers
-		for i := 0; i < len(newPeers); i++ {
-			thisNode.updateKBucket(newPeers[i])
-		}
-		return
+		case KDM_FIND_NODE_ANSWER:
+			newPeers := m.body.(*kdmFindNodeAnswerBody).answerPeers
+			for i := 0; i < len(newPeers); i++ {
+				thisNode.updateKBucket(newPeers[i])
+			}
+			return
 
 		case KDM_FIND_VALUE:
 			var key id

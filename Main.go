@@ -48,12 +48,12 @@ func parseConfig() configuraton {
 	}
 	k, err := config.Section("dht").Key("k").Int()
 	if err != nil {
-		fmt.Println("Wrong configuration: maxReplication is not an Integer")
+		fmt.Println("Wrong configuration: k is not an Integer")
 		os.Exit(1)
 	}
 	a, err := config.Section("dht").Key("a").Int()
 	if err != nil {
-		fmt.Println("Wrong configuration: maxReplication is not an Integer")
+		fmt.Println("Wrong configuration: a is not an Integer")
 		os.Exit(1)
 	}
 
@@ -74,11 +74,14 @@ func parseConfig() configuraton {
 	apiAddr := extractPeerAddressFromString(config.Section("dht").Key("api_address").String())
 	p2pAddr := extractPeerAddressFromString(config.Section("dht").Key("p2p_address").String())
 
-	tmpKeySize, err := config.Section("dht").Key("keySize").Int()
-	if err != nil {
-		fmt.Println("Wrong configuration: maxReplication is not an Integer")
-		os.Exit(1)
-	}
+	/*
+		tmpKeySize, err := config.Section("dht").Key("keySize").Int()
+		if err != nil {
+			fmt.Println("Wrong configuration: keySize is not an Integer")
+			os.Exit(1)
+		}
+
+	*/
 
 	conf := configuraton{
 		HostKeyFile: config.Section("").Key("hostkey").String(),
@@ -96,9 +99,9 @@ func parseConfig() configuraton {
 		preConfPeer2:     config.Section("dht").Key("preConfPeer2").String(),
 		preConfPeer3:     config.Section("dht").Key("preConfPeer3").String(),
 		//apiAddressRPS:  config.Section("rps").Key("api_address").String(),
-		k:       k,
-		a:       a,
-		keySize: tmpKeySize,
+		k: k,
+		a: a,
+		//keySize: tmpKeySize,
 	}
 	/*
 		if !conf.checkConfig() {
