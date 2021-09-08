@@ -98,10 +98,10 @@ func initializeP2Pcomm() {
 	if err != nil {
 		fmt.Println("Error while reading File: ", err)
 	}
-	fmt.Println("Bytes from private key pem file: ", priv[:10], "...", priv[140:150], "...")
+	fmt.Println("   Bytes from private key pem file: ", priv[:10], "...", priv[140:150], "...")
 	block, _ := pem.Decode([]byte(priv))
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
-		log.Fatal("failed to decode PEM block containing public key")
+		log.Fatal("[FAILURE] failed to decode PEM block containing public key")
 	}
 	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
@@ -119,9 +119,9 @@ func initializeP2Pcomm() {
 		Bytes:   publicKeyDer,
 	}
 	pubKeyPem := string(pem.EncodeToMemory(&pubKeyBlock))
-	fmt.Println("public key generated: ", pubKeyPem[:50], "...")
+	fmt.Println("   public key generated: ", pubKeyPem[:50], "...")
 
-	fmt.Println("Public Key as bytes: ", publicKeyDer[:10], "...", publicKeyDer[140:150], "...")
+	fmt.Println("   Public Key as bytes: ", publicKeyDer[:10], "...", publicKeyDer[140:150], "...")
 
 	//now we calculate the sha256 hash sum to retreive our ID
 	h := sha256.New()
@@ -129,11 +129,11 @@ func initializeP2Pcomm() {
 	newIDbytes := h.Sum(nil)
 	var newID id
 	copy(newID[:], newIDbytes)
-	fmt.Println("Our ID: ", newIDbytes)
+	fmt.Println("[SUCCESSS] Our generated ID: ", newIDbytes)
 	thisNode.thisPeer.ip = Conf.p2pIP
 	thisNode.thisPeer.port = Conf.p2pPort
 	thisNode.thisPeer.id = newID
-	fmt.Println("THIS PEER: ", thisNode.thisPeer.toString())
+	fmt.Println("[SUCCESS] Configured this peer: ", thisNode.thisPeer.toString())
 	var initialPeers []peer
 	initialPeers = make([]peer, 3)
 	initialPeers[0] = extractPeerAddressFromString(Conf.preConfPeer1)
@@ -147,7 +147,8 @@ func initializeP2Pcomm() {
 		//time.Sleep(1)
 
 	}
-
+	fmt.Println("[SUCCESS] FINISHED INITIALIZING OF P2P COMMUNICATION")
+	fmt.Println()
 }
 
 func extractPeerAddressFromString(line string) peer {
@@ -193,7 +194,7 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 			fmt.Println(custError)
 			panic(custError)
 		}
-		fmt.Println("[SUCCESS] MAIN: New Connection established, ", conn)
+		fmt.Println("[SUCCESS] MAIN: New Connection established, ", conn.LocalAddr(), " r:", conn.RemoteAddr())
 		conn.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
 
 		go handleP2PConnection(conn)
@@ -208,7 +209,7 @@ func handleP2PConnection(conn net.Conn) {
 	//m := makeP2PMessageOutOfBytes(mRaw)
 	if m != nil {
 		fmt.Println(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString())
-		//	thisNode.updateKBucketPeer(m.header.senderPeer) //todo
+		//thisNode.updateKBucketPeer(m.header.senderPeer) //todo
 
 		// switch according to m type
 		switch m.header.messageType {

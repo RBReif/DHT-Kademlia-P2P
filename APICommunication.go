@@ -20,7 +20,7 @@ func startAPIMessageDispatcher(wg *sync.WaitGroup) {
 		panic(custError)
 	}
 	defer l.Close()
-	fmt.Println("[SUCCESS] MAIN: Listening on ", Conf.apiIP, ": ", Conf.apiPort)
+	fmt.Println("[SUCCESS] MAIN: APIMessageDispatcher Listening on ", Conf.apiIP, ": ", Conf.apiPort)
 	for {
 		con, err := l.Accept()
 		if err != nil {

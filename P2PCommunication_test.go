@@ -83,12 +83,14 @@ func TestPingNode(t *testing.T) {
 func TestKDM_PING(t *testing.T) {
 
 	thisNode.thisPeer.ip = "127.0.0.1"
-	thisNode.thisPeer.port = 8080
+	thisNode.thisPeer.port = 3011
 
 	Conf.p2pIP = "127.0.0.1"
-	Conf.p2pPort = 8080
+	Conf.p2pPort = 3011
 
 	var wg sync.WaitGroup
+	wg.Add(1)
+
 	go startP2PMessageDispatcher(&wg)
 	c, err := net.Dial("tcp", thisNode.thisPeer.ip+":"+fmt.Sprint(thisNode.thisPeer.port))
 	if err != nil {
@@ -97,18 +99,23 @@ func TestKDM_PING(t *testing.T) {
 	pingMessage := makeP2PMessageOutOfBody(nil, KDM_PING)
 	tmp, _ := strconv.Atoi(strings.Split(c.LocalAddr().String(), ":")[1])
 	pingMessage.header.senderPeer.port = uint16(tmp) // change port to port of test case
+	pingMessage.data = pingMessage.header.decodeHeaderToBytes()
 	sendP2PMessage(pingMessage, thisNode.thisPeer)
-	fmt.Println("Sent Ping MEssage")
+	fmt.Println("Sent Ping Message")
+	l, err := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(tmp))
+	conn, err := l.Accept()
 
 	// receive KDM_PONG
-	answer := readMessage(c)
+	answer := readMessage(conn)
 	//answer := makeP2PMessageOutOfBytes(answerRaw)
-	fmt.Println("Received answer: ", answer)
+	fmt.Println("Received answer: ", answer.toString())
 	if answer.header.messageType == KDM_PONG {
 		// success
 	} else {
 		// failure
 		t.Errorf("Received no KDM_PONG after sending KDM_PING")
 	}
+	wg.Done()
+	fmt.Println("finished")
 
 }

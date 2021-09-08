@@ -100,7 +100,7 @@ func parseConfig() configuraton {
 		}
 
 	*/
-	fmt.Println("Read and Parsed the following Configuration file: ", conf.toString())
+	fmt.Println("[SUCCESS] Read and Parsed the following Configuration file: ", conf.toString())
 	return conf
 }
 
