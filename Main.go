@@ -74,6 +74,12 @@ func parseConfig() configuraton {
 	apiAddr := extractPeerAddressFromString(config.Section("dht").Key("api_address").String())
 	p2pAddr := extractPeerAddressFromString(config.Section("dht").Key("p2p_address").String())
 
+	tmpKeySize, err := config.Section("dht").Key("keySize").Int()
+	if err != nil {
+		fmt.Println("Wrong configuration: maxReplication is not an Integer")
+		os.Exit(1)
+	}
+
 	conf := configuraton{
 		HostKeyFile: config.Section("").Key("hostkey").String(),
 		apiIP:       apiAddr.ip,
@@ -90,8 +96,9 @@ func parseConfig() configuraton {
 		preConfPeer2:     config.Section("dht").Key("preConfPeer2").String(),
 		preConfPeer3:     config.Section("dht").Key("preConfPeer3").String(),
 		//apiAddressRPS:  config.Section("rps").Key("api_address").String(),
-		k: k,
-		a: a,
+		k:       k,
+		a:       a,
+		keySize: tmpKeySize,
 	}
 	/*
 		if !conf.checkConfig() {
@@ -143,6 +150,7 @@ type configuraton struct {
 	a int
 	//rps
 	//apiAddressRPS string
+	keySize int
 }
 
 func (c *configuraton) toString() string {
@@ -160,6 +168,7 @@ func (c *configuraton) toString() string {
 	str = str + "   preConfPeer2: " + c.preConfPeer2 + "\n"
 	str = str + "   preConfPeer3: " + c.preConfPeer3 + "\n"
 	//str = str + "   apiAddressRPS: " + c.apiAddressRPS + "\n"
+	str = str + "   keySize: " + strconv.Itoa(c.keySize) + "\n"
 	return str
 }
 

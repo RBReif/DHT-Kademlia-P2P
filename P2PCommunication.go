@@ -7,12 +7,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	//"encoding/binary"
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -20,8 +20,8 @@ import (
 var thisNode localNode
 
 type localNode struct {
-	thisPeer peer
-	kBuckets [160][]peer
+	thisPeer    peer
+	routingTree routingTree
 	// TODO: which maximum size should data have?
 	hashTable hashTable
 }
@@ -83,6 +83,14 @@ func (p *peer) toString() string {
 }
 
 type id [SIZE_OF_ID]byte
+
+func (id *id) startsWith(prefix string) bool {
+	idString := ""
+	for _, byte := range id {
+		idString += fmt.Sprintf("%08b", byte)
+	}
+	return strings.HasPrefix(idString, prefix)
+}
 
 func (id id) toByte() []byte {
 	var result []byte
@@ -234,12 +242,12 @@ func handleP2PConnection(conn net.Conn) {
 			sendP2PMessage(answer, m.header.senderPeer)
 			return
 
-		case KDM_FIND_NODE_ANSWER:
-			newPeers := m.body.(*kdmFindNodeAnswerBody).answerPeers
-			for i := 0; i < len(newPeers); i++ {
-				thisNode.updateKBucketPeer(newPeers[i])
-			}
-			return
+	case KDM_FIND_NODE_ANSWER:
+		newPeers := m.body.(*kdmFindNodeAnswerBody).answerPeers
+		for i := 0; i < len(newPeers); i++ {
+			thisNode.updateKBucket(newPeers[i])
+		}
+		return
 
 		case KDM_FIND_VALUE:
 			var key id
