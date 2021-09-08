@@ -116,8 +116,8 @@ func (routingTable *routingTree) split() {
 	prefixLeft := routingTable.prefix + "0"
 	prefixRight := routingTable.prefix + "1"
 
-	routingTreeLeft := routingTree{prefix: prefixLeft, parent: routingTable}
-	routingTreeRight := routingTree{prefix: prefixRight, parent: routingTable}
+	routingTreeLeft := routingTree{prefix: prefixLeft, parent: routingTable, kBucket: kBucket{}}
+	routingTreeRight := routingTree{prefix: prefixRight, parent: routingTable, kBucket: kBucket{}}
 
 	routingTable.left = &routingTreeLeft
 	routingTable.right = &routingTreeRight
@@ -232,7 +232,7 @@ func wasANewPeerAdded(oldPeers []peer, newPeer peer) bool {
 	return true
 }
 
-func (thisNode *localNode) updateKBucket(p peer) {
+func (thisNode *localNode) updateRoutingTable(p peer) {
 	// find responsible k-Bucket
 	routingTree := thisNode.findResponsibleRoutingTree(p.id)
 
@@ -247,7 +247,7 @@ func (thisNode *localNode) updateKBucket(p peer) {
 			// if range of k-Bucket includes own id, split bucket and repeat insertion attempt
 			if routingTree.inRange(thisNode.thisPeer.id) {
 				routingTree.split()
-				thisNode.updateKBucket(p)
+				thisNode.updateRoutingTable(p)
 			} else {
 				// else ping least-recently seen node
 				nodeActive := pingNode(routingTree.kBucket[0])
