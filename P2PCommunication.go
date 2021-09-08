@@ -247,8 +247,7 @@ func handleP2PConnection(conn net.Conn) {
 			thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(Conf.maxTTL)*time.Second), time.Now().Add(time.Duration(Conf.republishingTime)*time.Second))
 			return
 		case KDM_FIND_NODE:
-			var key id
-			copy(key[:], m.data[44:64])
+			key := m.body.(*kdmFindNodeBody).id
 			answerBody := thisNode.FIND_NODE(key)
 			answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
 

@@ -183,13 +183,13 @@ func TestUpdateInsert(t *testing.T) {
 
 	thisNode.thisPeer = peer{id: buildTestIdFromString("0")} // own id only 0s
 
-	thisNode.updateKBucket(testPeer1)
-	thisNode.updateKBucket(testPeer2)
-	thisNode.updateKBucket(testPeer3)
-	thisNode.updateKBucket(testPeer4)
-	thisNode.updateKBucket(testPeer5)
-	thisNode.updateKBucket(testPeer6)
-	thisNode.updateKBucket(testPeer7)
+	thisNode.updateRoutingTable(testPeer1)
+	thisNode.updateRoutingTable(testPeer2)
+	thisNode.updateRoutingTable(testPeer3)
+	thisNode.updateRoutingTable(testPeer4)
+	thisNode.updateRoutingTable(testPeer5)
+	thisNode.updateRoutingTable(testPeer6)
+	thisNode.updateRoutingTable(testPeer7)
 
 	// TODO: implement correctness checks
 

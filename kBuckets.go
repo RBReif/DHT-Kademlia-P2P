@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"math"
 )
 
@@ -138,6 +139,7 @@ func (kBucket *kBucket) remove(id id) {
 }
 
 func (routingTable *routingTree) split() {
+	fmt.Println(thisNode.thisPeer.port, ": splitting at current prefix ", routingTable.prefix)
 	prefixLeft := routingTable.prefix + "0"
 	prefixRight := routingTable.prefix + "1"
 	/*

@@ -91,6 +91,17 @@ func TestKDM_PING(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
+	kBucket := kBucket{}
+	kBucket = make([]peer, 0)
+
+	thisNode.routingTree = routingTree{
+		left:    nil,
+		right:   nil,
+		parent:  nil,
+		prefix:  "",
+		kBucket: kBucket,
+	}
+
 	go startP2PMessageDispatcher(&wg)
 	c, err := net.Dial("tcp", thisNode.thisPeer.ip+":"+fmt.Sprint(thisNode.thisPeer.port))
 	if err != nil {
