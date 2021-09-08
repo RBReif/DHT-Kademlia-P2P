@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"sort"
 )
 
 type kBucket []peer
@@ -139,6 +140,10 @@ func (kBucket *kBucket) remove(id id) {
 }
 
 func (routingTable *routingTree) split() {
+	if len(routingTable.prefix) == SIZE_OF_ID*8 {
+		panic("Tried to split k-Bucket with maximum size of 1")
+	}
+
 	fmt.Println(thisNode.thisPeer.port, ": splitting at current prefix ", routingTable.prefix)
 	prefixLeft := routingTable.prefix + "0"
 	prefixRight := routingTable.prefix + "1"
@@ -182,13 +187,40 @@ func (routingTable *routingTree) getSibling() *routingTree {
 	}
 }
 
+//returns a number of the closest peers in a given bucket to a given id ordered by distance (closest at the beginning)
+func (kBucket *kBucket) findNumberOfClosestPeersInOneBucket(key id, number int) []peer {
+	result := make([]peer, 0, number)
+
+	for i := 0; i < len(*kBucket); i++ {
+		if len(result) < number {
+			result = append(result, (*kBucket)[i])
+		} else {
+			indexOfFarest := findIndexOfFarestPeerInSlice(result, key)
+			dNew := distance(key, (*kBucket)[i].id)
+			dOld := distance(key, result[indexOfFarest].id)
+			if bytes.Compare(dNew[:], dOld[:]) < 0 {
+				result[indexOfFarest] = (*kBucket)[i]
+			}
+		}
+	}
+
+	// sort by distance
+	sort.Slice(result, func(i, j int) bool {
+		dI := distance(key, result[i].id)
+		dJ := distance(key, result[j].id)
+		return bytes.Compare(dI[:], dJ[:]) < 0
+	})
+	return result
+}
+
 func (routingTable *routingTree) getNumberOfClosestPeers(key id, number int) []peer {
 	if routingTable.kBucket != nil {
-		return findNumberOfClosestPeersInOneBucket(routingTable.kBucket, key, number)
+		return routingTable.kBucket.findNumberOfClosestPeersInOneBucket(key, number)
 	} else {
-		tmp := routingTable.left.getNumberOfClosestPeers(key, number)
+		tmp := kBucket{}
+		tmp = append(tmp, routingTable.left.getNumberOfClosestPeers(key, number)...)
 		tmp = append(tmp, routingTable.right.getNumberOfClosestPeers(key, number)...)
-		return findNumberOfClosestPeersInOneBucket(tmp, key, number)
+		return tmp.findNumberOfClosestPeersInOneBucket(key, number)
 	}
 }
 
@@ -204,25 +236,6 @@ func findIndexOfFarestPeerInSlice(peers []peer, key id) int {
 		}
 	}
 	return index
-}
-
-//returns a number of the closest peers in a given bucket to a given id
-func findNumberOfClosestPeersInOneBucket(kBucket kBucket, key id, number int) []peer {
-	result := make([]peer, 0, number)
-
-	for i := 0; i < len(kBucket); i++ {
-		if len(result) < number {
-			result = append(result, kBucket[i])
-		} else {
-			indexOfFarest := findIndexOfFarestPeerInSlice(result, key)
-			dNew := distance(key, kBucket[i].id)
-			dOld := distance(key, result[indexOfFarest].id)
-			if bytes.Compare(dNew[:], dOld[:]) < 0 {
-				result[indexOfFarest] = kBucket[i]
-			}
-		}
-	}
-	return result
 }
 
 //returns a specified amount of peers that are the closest to a specified id on a node
