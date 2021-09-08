@@ -17,6 +17,21 @@ type routingTree struct {
 	kBucket kBucket
 }
 
+func (r *routingTree) toString() string {
+	result := r.prefix
+	if r.kBucket != nil {
+		result = result + " has " + r.kBucket.toString() + "\n"
+	}
+	if r.left != nil {
+		result = result + "left:" + r.left.toString() + "\n"
+	}
+	if r.right != nil {
+
+		result = result + "right:" + r.right.toString() + "\n"
+	}
+	return result
+}
+
 // returns if kBucket contains id
 func (kBucket *kBucket) contains(id id) bool {
 
@@ -27,6 +42,16 @@ func (kBucket *kBucket) contains(id id) bool {
 	}
 
 	return false
+
+}
+
+func (kBucket *kBucket) toString() string {
+	result := ""
+	for _, element := range *kBucket {
+		result = result + "    " + element.toString()
+	}
+
+	return result
 
 }
 
@@ -115,6 +140,14 @@ func (kBucket *kBucket) remove(id id) {
 func (routingTable *routingTree) split() {
 	prefixLeft := routingTable.prefix + "0"
 	prefixRight := routingTable.prefix + "1"
+	/*
+		kBucketLeft := kBucket{}
+		kBucketLeft = make([]peer,5)
+
+		kBucketRight := kBucket{}
+		kBucketRight = make([]peer,5)
+
+	*/
 
 	routingTreeLeft := routingTree{prefix: prefixLeft, parent: routingTable, kBucket: kBucket{}}
 	routingTreeRight := routingTree{prefix: prefixRight, parent: routingTable, kBucket: kBucket{}}

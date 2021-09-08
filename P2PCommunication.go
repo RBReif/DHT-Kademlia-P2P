@@ -147,6 +147,17 @@ func initializeP2Pcomm() {
 	initialPeers[0] = extractPeerAddressFromString(Conf.preConfPeer1)
 	initialPeers[1] = extractPeerAddressFromString(Conf.preConfPeer2)
 	initialPeers[2] = extractPeerAddressFromString(Conf.preConfPeer3)
+
+	kBucket := kBucket{}
+	kBucket = make([]peer, 0)
+
+	thisNode.routingTree = routingTree{
+		left:    nil,
+		right:   nil,
+		parent:  nil,
+		prefix:  "",
+		kBucket: kBucket,
+	}
 	time.Sleep(1 * time.Second)
 	for _, p := range initialPeers {
 		msg := makeP2PMessageOutOfBody(nil, KDM_PING)
@@ -157,6 +168,8 @@ func initializeP2Pcomm() {
 	}
 	fmt.Println("[SUCCESS] FINISHED INITIALIZING OF P2P COMMUNICATION")
 	fmt.Println()
+	time.Sleep(1 * time.Second)
+	fmt.Println(thisNode.thisPeer.port, "stores: ", thisNode.routingTree.toString())
 }
 
 func extractPeerAddressFromString(line string) peer {
@@ -217,7 +230,7 @@ func handleP2PConnection(conn net.Conn) {
 	//m := makeP2PMessageOutOfBytes(mRaw)
 	if m != nil {
 		fmt.Println(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString())
-		//thisNode.updateRoutingTable(m.header.senderPeer) //todo
+		thisNode.updateRoutingTable(m.header.senderPeer) //todo
 
 		// switch according to m type
 		switch m.header.messageType {
