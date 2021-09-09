@@ -68,9 +68,9 @@ func (h *p2pHeader) decodeHeaderToBytes() []byte {
 }
 func (h *p2pHeader) toString() string {
 	result := "      [size = " + strconv.Itoa(int(h.size)) + "]"
-	result = result + " [type = " + strconv.Itoa(int(h.messageType)) + "] \n"
+	result = result + " [type = " + strconv.Itoa(int(h.messageType)) + "]"
 	result = result + "      [senderPeer: " + h.senderPeer.toString() + "] \n"
-	result = result + "      [nonce: " + bytesToString(h.nonce) + "] \n"
+	//	result = result + "      [nonce: " + bytesToString(h.nonce) + "] \n"
 	return result
 }
 

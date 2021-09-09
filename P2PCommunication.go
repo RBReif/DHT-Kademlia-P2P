@@ -27,9 +27,9 @@ type localNode struct {
 }
 
 type hashTable struct {
-	values            map[id][]byte
-	expirations       map[id]time.Time
-	republishingTimes map[id]time.Time
+	values      map[id][]byte
+	expirations map[id]time.Time
+	//republishingTimes map[id]time.Time
 	sync.RWMutex
 }
 
@@ -82,7 +82,7 @@ type peer struct {
 }
 
 func (p *peer) toString() string {
-	return "" + p.ip + ":" + strconv.Itoa(int(p.port)) + " (" + bytesToString(p.id.toByte()) + ")"
+	return "" + p.ip + ":" + strconv.Itoa(int(p.port)) + " (" + bytesToString(p.id.toByte()[:10]) + ")"
 }
 
 type id [SIZE_OF_ID]byte
@@ -169,6 +169,12 @@ func initializeP2Pcomm() {
 		//time.Sleep(1)
 
 	}
+
+	thisNode.hashTable = hashTable{
+		values:      make(map[id][]byte),
+		expirations: make(map[id]time.Time),
+		RWMutex:     sync.RWMutex{},
+	}
 	fmt.Println("[SUCCESS] FINISHED INITIALIZING OF P2P COMMUNICATION")
 	fmt.Println()
 	time.Sleep(1 * time.Second)
@@ -232,9 +238,12 @@ func handleP2PConnection(conn net.Conn) {
 	m := readMessage(conn) //todo readMap whole message
 	//m := makeP2PMessageOutOfBytes(mRaw)
 	if m != nil {
-		fmt.Println(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString())
+		bdyStrg := ""
+		if m.body != nil {
+			bdyStrg = m.body.toString()
+		}
+		fmt.Println(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString(), " : ", bdyStrg)
 		thisNode.updateRoutingTable(m.header.senderPeer)
-
 		// switch according to m type
 		switch m.header.messageType {
 		case KDM_PING: // ping

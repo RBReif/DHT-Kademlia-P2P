@@ -15,7 +15,7 @@ var Conf configuraton
 
 func parseConfig() configuraton {
 	var pathToConfigFile string
-	flag.StringVar(&pathToConfigFile, "c", "config/config1.ini", "Specify the path to the config file")
+	flag.StringVar(&pathToConfigFile, "c", "config/mainConfig.ini", "Specify the path to the config file")
 	flag.Parse()
 	config, err := ini.Load(pathToConfigFile)
 	if err != nil {

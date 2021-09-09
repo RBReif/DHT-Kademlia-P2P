@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
 )
 
 type kBucket []peer
@@ -50,7 +51,7 @@ func (kBucket *kBucket) contains(id id) bool {
 func (kBucket *kBucket) toString() string {
 	result := ""
 	for _, element := range *kBucket {
-		result = result + "    " + element.toString()
+		result = result + "    " + strconv.Itoa(int(element.port))
 	}
 
 	return result

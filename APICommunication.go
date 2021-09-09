@@ -55,7 +55,6 @@ func handleAPIconnection(con net.Conn) {
 		}
 		size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
 		fmt.Println("Received message has size: ", size)
-		fmt.Println("Received message, data: ", receivedMessageRaw[:size])
 		if uint16(msgSize) != size {
 			custError := "[FAILURE] MAIN: Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
 			fmt.Println(custError)
@@ -64,7 +63,7 @@ func handleAPIconnection(con net.Conn) {
 			return
 		}
 		receivedMsg := makeApiMessageOutOfBytes(receivedMessageRaw[:msgSize])
-		//		fmt.Println("Parsed message into : ", receivedMsg.toString())
+		fmt.Println("API ", Conf.apiPort, " Received message : ", receivedMsg.toString())
 
 		switch receivedMsg.header.messageType {
 		case dhtPUT:
