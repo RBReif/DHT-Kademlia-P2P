@@ -116,6 +116,7 @@ func TestStoreCodingAndDecoding(t *testing.T) {
 	}
 	storeBdy := kdmStoreBody{
 		key:   i2,
+		ttl:   15,
 		value: value,
 	}
 

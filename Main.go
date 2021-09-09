@@ -31,21 +31,24 @@ func parseConfig() configuraton {
 		fmt.Println("Wrong configuration: maxTTL is not an Integer")
 		os.Exit(1)
 	}
-	tmpMinRep, err := config.Section("dht").Key("minReplication").Int()
-	if err != nil {
-		fmt.Println("Wrong configuration: minReplication is not an Integer")
-		os.Exit(1)
-	}
-	tmpMaxRep, err := config.Section("dht").Key("maxReplication").Int()
-	if err != nil {
-		fmt.Println("Wrong configuration: maxReplication is not an Integer")
-		os.Exit(1)
-	}
-	tmpRepTime, err := config.Section("dht").Key("republishingTime").Int()
-	if err != nil {
-		fmt.Println("Wrong configuration: republishingTime is not an Integer")
-		os.Exit(1)
-	}
+	/*
+		tmpMinRep, err := config.Section("dht").Key("minReplication").Int()
+		if err != nil {
+			fmt.Println("Wrong configuration: minReplication is not an Integer")
+			os.Exit(1)
+		}
+		tmpMaxRep, err := config.Section("dht").Key("maxReplication").Int()
+		if err != nil {
+			fmt.Println("Wrong configuration: maxReplication is not an Integer")
+			os.Exit(1)
+		}
+		tmpRepTime, err := config.Section("dht").Key("republishingTime").Int()
+		if err != nil {
+			fmt.Println("Wrong configuration: republishingTime is not an Integer")
+			os.Exit(1)
+		}
+
+	*/
 	k, err := config.Section("dht").Key("k").Int()
 	if err != nil {
 		fmt.Println("Wrong configuration: k is not an Integer")
@@ -91,13 +94,15 @@ func parseConfig() configuraton {
 		p2pPort:     p2pAddr.port,
 
 		//minTTL:           time.Duration(),
-		maxTTL:           tmpMaxTtl,
-		minReplication:   tmpMinRep,
+		maxTTL: tmpMaxTtl,
+		/*minReplication:   tmpMinRep,
 		maxReplication:   tmpMaxRep,
 		republishingTime: tmpRepTime,
-		preConfPeer1:     config.Section("dht").Key("preConfPeer1").String(),
-		preConfPeer2:     config.Section("dht").Key("preConfPeer2").String(),
-		preConfPeer3:     config.Section("dht").Key("preConfPeer3").String(),
+
+		*/
+		preConfPeer1: config.Section("dht").Key("preConfPeer1").String(),
+		preConfPeer2: config.Section("dht").Key("preConfPeer2").String(),
+		preConfPeer3: config.Section("dht").Key("preConfPeer3").String(),
 		//apiAddressRPS:  config.Section("rps").Key("api_address").String(),
 		k: k,
 		a: a,
@@ -137,23 +142,23 @@ type configuraton struct {
 	//general
 	HostKeyFile string
 	//dht
-	apiIP            string
-	apiPort          uint16
-	p2pIP            string
-	p2pPort          uint16
-	maxTTL           int
-	minReplication   int
-	maxReplication   int
-	republishingTime int
-	preConfPeer1     string
-	preConfPeer2     string
-	preConfPeer3     string
+	apiIP   string
+	apiPort uint16
+	p2pIP   string
+	p2pPort uint16
+	maxTTL  int
+	//minReplication   int
+	//maxReplication   int
+	// republishingTime int
+	preConfPeer1 string
+	preConfPeer2 string
+	preConfPeer3 string
 	//kademlia specific
 	k int
 	a int
 	//rps
 	//apiAddressRPS string
-	keySize int
+	//	keySize int
 }
 
 func (c *configuraton) toString() string {
@@ -164,14 +169,16 @@ func (c *configuraton) toString() string {
 	str = str + "   p2pIP: " + c.p2pIP + "\n"
 	str = str + "   p2pPort: " + strconv.Itoa(int(c.p2pPort)) + "\n"
 	str = str + "   maxTTL: " + strconv.Itoa(c.maxTTL) + "\n"
-	str = str + "   minReplication: " + strconv.Itoa(c.minReplication) + "\n"
+	/*str = str + "   minReplication: " + strconv.Itoa(c.minReplication) + "\n"
 	str = str + "   maxReplication: " + strconv.Itoa(c.maxReplication) + "\n"
 	str = str + "   republishingTime: " + strconv.Itoa(c.republishingTime) + "\n"
+
+	*/
 	str = str + "   preConfPeer1: " + c.preConfPeer1 + "\n"
 	str = str + "   preConfPeer2: " + c.preConfPeer2 + "\n"
 	str = str + "   preConfPeer3: " + c.preConfPeer3 + "\n"
 	//str = str + "   apiAddressRPS: " + c.apiAddressRPS + "\n"
-	str = str + "   keySize: " + strconv.Itoa(c.keySize) + "\n"
+	// = str + "   keySize: " + strconv.Itoa(c.keySize) + "\n"
 	return str
 }
 
