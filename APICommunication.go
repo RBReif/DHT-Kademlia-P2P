@@ -102,6 +102,7 @@ func handleAPIconnection(con net.Conn) {
 func handleGet(body *getBody) DhtAnswer {
 	//fmt.Println("handleGet has received :", body.toString())
 	time.Sleep(1 * time.Second)
+
 	v, ok := readMap(body.key)
 	if ok {
 		return DhtAnswer{
@@ -120,7 +121,17 @@ func handleGet(body *getBody) DhtAnswer {
 
 func handlePut(body *putBody) {
 	//fmt.Println("handlePut has received :", body.toString())
-	writeMap(body.key, body.value)
+	// writeMap(body.key, body.value) //for testing
+	kClosestPeers := thisNode.nodeLookup(body.key)
+	for _, p := range kClosestPeers {
+		storeBdy := kdmStoreBody{
+			key:   body.key,
+			value: body.value,
+		}
+		m := makeP2PMessageOutOfBody(&storeBdy, KDM_STORE)
+		sendP2PMessage(m, p)
+	}
+
 }
 
 var testLock = sync.RWMutex{}
