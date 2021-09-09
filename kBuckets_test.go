@@ -140,6 +140,17 @@ func TestRemove(t *testing.T) {
 
 }
 
+func TestSplit(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("[FAILURE] split() did not panic even though it exceeded key-length")
+		}
+	}()
+
+	thisNode := localNode{thisPeer: peer{id: buildTestIdFromString("")}, routingTree: routingTree{kBucket: kBucket{}}}
+	thisNode.updateRoutingTable(thisNode.thisPeer)
+}
+
 func TestGetSibling(t *testing.T) {
 	// init routingTree
 	routingTable := routingTree{}
@@ -164,7 +175,65 @@ func TestGetSibling(t *testing.T) {
 	}
 }
 
-func TestUpdateInsert(t *testing.T) {
+func TestFindNumberOfClosestPeersInOneBucket(t *testing.T) {
+	// should return empty slice if bucket is empty
+	testBucket := kBucket{}
+	if len(testBucket.findNumberOfClosestPeersInOneBucket(buildTestIdFromString(""), 1)) != 0 {
+		t.Errorf("[FAILURE] findNumberOfClosestPeersInOneBucket(...) should return empty slice if bucket is empty")
+	}
+
+	// test with plausible values
+	testPeer1 := peer{id: buildTestIdFromString("0001")}
+	testPeer2 := peer{id: buildTestIdFromString("0010")}
+	testPeer3 := peer{id: buildTestIdFromString("0011")}
+	testPeer4 := peer{id: buildTestIdFromString("0100")}
+	testPeer5 := peer{id: buildTestIdFromString("0101")}
+	testPeer6 := peer{id: buildTestIdFromString("0110")}
+	testPeer7 := peer{id: buildTestIdFromString("0111")}
+	testPeer8 := peer{id: buildTestIdFromString("1000")}
+	testPeer9 := peer{id: buildTestIdFromString("1001")}
+	testPeer10 := peer{id: buildTestIdFromString("1010")}
+	testPeer11 := peer{id: buildTestIdFromString("1011")}
+	testPeer12 := peer{id: buildTestIdFromString("1100")}
+	testPeer13 := peer{id: buildTestIdFromString("1101")}
+	testPeer14 := peer{id: buildTestIdFromString("1110")}
+	testPeer15 := peer{id: buildTestIdFromString("1111")}
+
+	testBucket = append(testBucket, testPeer1)
+	testBucket = append(testBucket, testPeer2)
+	testBucket = append(testBucket, testPeer3)
+	testBucket = append(testBucket, testPeer4)
+	testBucket = append(testBucket, testPeer5)
+	testBucket = append(testBucket, testPeer6)
+	testBucket = append(testBucket, testPeer7)
+	testBucket = append(testBucket, testPeer8)
+	testBucket = append(testBucket, testPeer9)
+	testBucket = append(testBucket, testPeer10)
+	testBucket = append(testBucket, testPeer11)
+	testBucket = append(testBucket, testPeer12)
+	testBucket = append(testBucket, testPeer13)
+	testBucket = append(testBucket, testPeer14)
+	testBucket = append(testBucket, testPeer15)
+
+	result := testBucket.findNumberOfClosestPeersInOneBucket(testPeer8.id, 3)
+	if len(result) != 3 {
+		t.Errorf("[FAILURE] findNumberOfClosestPeersInOneBucket(...) should return 3 peers in this case")
+	}
+
+	if result[0] != testPeer8 {
+		t.Errorf("[FAILURE] closest peer of testPeer8 should be testPeer8")
+	}
+
+	if result[1] != testPeer9 {
+		t.Errorf("[FAILURE] second closest peer of testPeer8 should be testPeer9")
+	}
+
+	if result[2] != testPeer10 {
+		t.Errorf("[FAILURE] third closest peer of testPeer8 should be testPeer10")
+	}
+}
+
+func TestGetNumberOfClosestPeersOnNode(t *testing.T) {
 	// init Conf
 	Conf.k = 5
 
@@ -173,13 +242,21 @@ func TestUpdateInsert(t *testing.T) {
 
 	// init localNode
 	thisNode := localNode{routingTree: *routingTree}
-	testPeer1 := peer{id: buildTestIdFromString("111")}
-	testPeer2 := peer{id: buildTestIdFromString("110")}
-	testPeer3 := peer{id: buildTestIdFromString("101")}
-	testPeer4 := peer{id: buildTestIdFromString("100")}
-	testPeer5 := peer{id: buildTestIdFromString("011")}
-	testPeer6 := peer{id: buildTestIdFromString("010")}
-	testPeer7 := peer{id: buildTestIdFromString("001")}
+	testPeer1 := peer{id: buildTestIdFromString("0001")}
+	testPeer2 := peer{id: buildTestIdFromString("0010")}
+	testPeer3 := peer{id: buildTestIdFromString("0011")}
+	testPeer4 := peer{id: buildTestIdFromString("0100")}
+	testPeer5 := peer{id: buildTestIdFromString("0101")}
+	testPeer6 := peer{id: buildTestIdFromString("0110")}
+	testPeer7 := peer{id: buildTestIdFromString("0111")}
+	testPeer8 := peer{id: buildTestIdFromString("1000")}
+	testPeer9 := peer{id: buildTestIdFromString("1001")}
+	testPeer10 := peer{id: buildTestIdFromString("1010")}
+	testPeer11 := peer{id: buildTestIdFromString("1011")}
+	testPeer12 := peer{id: buildTestIdFromString("1100")}
+	testPeer13 := peer{id: buildTestIdFromString("1101")}
+	testPeer14 := peer{id: buildTestIdFromString("1110")}
+	testPeer15 := peer{id: buildTestIdFromString("1111")}
 
 	thisNode.thisPeer = peer{id: buildTestIdFromString("0")} // own id only 0s
 
@@ -190,6 +267,227 @@ func TestUpdateInsert(t *testing.T) {
 	thisNode.updateRoutingTable(testPeer5)
 	thisNode.updateRoutingTable(testPeer6)
 	thisNode.updateRoutingTable(testPeer7)
+	thisNode.updateRoutingTable(testPeer8)
+	thisNode.updateRoutingTable(testPeer9)
+	thisNode.updateRoutingTable(testPeer10)
+	thisNode.updateRoutingTable(testPeer11)
+	thisNode.updateRoutingTable(testPeer12)
+	thisNode.updateRoutingTable(testPeer13)
+	thisNode.updateRoutingTable(testPeer14)
+	thisNode.updateRoutingTable(testPeer15)
+
+	// findNumberOfClosestPeersOnNode(...) searching for own id (left subtree in this case) should return the closest peers existing
+	result := thisNode.findNumberOfClosestPeersOnNode(thisNode.thisPeer.id, 3)
+	if len(result) != 3 {
+		t.Errorf("[FAILURE] findNumberOfClosestPeersInOneBucket(...) should return 3 peers in this case")
+	}
+
+	if result[0] != testPeer1 {
+		t.Errorf("[FAILURE] closest peer of thisPeer should be testPeer1")
+	}
+
+	if result[1] != testPeer2 {
+		t.Errorf("[FAILURE] second closest peer of thisPeer should be testPeer2")
+	}
+
+	if result[2] != testPeer3 {
+		t.Errorf("[FAILURE] third closest peer of thisPeer should be testPeer3")
+	}
+
+	// getNumberOfClosestPeers(...) of root routingTree searching for id in right subtree should return the closest peers of the last seen peers
+	result = thisNode.findNumberOfClosestPeersOnNode(testPeer8.id, 3)
+	if len(result) != 3 {
+		t.Errorf("[FAILURE] findNumberOfClosestPeersInOneBucket(...) should return 3 peers in this case")
+	}
+
+	if result[0] != testPeer11 {
+		t.Errorf("[FAILURE] closest peer of testPeer8 should be testPeer8")
+	}
+
+	if result[1] != testPeer12 {
+		t.Errorf("[FAILURE] second closest peer of testPeer8 should be testPeer9")
+	}
+
+	if result[2] != testPeer13 {
+		t.Errorf("[FAILURE] third closest peer of testPeer8 should be testPeer10")
+	}
+
+}
+
+func TestGetNumberOfClosestPeers(t *testing.T) {
+	// init Conf
+	Conf.k = 5
+
+	// init empty routingTree
+	routingTree := buildEmptyTestRoutingTree()
+
+	// init localNode
+	thisNode := localNode{routingTree: *routingTree}
+	testPeer1 := peer{id: buildTestIdFromString("0001")}
+	testPeer2 := peer{id: buildTestIdFromString("0010")}
+	testPeer3 := peer{id: buildTestIdFromString("0011")}
+	testPeer4 := peer{id: buildTestIdFromString("0100")}
+	testPeer5 := peer{id: buildTestIdFromString("0101")}
+	testPeer6 := peer{id: buildTestIdFromString("0110")}
+	testPeer7 := peer{id: buildTestIdFromString("0111")}
+	testPeer8 := peer{id: buildTestIdFromString("1000")}
+	testPeer9 := peer{id: buildTestIdFromString("1001")}
+	testPeer10 := peer{id: buildTestIdFromString("1010")}
+	testPeer11 := peer{id: buildTestIdFromString("1011")}
+	testPeer12 := peer{id: buildTestIdFromString("1100")}
+	testPeer13 := peer{id: buildTestIdFromString("1101")}
+	testPeer14 := peer{id: buildTestIdFromString("1110")}
+	testPeer15 := peer{id: buildTestIdFromString("1111")}
+
+	thisNode.thisPeer = peer{id: buildTestIdFromString("0")} // own id only 0s
+
+	thisNode.updateRoutingTable(testPeer1)
+	thisNode.updateRoutingTable(testPeer2)
+	thisNode.updateRoutingTable(testPeer3)
+	thisNode.updateRoutingTable(testPeer4)
+	thisNode.updateRoutingTable(testPeer5)
+	thisNode.updateRoutingTable(testPeer6)
+	thisNode.updateRoutingTable(testPeer7)
+	thisNode.updateRoutingTable(testPeer8)
+	thisNode.updateRoutingTable(testPeer9)
+	thisNode.updateRoutingTable(testPeer10)
+	thisNode.updateRoutingTable(testPeer11)
+	thisNode.updateRoutingTable(testPeer12)
+	thisNode.updateRoutingTable(testPeer13)
+	thisNode.updateRoutingTable(testPeer14)
+	thisNode.updateRoutingTable(testPeer15)
+
+	// getNumberOfClosestPeers(...) of root routingTree searching for own id (left subtree in this case) should return the closest peers existing
+	result := thisNode.routingTree.getNumberOfClosestPeers(thisNode.thisPeer.id, 3)
+	if len(result) != 3 {
+		t.Errorf("[FAILURE] findNumberOfClosestPeersInOneBucket(...) should return 3 peers in this case")
+	}
+
+	if result[0] != testPeer1 {
+		t.Errorf("[FAILURE] closest peer of thisPeer should be testPeer1")
+	}
+
+	if result[1] != testPeer2 {
+		t.Errorf("[FAILURE] second closest peer of thisPeer should be testPeer2")
+	}
+
+	if result[2] != testPeer3 {
+		t.Errorf("[FAILURE] third closest peer of thisPeer should be testPeer3")
+	}
+
+	// getNumberOfClosestPeers(...) of root routingTree searching for id in right subtree should return the closest peers of the last seen peers
+	result = thisNode.routingTree.getNumberOfClosestPeers(testPeer8.id, 3)
+	if len(result) != 3 {
+		t.Errorf("[FAILURE] findNumberOfClosestPeersInOneBucket(...) should return 3 peers in this case")
+	}
+
+	if result[0] != testPeer11 {
+		t.Errorf("[FAILURE] closest peer of testPeer8 should be testPeer8")
+	}
+
+	if result[1] != testPeer12 {
+		t.Errorf("[FAILURE] second closest peer of testPeer8 should be testPeer9")
+	}
+
+	if result[2] != testPeer13 {
+		t.Errorf("[FAILURE] third closest peer of testPeer8 should be testPeer10")
+	}
+
+}
+
+func TestUpdateInsertAndSplit(t *testing.T) {
+	// init Conf
+	Conf.k = 5
+
+	// init empty routingTree
+	routingTree := buildEmptyTestRoutingTree()
+
+	// init localNode
+	thisNode := localNode{routingTree: *routingTree}
+	testPeer1 := peer{id: buildTestIdFromString("0001")}
+	testPeer2 := peer{id: buildTestIdFromString("0010")}
+	testPeer3 := peer{id: buildTestIdFromString("0011")}
+	testPeer4 := peer{id: buildTestIdFromString("0100")}
+	testPeer5 := peer{id: buildTestIdFromString("0101")}
+	testPeer6 := peer{id: buildTestIdFromString("0110")}
+	testPeer7 := peer{id: buildTestIdFromString("0111")}
+	testPeer8 := peer{id: buildTestIdFromString("1000")}
+	testPeer9 := peer{id: buildTestIdFromString("1001")}
+	testPeer10 := peer{id: buildTestIdFromString("1010")}
+	testPeer11 := peer{id: buildTestIdFromString("1011")}
+	testPeer12 := peer{id: buildTestIdFromString("1100")}
+	testPeer13 := peer{id: buildTestIdFromString("1101")}
+	testPeer14 := peer{id: buildTestIdFromString("1110")}
+	testPeer15 := peer{id: buildTestIdFromString("1111")}
+
+	thisNode.thisPeer = peer{id: buildTestIdFromString("0")} // own id only 0s
+
+	thisNode.updateRoutingTable(testPeer1)
+	thisNode.updateRoutingTable(testPeer2)
+	thisNode.updateRoutingTable(testPeer3)
+	thisNode.updateRoutingTable(testPeer4)
+	thisNode.updateRoutingTable(testPeer5)
+	thisNode.updateRoutingTable(testPeer6)
+	thisNode.updateRoutingTable(testPeer7)
+	thisNode.updateRoutingTable(testPeer8)
+	thisNode.updateRoutingTable(testPeer9)
+	thisNode.updateRoutingTable(testPeer10)
+	thisNode.updateRoutingTable(testPeer11)
+	thisNode.updateRoutingTable(testPeer12)
+	thisNode.updateRoutingTable(testPeer13)
+	thisNode.updateRoutingTable(testPeer14)
+	thisNode.updateRoutingTable(testPeer15)
+
+	// TODO: implement correctness checks
+
+}
+
+func TestUpdateInsertAndPing(t *testing.T) {
+	// init Conf
+	Conf.k = 5
+
+	// init empty routingTree
+	routingTree := buildEmptyTestRoutingTree()
+
+	// init localNode
+	thisNode := localNode{routingTree: *routingTree}
+	testPeer1 := peer{id: buildTestIdFromString("0001")}
+	testPeer2 := peer{id: buildTestIdFromString("0010")}
+	testPeer3 := peer{id: buildTestIdFromString("0011")}
+	testPeer4 := peer{id: buildTestIdFromString("0100")}
+	testPeer5 := peer{id: buildTestIdFromString("0101")}
+	testPeer6 := peer{id: buildTestIdFromString("0110")}
+	testPeer7 := peer{id: buildTestIdFromString("0111")}
+	testPeer8 := peer{id: buildTestIdFromString("1000")}
+	testPeer9 := peer{id: buildTestIdFromString("1001")}
+	testPeer10 := peer{id: buildTestIdFromString("1010")}
+	testPeer11 := peer{id: buildTestIdFromString("1011")}
+	testPeer12 := peer{id: buildTestIdFromString("1100")}
+	testPeer13 := peer{id: buildTestIdFromString("1101")}
+	testPeer14 := peer{id: buildTestIdFromString("1110")}
+	testPeer15 := peer{id: buildTestIdFromString("1111")}
+
+	thisNode.thisPeer = peer{id: buildTestIdFromString("0")} // own id only 0s
+
+	thisNode.updateRoutingTable(testPeer1)
+	thisNode.updateRoutingTable(testPeer2)
+	thisNode.updateRoutingTable(testPeer3)
+	thisNode.updateRoutingTable(testPeer4)
+	thisNode.updateRoutingTable(testPeer5)
+	thisNode.updateRoutingTable(testPeer6)
+	thisNode.updateRoutingTable(testPeer7)
+	thisNode.updateRoutingTable(testPeer8)
+	thisNode.updateRoutingTable(testPeer9)
+	thisNode.updateRoutingTable(testPeer10)
+	thisNode.updateRoutingTable(testPeer11)
+	thisNode.updateRoutingTable(testPeer12)
+	thisNode.updateRoutingTable(testPeer13)
+	thisNode.updateRoutingTable(testPeer14)
+	thisNode.updateRoutingTable(testPeer15)
+
+	// make one of the peers active
+	testPeer9.ip = "127.0.0.1"
+	testPeer9.port = 8000
 
 	// TODO: implement correctness checks
 
