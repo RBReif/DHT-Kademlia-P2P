@@ -269,6 +269,7 @@ func wasAnyNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
 		}
 
 	}
+
 	return false
 }
 

@@ -28,7 +28,7 @@ func startAPIMessageDispatcher(wg *sync.WaitGroup) {
 			fmt.Println(custError)
 			panic(custError)
 		}
-		fmt.Println("[SUCCESS] MAIN: New Connection established, ", con)
+		fmt.Println("[SUCCESS] MAIN "+strconv.Itoa(int(Conf.apiPort))+": New Connection established, ", con)
 		con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
 
 		go handleAPIconnection(con)
@@ -56,7 +56,7 @@ func handleAPIconnection(con net.Conn) {
 		size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
 		fmt.Println("Received message has size: ", size)
 		if uint16(msgSize) != size {
-			custError := "[FAILURE] MAIN: Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
+			custError := "[FAILURE] MAIN " + strconv.Itoa(int(Conf.apiPort)) + ": Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
 			fmt.Println(custError)
 			fmt.Println("!!!", receivedMessageRaw[:msgSize])
 			con.Close()
@@ -123,6 +123,7 @@ func handlePut(body *putBody) {
 	//fmt.Println("handlePut has received :", body.toString())
 	// writeMap(body.key, body.value) //for testing
 	kClosestPeers := thisNode.nodeLookup(body.key, false)
+	fmt.Println("FINAL : number of k CLOSEST PEERS", len(kClosestPeers))
 	for _, p := range kClosestPeers {
 		storeBdy := kdmStoreBody{
 			key:   body.key,

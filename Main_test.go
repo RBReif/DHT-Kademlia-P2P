@@ -69,7 +69,8 @@ func TestComplete(t *testing.T) {
 	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...", waitingTime, ": ", putMsg.body.toString())
 	fmt.Println()
 	time.Sleep(time.Duration(waitingTime * time.Millisecond))
-	time.Sleep(1000 * time.Millisecond)
+	fmt.Println("WAITING.... ")
+	time.Sleep(30 * time.Second)
 	getBdy := getBody{key: i}
 	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
 
@@ -109,6 +110,7 @@ func TestComplete(t *testing.T) {
 	}
 
 	time.Sleep(waitingTime * time.Millisecond)
+	time.Sleep(25 * time.Second)
 	fmt.Println()
 	getBdy.key[1] = 0
 	getBdy.key[4] = 0

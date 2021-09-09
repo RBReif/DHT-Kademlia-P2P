@@ -45,6 +45,7 @@ func (hashTable *hashTable) write(key id, value []byte, expiration time.Time) {
 	defer hashTable.Unlock()
 	hashTable.values[key] = value
 	hashTable.expirations[key] = expiration
+	fmt.Println("WE HAVE WRITTEN KEY_VALUE PAIR TO ", Conf.p2pPort, " :", key[:10], "  - ", value, " (ttl ", expiration, ")")
 	//hashTable.republishingTimes[key] = republishingTime
 }
 
@@ -268,10 +269,21 @@ func handleP2PConnection(conn net.Conn) {
 
 		case KDM_FIND_NODE:
 			key := m.body.(*kdmFindNodeBody).id
-			answerBody := thisNode.FIND_NODE(key)
-			answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
 
-			sendP2PMessage(answer, m.header.senderPeer)
+			value, ok := thisNode.hashTable.read(key)
+			if ok {
+				answerBody := kdmFoundValueBody{
+					key:   key,
+					value: value,
+				}
+				answer := makeP2PMessageOutOfBody(&answerBody, KDM_FOUND_VALUE)
+				sendP2PMessage(answer, m.header.senderPeer)
+			} else {
+
+				answerBody := thisNode.FIND_NODE(key)
+				answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
+				sendP2PMessage(answer, m.header.senderPeer)
+			}
 			return
 
 		case KDM_FIND_NODE_ANSWER:
@@ -345,10 +357,11 @@ func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer {
 			_, ok := thisNode.hashTable.read(key)
 			if ok {
 				// value found, halt lookup
+				fmt.Println("VALUE WAS FOUND IN LOCAL HASH TABLE OF ", Conf.apiPort)
 				return nil
 			}
 		}
-		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, Conf.a)
+		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, Conf.k)
 		if !wasAnyNewPeerAdded(closestPeersOld, closestPeersNew) {
 			if waitingTime > 1000 {
 				break
@@ -357,8 +370,7 @@ func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer {
 		} else {
 			waitingTime = 10
 		}
-		//todo maybe collect the answers first and use them during nodeLookup before updating the kBuckets
-		for _, p := range closestPeersNew {
+		for _, p := range thisNode.findNumberOfClosestPeersOnNode(key, Conf.a) {
 			if wasANewPeerAdded(closestPeersOld, p) {
 				if findValue {
 					msgBody := kdmFindValueBody{
@@ -377,7 +389,6 @@ func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer {
 		}
 		closestPeersOld = closestPeersNew
 		time.Sleep(time.Duration(waitingTime) * time.Millisecond)
-		//todo wait , for how long?
 	}
 	return closestPeersOld
 
@@ -387,7 +398,7 @@ func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
 
 	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, Conf.k)
 	answerBody := kdmFindNodeAnswerBody{answerPeers: closestPeers}
-	fmt.Println(answerBody)
+	//fmt.Println(answerBody)
 	return answerBody
 }
 
