@@ -40,14 +40,15 @@ func (hashTable *hashTable) read(key id) ([]byte, bool) {
 	return value, existing
 }
 
-func (hashTable *hashTable) write(key id, value []byte, expiration time.Time, republishingTime time.Time) {
+func (hashTable *hashTable) write(key id, value []byte, expiration time.Time) {
 	hashTable.Lock()
 	defer hashTable.Unlock()
 	hashTable.values[key] = value
 	hashTable.expirations[key] = expiration
-	hashTable.republishingTimes[key] = republishingTime
+	//hashTable.republishingTimes[key] = republishingTime
 }
 
+/*
 func (hashTable *hashTable) republishKeys() {
 	hashTable.Lock()
 	defer hashTable.Unlock()
@@ -58,6 +59,8 @@ func (hashTable *hashTable) republishKeys() {
 		}
 	}
 }
+
+*/
 
 // Deletes all key/value-pairs which are expired
 func (hashTable *hashTable) expireKeys() {
@@ -230,7 +233,7 @@ func handleP2PConnection(conn net.Conn) {
 	//m := makeP2PMessageOutOfBytes(mRaw)
 	if m != nil {
 		fmt.Println(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString())
-		thisNode.updateRoutingTable(m.header.senderPeer) //todo
+		thisNode.updateRoutingTable(m.header.senderPeer)
 
 		// switch according to m type
 		switch m.header.messageType {
@@ -244,8 +247,16 @@ func handleP2PConnection(conn net.Conn) {
 			}
 		case KDM_STORE:
 			// write (key, value) to hashTable
-			thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(Conf.maxTTL)*time.Second), time.Now().Add(time.Duration(Conf.republishingTime)*time.Second))
+			ttl := int(m.body.(*kdmStoreBody).ttl)
+			if ttl > Conf.maxTTL {
+				ttl = Conf.maxTTL
+			}
+			thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(ttl)*time.Second))
 			return
+
+		case KDM_FOUND_VALUE:
+			thisNode.hashTable.write(m.body.(*kdmFoundValueBody).key, m.body.(*kdmFoundValueBody).value, time.Now().Add(time.Duration(15)*time.Second))
+
 		case KDM_FIND_NODE:
 			key := m.body.(*kdmFindNodeBody).id
 			answerBody := thisNode.FIND_NODE(key)
@@ -262,12 +273,11 @@ func handleP2PConnection(conn net.Conn) {
 			return
 
 		case KDM_FIND_VALUE:
-			var key id
-			copy(key[:], m.data[44:64])
+			key := m.body.(*kdmFindValueBody).id
 			var value, existing = thisNode.hashTable.read(key)
 			if existing {
 				// reply with value
-				answerBody := kdmFoundValueBody{value: value}
+				answerBody := kdmFoundValueBody{value: value, key: key}
 				answer := makeP2PMessageOutOfBody(&answerBody, KDM_FOUND_VALUE)
 				sendP2PMessage(answer, m.header.senderPeer)
 			} else {
@@ -365,7 +375,7 @@ func startTimers() {
 			thisNode.hashTable.expireKeys()
 
 			// republish keys
-			thisNode.hashTable.republishKeys()
+			// thisNode.hashTable.republishKeys()
 		}
 	}
 }

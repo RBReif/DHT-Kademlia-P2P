@@ -136,6 +136,7 @@ func (b *kdmFoundValueBody) toString() string {
 
 type kdmStoreBody struct {
 	key   id
+	ttl   uint16
 	value []byte
 }
 
@@ -146,16 +147,21 @@ func (b *kdmStoreBody) decodeBodyFromBytes(m *p2pMessage) {
 	var i id
 	copy(i[:], idHelp)
 	b.key = i
-	b.value = m.data[SIZE_OF_HEADER+SIZE_OF_ID:]
+	b.ttl = binary.BigEndian.Uint16(m.data[SIZE_OF_HEADER+SIZE_OF_ID : SIZE_OF_HEADER+SIZE_OF_ID+2])
+	b.value = m.data[SIZE_OF_HEADER+SIZE_OF_ID+2:]
 }
 func (b *kdmStoreBody) decodeBodyToBytes() []byte {
 	var result []byte
 	result = append(result, b.key.toByte()...)
+
+	result = append(result, 0)
+	result = append(result, 0)
+	binary.BigEndian.PutUint16(result[SIZE_OF_ID:SIZE_OF_ID+2], b.ttl)
 	result = append(result, b.value...)
 	return result
 }
 func (b *kdmStoreBody) toString() string {
-	return "[Key: " + bytesToString(b.key.toByte()) + "]\n     [value:" + bytesToString(b.value) + "]"
+	return "[Key: " + bytesToString(b.key.toByte()) + "](" + strconv.Itoa(int(b.ttl)) + ")\n     [value:" + bytesToString(b.value) + "]"
 }
 
 type kdmFindNodeAnswerBody struct {

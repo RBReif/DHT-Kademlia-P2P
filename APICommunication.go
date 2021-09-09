@@ -101,22 +101,46 @@ func handleAPIconnection(con net.Conn) {
 
 func handleGet(body *getBody) DhtAnswer {
 	//fmt.Println("handleGet has received :", body.toString())
-	time.Sleep(1 * time.Second)
+	/*
+		//The next to lines of code can be used for testing purposes
+		time.Sleep(1 * time.Second)
+		v, ok := readMap(body.key)
 
-	v, ok := readMap(body.key)
-	if ok {
+	*/
+
+	//first we lookup, if the node is stored at our local store. If so, we return the value
+	key := body.key
+	var value, existingLocally = thisNode.hashTable.read(key)
+	if existingLocally {
+		// reply with value
 		return DhtAnswer{
 			success: true,
 			key:     body.key,
-			value:   v,
-		}
-	} else {
-		return DhtAnswer{
-			success: false,
-			key:     body.key,
-			value:   nil,
+			value:   value,
 		}
 	}
+	tm := 10
+	for tm <= 10000 {
+		time.Sleep(time.Duration(tm) * time.Millisecond)
+		tm = tm * 10
+		var value, existingLocally = thisNode.hashTable.read(key)
+		if existingLocally {
+			// reply with value
+			return DhtAnswer{
+				success: true,
+				key:     body.key,
+				value:   value,
+			}
+		}
+
+	}
+
+	return DhtAnswer{
+		success: false,
+		key:     body.key,
+		value:   nil,
+	}
+
 }
 
 func handlePut(body *putBody) {
@@ -131,7 +155,7 @@ func handlePut(body *putBody) {
 		m := makeP2PMessageOutOfBody(&storeBdy, KDM_STORE)
 		sendP2PMessage(m, p)
 	}
-
+	thisNode.hashTable.write(body.key, body.value, time.Now().Add(time.Duration(body.ttl)*time.Second))
 }
 
 var testLock = sync.RWMutex{}
