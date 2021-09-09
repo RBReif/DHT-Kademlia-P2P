@@ -325,11 +325,20 @@ func pingNode(node peer) bool {
 
 }
 
-func (thisNode *localNode) nodeLookup(key id) []peer {
+// finds k closest peers to given key
+// if flag findValue ist set, then it searches for the stored value to the given key
+func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer {
 	var closestPeersOld []peer
 
 	waitingTime := 10
 	for {
+		if findValue {
+			_, ok := thisNode.hashTable.read(key)
+			if ok {
+				// value found, halt lookup
+				return nil
+			}
+		}
 		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, Conf.a)
 		if !wasAnyNewPeerAdded(closestPeersOld, closestPeersNew) {
 			if waitingTime > 1000 {
@@ -342,11 +351,19 @@ func (thisNode *localNode) nodeLookup(key id) []peer {
 		//todo maybe collect the answers first and use them during nodeLookup before updating the kBuckets
 		for _, p := range closestPeersNew {
 			if wasANewPeerAdded(closestPeersOld, p) {
-				msgBody := kdmFindNodeBody{
-					id: key,
+				if findValue {
+					msgBody := kdmFindValueBody{
+						id: key,
+					}
+					m := makeP2PMessageOutOfBody(&msgBody, KDM_FIND_VALUE)
+					sendP2PMessage(m, p)
+				} else {
+					msgBody := kdmFindNodeBody{
+						id: key,
+					}
+					m := makeP2PMessageOutOfBody(&msgBody, KDM_FIND_NODE)
+					sendP2PMessage(m, p)
 				}
-				m := makeP2PMessageOutOfBody(&msgBody, KDM_FIND_NODE)
-				sendP2PMessage(m, p)
 			}
 		}
 		closestPeersOld = closestPeersNew

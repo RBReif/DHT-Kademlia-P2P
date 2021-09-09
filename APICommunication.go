@@ -100,53 +100,27 @@ func handleAPIconnection(con net.Conn) {
 }
 
 func handleGet(body *getBody) DhtAnswer {
-	//fmt.Println("handleGet has received :", body.toString())
-	/*
-		//The next to lines of code can be used for testing purposes
-		time.Sleep(1 * time.Second)
-		v, ok := readMap(body.key)
-
-	*/
-
-	//first we lookup, if the node is stored at our local store. If so, we return the value
 	key := body.key
-	var value, existingLocally = thisNode.hashTable.read(key)
-	if existingLocally {
+	thisNode.nodeLookup(key, true)
+	var value, valueFound = thisNode.hashTable.read(key)
+	if valueFound {
 		// reply with value
 		return DhtAnswer{
 			success: true,
 			key:     body.key,
 			value:   value,
 		}
+	} else {
+		panic("Value could not be found on network") // TODO: what to do when value could not be found?
 	}
-	tm := 10
-	for tm <= 10000 {
-		time.Sleep(time.Duration(tm) * time.Millisecond)
-		tm = tm * 10
-		var value, existingLocally = thisNode.hashTable.read(key)
-		if existingLocally {
-			// reply with value
-			return DhtAnswer{
-				success: true,
-				key:     body.key,
-				value:   value,
-			}
-		}
-
-	}
-
-	return DhtAnswer{
-		success: false,
-		key:     body.key,
-		value:   nil,
-	}
-
 }
 
+// locates k closest Nodes in network and sends KDM_STORE messages to them
+// TODO: consider ttl, expiration etc.
 func handlePut(body *putBody) {
 	//fmt.Println("handlePut has received :", body.toString())
 	// writeMap(body.key, body.value) //for testing
-	kClosestPeers := thisNode.nodeLookup(body.key)
+	kClosestPeers := thisNode.nodeLookup(body.key, false)
 	for _, p := range kClosestPeers {
 		storeBdy := kdmStoreBody{
 			key:   body.key,
