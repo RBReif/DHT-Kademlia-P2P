@@ -111,12 +111,15 @@ func handleGet(body *getBody) DhtAnswer {
 			value:   value,
 		}
 	} else {
-		panic("Value could not be found on network") // TODO: what to do when value could not be found?
+		return DhtAnswer{
+			success: false,
+			key:     body.key,
+		}
+
 	}
 }
 
 // locates k closest Nodes in network and sends KDM_STORE messages to them
-// TODO: consider ttl, expiration etc.
 func handlePut(body *putBody) {
 	//fmt.Println("handlePut has received :", body.toString())
 	// writeMap(body.key, body.value) //for testing
@@ -125,6 +128,7 @@ func handlePut(body *putBody) {
 		storeBdy := kdmStoreBody{
 			key:   body.key,
 			value: body.value,
+			ttl:   body.ttl,
 		}
 		m := makeP2PMessageOutOfBody(&storeBdy, KDM_STORE)
 		sendP2PMessage(m, p)
