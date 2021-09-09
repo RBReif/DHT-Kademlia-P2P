@@ -315,14 +315,20 @@ func pingNode(node peer) bool {
 
 }
 
-func (thisNode *localNode) nodeLookup(key id) {
+func (thisNode *localNode) nodeLookup(key id) []peer {
 	var closestPeersOld []peer
+
+	waitingTime := 10
 	for {
 		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, Conf.a)
 		if !wasAnyNewPeerAdded(closestPeersOld, closestPeersNew) {
-			break
+			if waitingTime > 1000 {
+				break
+			}
+			waitingTime = waitingTime * 10
+		} else {
+			waitingTime = 10
 		}
-		//todo maybe change procedure to also call rpc on newly added nodes, that are farer away then the ones queried in round before
 		//todo maybe collect the answers first and use them during nodeLookup before updating the kBuckets
 		for _, p := range closestPeersNew {
 			if wasANewPeerAdded(closestPeersOld, p) {
@@ -334,11 +340,15 @@ func (thisNode *localNode) nodeLookup(key id) {
 			}
 		}
 		closestPeersOld = closestPeersNew
+		time.Sleep(time.Duration(waitingTime) * time.Millisecond)
 		//todo wait , for how long?
 	}
+	return closestPeersOld
+
 }
 
 func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
+
 	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, Conf.k)
 	answerBody := kdmFindNodeAnswerBody{answerPeers: closestPeers}
 	fmt.Println(answerBody)
