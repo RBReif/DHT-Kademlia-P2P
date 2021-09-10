@@ -27,9 +27,9 @@ type localNode struct {
 }
 
 type hashTable struct {
-	values      map[id][]byte
-	expirations map[id]time.Time
-	//republishingTimes map[id]time.Time
+	values            map[id][]byte
+	expirations       map[id]time.Time
+	republishingTimes map[id]time.Time
 	sync.RWMutex
 }
 
@@ -40,28 +40,25 @@ func (hashTable *hashTable) read(key id) ([]byte, bool) {
 	return value, existing
 }
 
-func (hashTable *hashTable) write(key id, value []byte, expiration time.Time) {
+func (hashTable *hashTable) write(key id, value []byte, expiration time.Time, republishingTime time.Time) {
 	hashTable.Lock()
 	defer hashTable.Unlock()
 	hashTable.values[key] = value
 	hashTable.expirations[key] = expiration
+	hashTable.republishingTimes[key] = republishingTime
 	fmt.Println("WE HAVE WRITTEN KEY_VALUE PAIR TO ", Conf.p2pPort, " :", key[:10], "  - ", value, " (ttl ", expiration, ")")
-	//hashTable.republishingTimes[key] = republishingTime
 }
 
-/*
 func (hashTable *hashTable) republishKeys() {
 	hashTable.Lock()
 	defer hashTable.Unlock()
 	for key, value := range hashTable.republishingTimes {
 		if time.Now().After(value) {
-			// TODO republish keys
-			print("DEBUG: Republishing" + fmt.Sprint(key)) // TODO: delete this line
+			print("DEBUG: Republishing: " + fmt.Sprint(key))
+			store(key, hashTable.values[key], uint16(hashTable.expirations[key].Sub(time.Now())))
 		}
 	}
 }
-
-*/
 
 // Deletes all key/value-pairs which are expired
 func (hashTable *hashTable) expireKeys() {
@@ -71,6 +68,7 @@ func (hashTable *hashTable) expireKeys() {
 		if time.Now().After(value) {
 			delete(hashTable.values, key)
 			delete(hashTable.expirations, key)
+			delete(hashTable.republishingTimes, key)
 		}
 	}
 }
@@ -256,11 +254,11 @@ func handleP2PConnection(conn net.Conn) {
 			if ttl > Conf.maxTTL {
 				ttl = Conf.maxTTL
 			}
-			thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(ttl)*time.Second))
+			thisNode.hashTable.write(m.body.(*kdmStoreBody).key, m.body.(*kdmStoreBody).value, time.Now().Add(time.Duration(ttl)*time.Second), time.Now().Add(time.Duration(REPUBLISH_TIME)*time.Second))
 			return
 
 		case KDM_FOUND_VALUE:
-			thisNode.hashTable.write(m.body.(*kdmFoundValueBody).key, m.body.(*kdmFoundValueBody).value, time.Now().Add(time.Duration(15)*time.Second))
+			thisNode.hashTable.write(m.body.(*kdmFoundValueBody).key, m.body.(*kdmFoundValueBody).value, time.Now().Add(time.Duration(15)*time.Second), time.Now().Add(time.Duration(REPUBLISH_TIME)*time.Second))
 
 		case KDM_FIND_NODE:
 			key := m.body.(*kdmFindNodeBody).id
@@ -394,6 +392,21 @@ func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
 	return answerBody
 }
 
+// locates k closest Nodes in network and sends KDM_STORE messages to them
+func store(key id, value []byte, ttl uint16) {
+	kClosestPeers := thisNode.nodeLookup(key, false)
+	fmt.Println("FINAL : number of k CLOSEST PEERS", len(kClosestPeers))
+	for _, p := range kClosestPeers {
+		storeBdy := kdmStoreBody{
+			key:   key,
+			value: value,
+			ttl:   ttl,
+		}
+		m := makeP2PMessageOutOfBody(&storeBdy, KDM_STORE)
+		sendP2PMessage(m, p)
+	}
+}
+
 // checks every second if keys are expired or should be republished
 func startTimers() {
 	ticker := time.NewTicker(time.Second)
@@ -402,6 +415,6 @@ func startTimers() {
 		thisNode.hashTable.expireKeys()
 
 		// republish keys
-		// thisNode.hashTable.republishKeys()
+		thisNode.hashTable.republishKeys()
 	}
 }

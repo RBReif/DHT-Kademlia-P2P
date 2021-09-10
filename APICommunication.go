@@ -118,37 +118,12 @@ func handleGet(body *getBody) DhtAnswer {
 	}
 }
 
-// locates k closest Nodes in network and sends KDM_STORE messages to them
 func handlePut(body *putBody) {
-	//fmt.Println("handlePut has received :", body.toString())
-	// writeMap(body.key, body.value) //for testing
-	kClosestPeers := thisNode.nodeLookup(body.key, false)
-	fmt.Println("FINAL : number of k CLOSEST PEERS", len(kClosestPeers))
-	for _, p := range kClosestPeers {
-		storeBdy := kdmStoreBody{
-			key:   body.key,
-			value: body.value,
-			ttl:   body.ttl,
-		}
-		m := makeP2PMessageOutOfBody(&storeBdy, KDM_STORE)
-		sendP2PMessage(m, p)
-	}
-	thisNode.hashTable.write(body.key, body.value, time.Now().Add(time.Duration(body.ttl)*time.Second))
+	// DEBUG: fmt.Println("handlePut has received :", body.toString())
+
+	// store on network
+	store(body.key, body.value, body.ttl)
+
+	// cache on local node TODO: for how long?
+	thisNode.hashTable.write(body.key, body.value, time.Now().Add(time.Duration(body.ttl)*time.Second), time.Now().Add(time.Duration(REPUBLISH_TIME)*time.Second))
 }
-
-var testLock = sync.RWMutex{}
-
-func readMap(key id) ([]byte, bool) {
-	testLock.RLock()
-	defer testLock.RUnlock()
-	v, ok := testMap[key]
-	return v, ok
-}
-
-func writeMap(key id, value []byte) {
-	testLock.Lock()
-	defer testLock.Unlock()
-	testMap[key] = value
-}
-
-var testMap map[id][]byte

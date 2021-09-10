@@ -28,6 +28,8 @@ const SIZE_OF_PEER int = SIZE_OF_ID + SIZE_OF_IP + SIZE_OF_PORT
 const SIZE_OF_NONCE int = 20
 const SIZE_OF_HEADER = 4 + SIZE_OF_PEER + SIZE_OF_NONCE
 
+const REPUBLISH_TIME int = 3600 // republish every 3600s
+
 //const SIZE_OF_KEY int = 20     //size of key equals size of id
 
 type p2pMessage struct {
