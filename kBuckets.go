@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -140,22 +141,14 @@ func (kBucket *kBucket) remove(id id) {
 	*kBucket = append((*kBucket)[:i], (*kBucket)[i+1:]...)
 }
 
-func (routingTable *routingTree) split() {
+func (routingTable *routingTree) split() error {
 	if len(routingTable.prefix) == SIZE_OF_ID*8 {
-		panic("Tried to split k-Bucket with maximum size of 1")
+		return errors.New("Tried to split k-Bucket with maximum size of 1")
 	}
 
 	fmt.Println(thisNode.thisPeer.port, ": splitting at current prefix ", routingTable.prefix)
 	prefixLeft := routingTable.prefix + "0"
 	prefixRight := routingTable.prefix + "1"
-	/*
-		kBucketLeft := kBucket{}
-		kBucketLeft = make([]peer,5)
-
-		kBucketRight := kBucket{}
-		kBucketRight = make([]peer,5)
-
-	*/
 
 	routingTreeLeft := routingTree{prefix: prefixLeft, parent: routingTable, kBucket: kBucket{}}
 	routingTreeRight := routingTree{prefix: prefixRight, parent: routingTable, kBucket: kBucket{}}
@@ -172,6 +165,8 @@ func (routingTable *routingTree) split() {
 	}
 
 	routingTable.kBucket = nil
+
+	return nil
 
 }
 
@@ -296,7 +291,10 @@ func (thisNode *localNode) updateRoutingTable(p peer) {
 		} else { // if k-Bucket is already full
 			// if range of k-Bucket includes own id, split bucket and repeat insertion attempt
 			if routingTree.inRange(thisNode.thisPeer.id) {
-				routingTree.split()
+				err := routingTree.split()
+				if err != nil {
+					return // abort update process
+				}
 				thisNode.updateRoutingTable(p)
 			} else {
 				// else ping least-recently seen node

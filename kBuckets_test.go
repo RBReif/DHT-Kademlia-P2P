@@ -141,15 +141,18 @@ func TestRemove(t *testing.T) {
 }
 
 func TestSplit(t *testing.T) {
-	Conf.k = 0 // to generate infinite splitting --> exceed key length
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("[FAILURE] split() did not panic even though it exceeded key-length")
-		}
-	}()
+	// generate routingTree with maximum prefix
+	prefix := ""
+	for i := 0; i < 256; i++ {
+		prefix += "0"
+	}
+	routingTable := routingTree{prefix: prefix, kBucket: kBucket{}}
 
-	thisNode := localNode{thisPeer: peer{id: buildTestIdFromString("")}, routingTree: routingTree{kBucket: kBucket{}}}
-	thisNode.updateRoutingTable(thisNode.thisPeer)
+	// try to split --> exceeds key length
+	err := routingTable.split()
+	if err == nil {
+		t.Errorf("[FAILURE] split() did not panic even though it exceeded key-length")
+	}
 }
 
 func TestGetSibling(t *testing.T) {

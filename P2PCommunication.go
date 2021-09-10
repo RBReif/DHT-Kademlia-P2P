@@ -202,10 +202,6 @@ func extractPeerAddressFromString(line string) peer {
 	return result
 }
 
-func (thisNode *localNode) init() {
-	thisNode.hashTable.values = make(map[id][]byte)
-}
-
 func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 	defer wg.Done()
 
