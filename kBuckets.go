@@ -117,7 +117,7 @@ func (thisNode *localNode) findResponsibleRoutingTree(key id) *routingTree {
 			var byte = key[byteNumber]
 			var bit = (byte & (128 >> bitNumber)) != 0
 
-			if bit == false {
+			if !bit {
 				tmpTree = tmpTree.left
 			} else {
 				tmpTree = tmpTree.right
@@ -259,7 +259,7 @@ func wasAnyNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
 	for i := 0; i < len(newPeers); i++ {
 		isThere := false
 		for j := 0; j < len(oldPeers); j++ {
-			if bytes.Compare(newPeers[i].id[:], oldPeers[j].id[:]) == 0 {
+			if bytes.Equal(newPeers[i].id[:], oldPeers[j].id[:]) {
 				isThere = true
 				break
 			}
@@ -275,7 +275,7 @@ func wasAnyNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
 
 func wasANewPeerAdded(oldPeers []peer, newPeer peer) bool {
 	for j := 0; j < len(oldPeers); j++ {
-		if bytes.Compare(newPeer.id[:], oldPeers[j].id[:]) == 0 {
+		if bytes.Equal(newPeer.id[:], oldPeers[j].id[:]) {
 			return false
 		}
 	}

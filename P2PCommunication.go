@@ -146,8 +146,7 @@ func initializeP2Pcomm() {
 	thisNode.thisPeer.port = Conf.p2pPort
 	thisNode.thisPeer.id = newID
 	fmt.Println("[SUCCESS] Configured this peer: ", thisNode.thisPeer.toString())
-	var initialPeers []peer
-	initialPeers = make([]peer, 3)
+	initialPeers := make([]peer, 3)
 	initialPeers[0] = extractPeerAddressFromString(Conf.preConfPeer1)
 	initialPeers[1] = extractPeerAddressFromString(Conf.preConfPeer2)
 	initialPeers[2] = extractPeerAddressFromString(Conf.preConfPeer3)
@@ -338,11 +337,8 @@ func pingNode(node peer) bool {
 	sendP2PMessage(pingMessage, node)
 	// receive KDM_PONG
 	answer := readMessage(c)
-	if answer.header.messageType == KDM_PONG {
-		return true
-	}
 
-	return false
+	return answer.header.messageType == KDM_PONG
 
 }
 
@@ -405,14 +401,11 @@ func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
 // checks every second if keys are expired or should be republished
 func startTimers() {
 	ticker := time.NewTicker(time.Second)
-	for {
-		select {
-		case <-ticker.C:
-			// expire keys
-			thisNode.hashTable.expireKeys()
+	for range ticker.C {
+		// expire keys
+		thisNode.hashTable.expireKeys()
 
-			// republish keys
-			// thisNode.hashTable.republishKeys()
-		}
+		// republish keys
+		// thisNode.hashTable.republishKeys()
 	}
 }

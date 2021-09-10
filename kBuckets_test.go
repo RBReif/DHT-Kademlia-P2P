@@ -88,7 +88,7 @@ func TestMaxSize(t *testing.T) {
 	for i := 0; i < SIZE_OF_ID*8; i++ {
 		tmpPrefix += "0"
 	}
-	routingTree.prefix = tmpPrefix[:len(tmpPrefix)]
+	routingTree.prefix = tmpPrefix[:]
 	if routingTree.maxSize() != 1 {
 		t.Errorf("[FAILURE] when prefix as long as SIZE_OF_ID * 8, then maxSize should be 1")
 	}
@@ -141,6 +141,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestSplit(t *testing.T) {
+	Conf.k = 0 // to generate infinite splitting --> exceed key length
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("[FAILURE] split() did not panic even though it exceeded key-length")
