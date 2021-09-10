@@ -149,6 +149,9 @@ func (b *failureBody) decodeBodyToBytes() []byte {
 	return b.key.toByte()
 }
 
+/*
+makeApiMessageOutOfBytes builds an instance of received bytes of e.g. a dhtGet or a dhtPut message
+*/
 func makeApiMessageOutOfBytes(messageData []byte) apiMessage {
 	//extracting header
 	hdr := apiHeader{
@@ -188,6 +191,9 @@ func makeApiMessageOutOfBytes(messageData []byte) apiMessage {
 	return msg
 }
 
+/*
+makeApiMessageOutOfAnswer builds a dhtFailure or a dhtSuccess message out of a received DhtAnswer
+*/
 func makeApiMessageOutOfAnswer(answer DhtAnswer) apiMessage {
 	//building header
 	hdr := apiHeader{}
