@@ -412,27 +412,26 @@ func TestParsePeerToByte(t *testing.T) {
 	var peer = peer{"127.0.0.1", 1234, randId}
 
 	var bytes = peerToByte(peer)
+	fmt.Println("Bytes representation: ", bytes)
 
 	if len(bytes) != 50 {
 		t.Errorf("Peer has to have length 50")
 	}
 
+	newPeer := parseByteToPeer(bytes)
+
 	// check if first SIZE_OF_ID bytes are equal to id
 	for i := 0; i < SIZE_OF_ID; i++ {
-		if bytes[i] != randIdBytes[i] {
+		if newPeer.id[i] != randIdBytes[i] {
 			t.Errorf("First " + fmt.Sprint(SIZE_OF_ID) + " Bytes have to be equal to Id")
 		}
 	}
-
-	// check if next 16 bytes are equal to ip
-	// TODO
-
-	// check if last 2 bytes are equal to port
-	// TODO
+	fmt.Println(peer)
+	fmt.Println(newPeer)
 
 	// check if parsing peer to bytes back to peer results in initial peer
-	if peer != parseByteToPeer(peerToByte(peer)) {
-		t.Errorf("Parsed peer to bytes and backwards has to be equal to initial peer")
+	if !reflect.DeepEqual(peer, newPeer) {
+		t.Errorf("Parsing of Header nonce does not work")
 	}
 
 }

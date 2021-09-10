@@ -270,20 +270,9 @@ func handleP2PConnection(conn net.Conn) {
 		case KDM_FIND_NODE:
 			key := m.body.(*kdmFindNodeBody).id
 
-			value, ok := thisNode.hashTable.read(key)
-			if ok {
-				answerBody := kdmFoundValueBody{
-					key:   key,
-					value: value,
-				}
-				answer := makeP2PMessageOutOfBody(&answerBody, KDM_FOUND_VALUE)
-				sendP2PMessage(answer, m.header.senderPeer)
-			} else {
-
-				answerBody := thisNode.FIND_NODE(key)
-				answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
-				sendP2PMessage(answer, m.header.senderPeer)
-			}
+			answerBody := thisNode.FIND_NODE(key)
+			answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
+			sendP2PMessage(answer, m.header.senderPeer)
 			return
 
 		case KDM_FIND_NODE_ANSWER:

@@ -31,24 +31,7 @@ func parseConfig() configuraton {
 		fmt.Println("Wrong configuration: maxTTL is not an Integer")
 		os.Exit(1)
 	}
-	/*
-		tmpMinRep, err := config.Section("dht").Key("minReplication").Int()
-		if err != nil {
-			fmt.Println("Wrong configuration: minReplication is not an Integer")
-			os.Exit(1)
-		}
-		tmpMaxRep, err := config.Section("dht").Key("maxReplication").Int()
-		if err != nil {
-			fmt.Println("Wrong configuration: maxReplication is not an Integer")
-			os.Exit(1)
-		}
-		tmpRepTime, err := config.Section("dht").Key("republishingTime").Int()
-		if err != nil {
-			fmt.Println("Wrong configuration: republishingTime is not an Integer")
-			os.Exit(1)
-		}
 
-	*/
 	k, err := config.Section("dht").Key("k").Int()
 	if err != nil {
 		fmt.Println("Wrong configuration: k is not an Integer")
@@ -59,20 +42,6 @@ func parseConfig() configuraton {
 		fmt.Println("Wrong configuration: a is not an Integer")
 		os.Exit(1)
 	}
-
-	/*
-		apiPort, err := strconv.Atoi(strings.Split(config.Section("dht").Key("api_address").String(), ":")[1])
-		if err != nil {
-			fmt.Println("Wrong configuration: the port of the apiAdress is not an Integer")
-			os.Exit(1)
-		}
-		p2pPort, err := strconv.Atoi(strings.Split(config.Section("dht").Key("p2p_address").String(), ":")[1])
-		if err != nil {
-			fmt.Println("Wrong configuration: the port of the p2pAdress is not an Integer")
-			os.Exit(1)
-		}
-
-	*/
 
 	apiAddr := extractPeerAddressFromString(config.Section("dht").Key("api_address").String())
 	p2pAddr := extractPeerAddressFromString(config.Section("dht").Key("p2p_address").String())

@@ -1,5 +1,5 @@
 #!/bin/bash
-n=50
+n=200
 
 echo "started creation of ${n} peers"
 
@@ -23,7 +23,7 @@ maxTTL = 86400
 preConfPeer1 = 127.0.0.1:${neighbor1}
 preConfPeer2 = 127.0.0.1:${neighbor2}
 preConfPeer3 = 127.0.0.1:${neighbor3}
-k = 20
+k = 5
 a = 3
 EOF
 

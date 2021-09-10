@@ -1,5 +1,5 @@
 #!/bin/bash
-n=50
+n=200
 
 echo "started initialization of ${n} peers"
 
