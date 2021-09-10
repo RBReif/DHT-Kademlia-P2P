@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"math"
 	"sort"
 	"strconv"
@@ -146,7 +146,7 @@ func (routingTable *routingTree) split() error {
 		return errors.New("Tried to split k-Bucket with maximum size of 1")
 	}
 
-	fmt.Println(thisNode.thisPeer.port, ": splitting at current prefix ", routingTable.prefix)
+	log.Debug(thisNode.thisPeer.port, ": splitting at current prefix ", routingTable.prefix)
 	prefixLeft := routingTable.prefix + "0"
 	prefixRight := routingTable.prefix + "1"
 

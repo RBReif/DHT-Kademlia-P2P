@@ -2,9 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/ini.v1"
-	"os"
 	"strconv"
 	"sync"
 )
@@ -20,8 +19,7 @@ func parseConfig() configuraton {
 
 	config, err := ini.Load(pathToConfigFile)
 	if err != nil {
-		fmt.Println("[FAILURE] Could not parse specified config file.")
-		os.Exit(1)
+		log.Fatal("[FAILURE] Could not parse specified config file.")
 	}
 
 	var lock = &sync.Mutex{}
@@ -29,19 +27,16 @@ func parseConfig() configuraton {
 	defer lock.Unlock()
 	tmpMaxTtl, err := config.Section("dht").Key("maxTTL").Int()
 	if err != nil {
-		fmt.Println("[FAILURE] Wrong configuration: maxTTL is not an Integer")
-		os.Exit(1)
+		log.Fatal("[FAILURE] Wrong configuration: maxTTL is not an Integer")
 	}
 
 	k, err := config.Section("dht").Key("k").Int()
 	if err != nil {
-		fmt.Println("[FAILURE] Wrong configuration: k is not an Integer")
-		os.Exit(1)
+		log.Fatal("[FAILURE] Wrong configuration: k is not an Integer")
 	}
 	a, err := config.Section("dht").Key("a").Int()
 	if err != nil {
-		fmt.Println("[FAILURE] Wrong configuration: a is not an Integer")
-		os.Exit(1)
+		log.Fatal("[FAILURE] Wrong configuration: a is not an Integer")
 	}
 
 	apiAddr := extractPeerAddressFromString(config.Section("dht").Key("api_address").String())
@@ -61,7 +56,7 @@ func parseConfig() configuraton {
 		a:            a,
 	}
 
-	fmt.Println("[SUCCESS] Read and Parsed the following Configuration file: ", conf.toString())
+	log.Info("[SUCCESS] Read and Parsed the following Configuration file: ", conf.toString())
 	return conf
 }
 
@@ -74,9 +69,9 @@ func main() {
 	initializeP2Pcomm()
 	go startTimers()
 
-	fmt.Println("Program started...")
+	log.Info("Program started")
 	wg.Wait()
-	fmt.Println("Program stopped")
+	log.Info("Program stopped")
 }
 
 type configuraton struct {

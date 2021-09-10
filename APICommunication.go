@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/binary"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"strconv"
 	"sync"
@@ -17,20 +17,18 @@ func startAPIMessageDispatcher(wg *sync.WaitGroup) {
 	l, err := net.Listen("tcp", Conf.apiIP+":"+strconv.Itoa(int(Conf.apiPort)))
 	if err != nil {
 		custError := "[FAILURE] MAIN: Error while listening for connection at" + Conf.apiIP + ": " + strconv.Itoa(int(Conf.apiPort)) + " - " + err.Error()
-		fmt.Println(custError)
-		panic(custError)
+		log.Panic(custError)
 	}
 	defer l.Close()
-	fmt.Println("[SUCCESS] MAIN: APIMessageDispatcher Listening on ", Conf.apiIP, ": ", Conf.apiPort)
+	log.Debug("[SUCCESS] MAIN: APIMessageDispatcher Listening on ", Conf.apiIP, ": ", Conf.apiPort)
 
 	for {
 		con, err := l.Accept()
 		if err != nil {
 			custError := "[FAILURE] MAIN: Error while accepting: " + err.Error()
-			fmt.Println(custError)
-			panic(custError)
+			log.Panic(custError)
 		}
-		fmt.Println("[SUCCESS] MAIN " + strconv.Itoa(int(Conf.apiPort)) + ": New Connection established")
+		log.Debug("[SUCCESS] MAIN " + strconv.Itoa(int(Conf.apiPort)) + ": New Connection established")
 		con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
 
 		//for each newly established connection we concurrently call the handleAPIconnection() function
@@ -46,29 +44,29 @@ func handleAPIconnection(con net.Conn) {
 		msgSize, err := con.Read(receivedMessageRaw)
 		if err != nil {
 			custError := "[pot. FAILURE] MAIN: Error while reading from connection: " + err.Error() + " (This might be because no more data was sent)"
-			fmt.Println(custError)
+			log.Error(custError)
 			con.Close()
 			return
 		}
 		if msgSize > maxMessageLength {
 			custError := "[FAILURE] MAIN: Too much data was sent to us: " + strconv.Itoa(msgSize)
-			fmt.Println(custError)
+			log.Error(custError)
 			con.Close()
 			return
 		}
 
 		size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
-		fmt.Println("DEBUG: Received message has size: ", size)
+		log.Debug("Received message has size: ", size)
 		if uint16(msgSize) != size {
 			custError := "[FAILURE] MAIN " + strconv.Itoa(int(Conf.apiPort)) + ": Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size)) + " sometimes this happens if two messages are sent to quickly)"
-			fmt.Println(custError)
+			log.Error(custError)
 			con.Close()
 			return
 		}
 
 		//out of the received bytes we create an instance of type apiMessage
 		receivedMsg := makeApiMessageOutOfBytes(receivedMessageRaw[:msgSize])
-		fmt.Println("API ", Conf.apiPort, " Received message : ", receivedMsg.toString())
+		log.Debug("API ", Conf.apiPort, " Received message : ", receivedMsg.toString())
 
 		switch receivedMsg.header.messageType {
 		case dhtPUT:
@@ -77,7 +75,7 @@ func handleAPIconnection(con net.Conn) {
 		case dhtGET:
 			if receivedMsg.header.size != 36 {
 				custError := "[FAILURE] MAIN: Message size (" + strconv.Itoa(msgSize) + ") does not match expected size for a GET message"
-				fmt.Println(custError)
+				log.Error(custError)
 				con.Close()
 				return
 			}
@@ -91,14 +89,13 @@ func handleAPIconnection(con net.Conn) {
 			_, err := con.Write(answerMessage.data)
 			if err != nil {
 				custError := "[FAILURE] MAIN:  Error while writing to connection: " + err.Error()
-				fmt.Println(custError)
-				panic(custError)
+				log.Panic(custError)
 			}
-			fmt.Println("[SUCCESS] MAIN: Written answer to connection")
+			log.Debug("[SUCCESS] MAIN: Written answer to connection")
 
 		default:
 			custError := "[FAILURE] MAIN: Message was of not specified type: " + strconv.Itoa(int(receivedMsg.header.messageType))
-			fmt.Println(custError)
+			log.Error(custError)
 			con.Close()
 			return
 		}
@@ -139,7 +136,7 @@ The handlePut() function first locates the k closest Nodes in network with the n
 Then it sends KDM_STORE messages with the key-value pair to the k closest nodes to the specified key
 */
 func handlePut(body *putBody) {
-	// DEBUG: fmt.Println("handlePut has received :", body.toString())
+	log.Debug("handlePut has received :", body.toString())
 
 	// store on network
 	store(body.key, body.value, body.ttl)

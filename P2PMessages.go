@@ -4,7 +4,7 @@ import "C"
 import (
 	"crypto/rand"
 	"encoding/binary"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net"
 	//	"net/http/httptest"
 	"strconv"
@@ -197,32 +197,32 @@ func (b *kdmFindNodeAnswerBody) toString() string {
 func readMessage(conn net.Conn) *p2pMessage {
 	receivedMessageRaw := make([]byte, maxMessageLength)
 	msgSize, err := conn.Read(receivedMessageRaw)
-	//	fmt.Println("received message: ", receivedMessageRaw[:30], " ...")
+	log.Debug("received message: ", receivedMessageRaw[:30], " ...")
 	if err != nil {
 		custError := "[pot. FAILURE] MAIN: Error while reading from connection: " + err.Error() + " (This might be because no more data was sent)"
-		fmt.Println(custError)
+		log.Error(custError)
 		conn.Close()
 		return nil
 	}
 	if msgSize > maxMessageLength {
 		custError := "[FAILURE] MAIN: Too much data was sent to us: " + strconv.Itoa(msgSize)
-		fmt.Println(custError)
+		log.Error(custError)
 		conn.Close()
 		return nil
 	}
 
 	size := binary.BigEndian.Uint16(receivedMessageRaw[:2])
-	//fmt.Println("Received message has size: ", size)
-	//fmt.Println("Received message, data: ", receivedMessageRaw[:size])
+	log.Debug("Received message has size: ", size)
+	log.Debug("Received message, data: ", receivedMessageRaw[:size])
 	if uint16(msgSize) != size {
 		custError := "[FAILURE] MAIN: Message size (" + strconv.Itoa(msgSize) + ") does not match specified 'size': " + strconv.Itoa(int(size))
-		fmt.Println(custError)
-		fmt.Println("!!!", receivedMessageRaw[:msgSize])
+		log.Error(custError)
+		log.Error("!!!", receivedMessageRaw[:msgSize])
 		conn.Close()
 		return nil
 	}
 	receivedMsg := makeP2PMessageOutOfBytes(receivedMessageRaw[:msgSize])
-	//fmt.Println("Going to return: ", receivedMsg.toString())
+	log.Debug("Going to return: ", receivedMsg.toString())
 	return &receivedMsg
 }
 
@@ -275,8 +275,8 @@ func makeP2PMessageOutOfBody(body p2pBody, msgType uint16) p2pMessage {
 		panic(err.Error())
 	}
 	result.header.nonce = nonce
-	//	fmt.Println(result.header.messageType, result.header.nonce)
-	//	fmt.Println(result.header.senderPeer)
+	log.Debug(result.header.messageType, result.header.nonce)
+	log.Debug(result.header.senderPeer)
 	if msgType == KDM_PING || msgType == KDM_PONG {
 		result.header.size = uint16(SIZE_OF_HEADER)
 		result.data = result.header.decodeHeaderToBytes()
@@ -298,29 +298,25 @@ func sendP2PMessage(m p2pMessage, receiverPeer peer) {
 	_, err := net.ResolveTCPAddr("tcp", m.header.senderPeer.ip+":"+strconv.Itoa(int(m.header.senderPeer.port)))
 	if err != nil {
 		custError := "[FAILURE] Error while parsing to TCP addr: " + err.Error()
-		fmt.Println(custError)
-		panic(custError)
+		log.Panic(custError)
 	}
 	_, err = net.ResolveTCPAddr("tcp", receiverPeer.ip+":"+strconv.Itoa(int(receiverPeer.port)))
 	if err != nil {
 		custError := "[FAILURE] Error while while parsing to TCP addr:" + err.Error()
-		fmt.Println(custError)
+		log.Error(custError)
 		return
-		//	panic(custError)
 	}
 	conn, err := net.Dial("tcp", receiverPeer.ip+":"+strconv.Itoa(int(receiverPeer.port)))
 	if err != nil {
 		custError := "[FAILURE] Error while connecting via tcp:" + err.Error()
-		fmt.Println(custError)
+		log.Error(custError)
 		return
-		//	panic(custError)
 	}
 	_, err = conn.Write(m.data)
 	if err != nil {
 		custError := "[FAILURE] Writing to connection failed:" + err.Error()
-		fmt.Println(custError)
+		log.Error(custError)
 		return
-		//	panic(custError)
 	}
 }
 

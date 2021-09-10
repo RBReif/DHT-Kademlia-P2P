@@ -4,17 +4,16 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
-	"log"
-	"os"
-
-	//"encoding/binary"
 	"fmt"
+	"io/ioutil"
+	//"encoding/binary"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var thisNode localNode
@@ -46,7 +45,7 @@ func (hashTable *hashTable) write(key id, value []byte, expiration time.Time, re
 	hashTable.values[key] = value
 	hashTable.expirations[key] = expiration
 	hashTable.republishingTimes[key] = republishingTime
-	fmt.Println("WE HAVE WRITTEN KEY_VALUE PAIR TO ", Conf.p2pPort, " :", key[:10], "  - ", value, " (ttl ", expiration, ")")
+	log.Debug("WE HAVE WRITTEN KEY_VALUE PAIR TO ", Conf.p2pPort, " :", key[:10], "  - ", value, " (ttl ", expiration, ")")
 }
 
 func (hashTable *hashTable) republishKeys() {
@@ -54,7 +53,7 @@ func (hashTable *hashTable) republishKeys() {
 	defer hashTable.Unlock()
 	for key, value := range hashTable.republishingTimes {
 		if time.Now().After(value) {
-			print("DEBUG: Republishing: " + fmt.Sprint(key))
+			log.Debug("Republishing: " + fmt.Sprint(key))
 			store(key, hashTable.values[key], uint16(hashTable.expirations[key].Sub(time.Now())))
 		}
 	}
@@ -106,9 +105,9 @@ func initializeP2Pcomm() {
 	//first we read the private key
 	priv, err := ioutil.ReadFile(Conf.HostKeyFile)
 	if err != nil {
-		fmt.Println("Error while reading File: ", err)
+		log.Error("Error while reading File: ", err)
 	}
-	fmt.Println("   Bytes from private key pem file: ", priv[:10], "...", priv[140:150], "...")
+	log.Debug("   Bytes from private key pem file: ", priv[:10], "...", priv[140:150], "...")
 	block, _ := pem.Decode([]byte(priv))
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		log.Fatal("[FAILURE] failed to decode PEM block containing public key")
@@ -129,9 +128,9 @@ func initializeP2Pcomm() {
 		Bytes:   publicKeyDer,
 	}
 	pubKeyPem := string(pem.EncodeToMemory(&pubKeyBlock))
-	fmt.Println("   public key generated: ", pubKeyPem[:50], "...")
+	log.Debug("   public key generated: ", pubKeyPem[:50], "...")
 
-	fmt.Println("   Public Key as bytes: ", publicKeyDer[:10], "...", publicKeyDer[140:150], "...")
+	log.Debug("   Public Key as bytes: ", publicKeyDer[:10], "...", publicKeyDer[140:150], "...")
 
 	//now we calculate the sha256 hash sum to retreive our ID
 	h := sha256.New()
@@ -139,11 +138,11 @@ func initializeP2Pcomm() {
 	newIDbytes := h.Sum(nil)
 	var newID id
 	copy(newID[:], newIDbytes)
-	fmt.Println("[SUCCESSS] Our generated ID: ", newIDbytes)
+	log.Info("[SUCCESSS] Our generated ID: ", newIDbytes)
 	thisNode.thisPeer.ip = Conf.p2pIP
 	thisNode.thisPeer.port = Conf.p2pPort
 	thisNode.thisPeer.id = newID
-	fmt.Println("[SUCCESS] Configured this peer: ", thisNode.thisPeer.toString())
+	log.Info("[SUCCESS] Configured this peer: ", thisNode.thisPeer.toString())
 	initialPeers := make([]peer, 3)
 	initialPeers[0] = extractPeerAddressFromString(Conf.preConfPeer1)
 	initialPeers[1] = extractPeerAddressFromString(Conf.preConfPeer2)
@@ -162,7 +161,7 @@ func initializeP2Pcomm() {
 	time.Sleep(1 * time.Second)
 	for _, p := range initialPeers {
 		msg := makeP2PMessageOutOfBody(nil, KDM_PING)
-		//	fmt.Println("MESSAGE: ", msg.toString())
+		log.Debug("MESSAGE: ", msg.toString())
 		sendP2PMessage(msg, p)
 		//time.Sleep(1)
 
@@ -173,10 +172,9 @@ func initializeP2Pcomm() {
 		expirations: make(map[id]time.Time),
 		RWMutex:     sync.RWMutex{},
 	}
-	fmt.Println("[SUCCESS] FINISHED INITIALIZING OF P2P COMMUNICATION")
-	fmt.Println()
+	log.Info("[SUCCESS] FINISHED INITIALIZING OF P2P COMMUNICATION\n")
 	time.Sleep(1 * time.Second)
-	fmt.Println(thisNode.thisPeer.port, "stores: ", thisNode.routingTree.toString())
+	log.Debug(thisNode.thisPeer.port, "stores: ", thisNode.routingTree.toString())
 }
 
 func extractPeerAddressFromString(line string) peer {
@@ -192,8 +190,7 @@ func extractPeerAddressFromString(line string) peer {
 		port, err = strconv.Atoi(strings.Split(line, ":")[1])
 	}
 	if err != nil {
-		fmt.Println("Wrong configuration: the port of ", line, " is not an Integer")
-		os.Exit(1)
+		log.Fatal("Wrong configuration: the port of ", line, " is not an Integer")
 	}
 	result.ip = ip
 	result.port = uint16(port)
@@ -206,19 +203,17 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 	l, err := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(int(Conf.p2pPort)))
 	if err != nil {
 		custError := "[FAILURE] MAIN: Error while listening for connection at" + Conf.p2pIP + ": " + strconv.Itoa(int(Conf.p2pPort)) + " - " + err.Error()
-		fmt.Println(custError)
-		panic(custError)
+		log.Panic(custError)
 	}
 	defer l.Close()
-	fmt.Println("[SUCCESS] MAIN: P2PMessageDispatcher Listening on ", Conf.p2pIP, ": ", Conf.p2pPort)
+	log.Info("[SUCCESS] MAIN: P2PMessageDispatcher Listening on ", Conf.p2pIP, ": ", Conf.p2pPort)
 	for {
 		conn, err := l.Accept()
 		if err != nil {
 			custError := "[FAILURE] MAIN: Error while accepting: " + err.Error()
-			fmt.Println(custError)
-			panic(custError)
+			log.Panic(custError)
 		}
-		fmt.Println("[SUCCESS] MAIN: New Connection established, ", conn.LocalAddr(), " r:", conn.RemoteAddr())
+		log.Debug("[SUCCESS] MAIN: New Connection established, ", conn.LocalAddr(), " r:", conn.RemoteAddr())
 		conn.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
 
 		go handleP2PConnection(conn)
@@ -236,7 +231,7 @@ func handleP2PConnection(conn net.Conn) {
 		if m.body != nil {
 			bdyStrg = m.body.toString()
 		}
-		fmt.Println(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString(), " : ", bdyStrg)
+		log.Debug(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString(), " : ", bdyStrg)
 		thisNode.updateRoutingTable(m.header.senderPeer)
 		// switch according to m type
 		switch m.header.messageType {
@@ -313,7 +308,7 @@ func pingNode(node peer) bool {
 
 	c, err := net.Dial("tcp", node.ip+":"+fmt.Sprint(node.port))
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		return false
 	}
 	pingMessage := makeP2PMessageOutOfBody(nil, KDM_PING)
@@ -339,7 +334,7 @@ func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer {
 			_, ok := thisNode.hashTable.read(key)
 			if ok {
 				// value found, halt lookup
-				fmt.Println("VALUE WAS FOUND IN LOCAL HASH TABLE OF ", Conf.apiPort)
+				log.Debug("VALUE WAS FOUND IN LOCAL HASH TABLE OF ", Conf.apiPort)
 				return nil
 			}
 		}
@@ -380,14 +375,14 @@ func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
 
 	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, Conf.k)
 	answerBody := kdmFindNodeAnswerBody{answerPeers: closestPeers}
-	//fmt.Println(answerBody)
+	log.Debug(answerBody)
 	return answerBody
 }
 
 // locates k closest Nodes in network and sends KDM_STORE messages to them
 func store(key id, value []byte, ttl uint16) {
 	kClosestPeers := thisNode.nodeLookup(key, false)
-	fmt.Println("FINAL : number of k CLOSEST PEERS", len(kClosestPeers))
+	log.Debug("FINAL : number of k CLOSEST PEERS", len(kClosestPeers))
 	for _, p := range kClosestPeers {
 		storeBdy := kdmStoreBody{
 			key:   key,

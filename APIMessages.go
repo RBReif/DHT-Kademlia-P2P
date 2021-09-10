@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/binary"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 )
 
@@ -184,8 +184,7 @@ func makeApiMessageOutOfBytes(messageData []byte) apiMessage {
 
 	default:
 		custError := "[FAILURE] Received Message with unknown Type " + strconv.Itoa(int(msg.header.messageType))
-		fmt.Println(custError)
-		//panic(custError)
+		log.Error(custError)
 	}
 
 	return msg
