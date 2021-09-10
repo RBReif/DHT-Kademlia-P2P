@@ -160,7 +160,6 @@ func TestComplete(t *testing.T) {
 	wg.Add(1)
 
 	go helpTestComplete(t, &wg)
-
 	go help(&wg)
 	cmd = exec.Command("/bin/bash", "runPeersConcurrent.sh")
 	o, e := cmd.Output()

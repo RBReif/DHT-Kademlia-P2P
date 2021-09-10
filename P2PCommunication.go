@@ -168,9 +168,11 @@ func initializeP2Pcomm() {
 	}
 
 	thisNode.hashTable = hashTable{
-		values:      make(map[id][]byte),
-		expirations: make(map[id]time.Time),
-		RWMutex:     sync.RWMutex{},
+		values:            make(map[id][]byte),
+		expirations:       make(map[id]time.Time),
+		republishingTimes: make(map[id]time.Time),
+
+		RWMutex: sync.RWMutex{},
 	}
 	log.Info("[SUCCESS] FINISHED INITIALIZING OF P2P COMMUNICATION\n")
 	time.Sleep(1 * time.Second)
