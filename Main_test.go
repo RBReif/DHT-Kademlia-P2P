@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/exec"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -14,7 +16,10 @@ import (
 
 //this test function sends a dhtPUT request and then a dhtGET request to receive the fitting dhtSUCCESS message
 //afterwards it sends a second dhtGET request for a (probably) not exiting/stored key to retreive a dhtFailure message
-func TestComplete(t *testing.T) {
+
+func helpTestComplete(t *testing.T, wg *sync.WaitGroup) {
+
+	time.Sleep(30 * time.Second)
 
 	waitingTime := time.Duration(200)
 
@@ -142,7 +147,41 @@ func TestComplete(t *testing.T) {
 	if answerMsg2.header.messageType != dhtFAILURE {
 		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer. (there is a small probability that the sent out key equals the randomly generated key from the first run)")
 	} else {
-		counter++
+		fmt.Println("Received (as expected) a dhtFAILURE answer")
 	}
+
+	wg.Done()
+}
+
+var cmd *exec.Cmd
+
+func TestComplete(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go helpTestComplete(t, &wg)
+
+	go help(&wg)
+	cmd = exec.Command("/bin/bash", "runPeersConcurrent.sh")
+	o, e := cmd.Output()
+	fmt.Println("o: ", o)
+	fmt.Println("e", e)
+	fmt.Println("command is running")
+	wg.Wait()
+}
+
+func help(wg *sync.WaitGroup) {
+	wg.Wait()
+	fmt.Println("waiting done")
+	err := cmd.Process.Signal(os.Interrupt)
+	time.Sleep(1 * time.Second)
+	cmd.Process.Kill()
+	out, err := exec.Command("pkill", "-f", "DHT-16").Output()
+	fmt.Println(out)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	os.Exit(0)
 
 }

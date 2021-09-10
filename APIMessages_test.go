@@ -203,6 +203,8 @@ func TestPutCodingAndDecoding(t *testing.T) {
 
 //this test function sends a dhtPUT request and then a dhtGET request to receive the fitting dhtSUCCESS message
 //afterwards it sends a second dhtGET request for a (probably) not exiting/stored key to retreive a dhtFailure message
+
+/*
 func TestAPICommunication(t *testing.T) {
 	// The following three lines of code are needed, if you want to run this Test function on its own
 	go main()
@@ -332,6 +334,8 @@ func TestAPICommunication(t *testing.T) {
 	}
 
 }
+
+*/
 
 func helpTestAPICommunication(t *testing.T) {
 	/* The following three lines of code are needed, if you want to run this Test function on its own

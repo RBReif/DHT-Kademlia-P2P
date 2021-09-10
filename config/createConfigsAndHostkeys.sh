@@ -1,5 +1,5 @@
 #!/bin/bash
-n=200
+n=50
 
 echo "started creation of ${n} peers"
 

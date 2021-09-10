@@ -12,11 +12,14 @@ import (
 )
 
 var Conf configuraton
+var pathToConfigFile string
 
 func parseConfig() configuraton {
-	var pathToConfigFile string
-	flag.StringVar(&pathToConfigFile, "c", "config/mainConfig.ini", "Specify the path to the config file")
-	flag.Parse()
+	if pathToConfigFile == "" {
+		flag.StringVar(&pathToConfigFile, "c", "config/mainConfig.ini", "Specify the path to the config file")
+		flag.Parse()
+	}
+	fmt.Println(pathToConfigFile)
 	config, err := ini.Load(pathToConfigFile)
 	if err != nil {
 		fmt.Println("Could not parse specified config file.")
@@ -89,7 +92,7 @@ func parseConfig() configuraton {
 }
 
 func main() {
-
+	fmt.Println("ptcf: ", pathToConfigFile)
 	var wg sync.WaitGroup
 
 	wg.Add(2)
