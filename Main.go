@@ -66,7 +66,7 @@ func main() {
 	Conf = parseConfig()
 	go startAPIMessageDispatcher(&wg)
 	go startP2PMessageDispatcher(&wg)
-	initializeP2Pcomm()
+	initializeP2PCommunication()
 	go startTimers()
 
 	log.Info("Program started")

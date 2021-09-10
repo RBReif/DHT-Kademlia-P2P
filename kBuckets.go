@@ -59,6 +59,7 @@ func (kBucket *kBucket) toString() string {
 
 }
 
+// checks if k-Bucket of given routingTree node is responsible for given id
 func (routingTable *routingTree) inRange(id id) bool {
 	return id.startsWith(routingTable.prefix)
 }
@@ -76,6 +77,7 @@ func (kBucket *kBucket) indexOf(id id) int {
 
 }
 
+// moves id stored in k-Bucket to tail of k-Bucket
 func (kBucket *kBucket) moveToTail(id id) {
 
 	i := kBucket.indexOf(id)
@@ -88,10 +90,12 @@ func (kBucket *kBucket) moveToTail(id id) {
 
 }
 
+// checks if k-Bucket of given routingTree node is full
 func (routingTable *routingTree) isFull() bool {
 	return len(routingTable.kBucket) == routingTable.maxSize()
 }
 
+// returns maximum size of k-Bucket of given routingTree node
 func (routingTable *routingTree) maxSize() int {
 
 	remainingBits := SIZE_OF_ID*8 - len(routingTable.prefix)
@@ -106,6 +110,7 @@ func (routingTable *routingTree) maxSize() int {
 
 }
 
+// finds responsible routingTree node for given id
 func (thisNode *localNode) findResponsibleRoutingTree(key id) *routingTree {
 	var tmpTree = &thisNode.routingTree
 
@@ -128,6 +133,7 @@ func (thisNode *localNode) findResponsibleRoutingTree(key id) *routingTree {
 	}
 }
 
+// inserts new peer into k-Bucket of given routingTree node
 func (routingTable *routingTree) insert(peer peer) {
 	// TODO: only insert if not already in bucket
 	// only insert if not already full
@@ -136,11 +142,13 @@ func (routingTable *routingTree) insert(peer peer) {
 	}
 }
 
+// removes id from given k-Bucket
 func (kBucket *kBucket) remove(id id) {
 	i := kBucket.indexOf(id)
 	*kBucket = append((*kBucket)[:i], (*kBucket)[i+1:]...)
 }
 
+// splits given routingTree node into two new routingTree nodes
 func (routingTable *routingTree) split() error {
 	if len(routingTable.prefix) == SIZE_OF_ID*8 {
 		return errors.New("Tried to split k-Bucket with maximum size of 1")
@@ -209,6 +217,7 @@ func (kBucket *kBucket) findNumberOfClosestPeersInOneBucket(key id, number int) 
 	return result
 }
 
+// returns given number of closest peers to given id available in subtree with given routingTree node as root node
 func (routingTable *routingTree) getNumberOfClosestPeers(key id, number int) []peer {
 	if routingTable.kBucket != nil {
 		return routingTable.kBucket.findNumberOfClosestPeersInOneBucket(key, number)
@@ -236,11 +245,10 @@ func findIndexOfFarestPeerInSlice(peers []peer, key id) int {
 
 //returns a specified amount of peers that are the closest to a specified id on a node
 func (thisNode *localNode) findNumberOfClosestPeersOnNode(key id, number int) []peer {
-	result := make([]peer, 0, number)
 	responsibleBucket := thisNode.findResponsibleRoutingTree(key)
 
 	for {
-		result = responsibleBucket.getNumberOfClosestPeers(key, number)
+		result := responsibleBucket.getNumberOfClosestPeers(key, number)
 		if len(result) == number || responsibleBucket.parent == nil {
 			return result
 		} else {
@@ -268,6 +276,7 @@ func wasAnyNewPeerAdded(oldPeers []peer, newPeers []peer) bool {
 	return false
 }
 
+// checks if given peer was added to given slice of peers
 func wasANewPeerAdded(oldPeers []peer, newPeer peer) bool {
 	for j := 0; j < len(oldPeers); j++ {
 		if bytes.Equal(newPeer.id[:], oldPeers[j].id[:]) {
@@ -277,6 +286,7 @@ func wasANewPeerAdded(oldPeers []peer, newPeer peer) bool {
 	return true
 }
 
+// updates routingTable of local node when it made contact with given peer
 func (thisNode *localNode) updateRoutingTable(p peer) {
 	// find responsible k-Bucket
 	routingTree := thisNode.findResponsibleRoutingTree(p.id)

@@ -403,7 +403,10 @@ func TestFoundValueCodingAndDecoding(t *testing.T) {
 
 func TestParsePeerToByte(t *testing.T) {
 	randIdBytes := make([]byte, SIZE_OF_ID)
-	rand.Read(randIdBytes)
+	_, err := rand.Read(randIdBytes)
+	if err != nil {
+		t.Errorf("Could not generate random id")
+	}
 	var randId id
 	for i := 0; i < SIZE_OF_ID; i++ {
 		randId[i] = randIdBytes[i]
