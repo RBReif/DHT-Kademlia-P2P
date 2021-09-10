@@ -38,7 +38,6 @@ func TestToByte(t *testing.T) {
 	}
 }
 
-/*
 func TestInitMakeHashtable(t *testing.T) {
 	if thisNode.hashTable.values != nil || thisNode.hashTable.expirations != nil {
 		t.Errorf("Hashtable must not be initialized before init function called")
@@ -51,8 +50,6 @@ func TestInitMakeHashtable(t *testing.T) {
 	}
 
 }
-
-*/
 
 // Test if pingNode successfully sends a PING request
 func TestPingNode(t *testing.T) {

@@ -4,15 +4,15 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
-	ran "math/rand"
-	"net"
-	"os"
 	"reflect"
-	"strconv"
 	"testing"
-	"time"
 )
 
+/*
+makeApiMessageOutOfBody is only needed for testing purposes.
+It generates instances of ApiMessages provided with an apiBody e.g. of dhtGet, dhtPut, dhtSuccess, dhtFailure
+For production the makeApiMessageOutOfAnswer() function suffices
+*/
 func makeApiMessageOutOfBody(msgBody apiBody, msgType uint16) apiMessage {
 	//building header
 	hdr := apiHeader{}
@@ -47,16 +47,23 @@ func makeApiMessageOutOfBody(msgBody apiBody, msgType uint16) apiMessage {
 
 func TestGetCodingAndDecoding(t *testing.T) {
 
-	idx := make([]byte, SIZE_OF_ID)
-	if _, err := rand.Read(idx); err != nil {
+	randomBytesForID := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(randomBytesForID); err != nil {
 		panic(err.Error())
 	}
 	var i id
-	copy(i[:], idx)
+	copy(i[:], randomBytesForID)
 	thisNode.thisPeer.id = i
 
-	getBdy := getBody{key: i}
+	randomBytesForKey := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(randomBytesForKey); err != nil {
+		panic(err.Error())
+	}
+	var key id
+	copy(key[:], randomBytesForKey)
 
+	//first we create a dhtGet Message
+	getBdy := getBody{key: key}
 	get1 := makeApiMessageOutOfBody(&getBdy, dhtGET)
 	fmt.Println("Get_1: ", get1.toString())
 	if get1.body == nil {
@@ -65,75 +72,94 @@ func TestGetCodingAndDecoding(t *testing.T) {
 
 	fmt.Println(get1.data)
 
+	//second we create another dhtGet Message out of the byte representation of the first dhtGet message
 	get2 := makeApiMessageOutOfBytes(get1.data)
 	fmt.Println("get2: ", get2.toString())
 
+	//third we compare both messages to see if they are the identical
 	if get1.header.size != get2.header.size {
-		t.Errorf("Parsing of Header size does not work")
+		t.Errorf("[FAILURE] Parsing of Header size does not work")
 	}
 	if get1.header.messageType != get2.header.messageType {
-		t.Errorf("Parsing of Header messageType does not work")
+		t.Errorf("[FAILURE] Parsing of Header messageType does not work")
 	}
 	if !reflect.DeepEqual(get1.body, get2.body) {
-		t.Errorf("Parsing of Body (get)  does not work")
+		t.Errorf("[FAILURE] Parsing of Body (get)  does not work")
 	}
 
 }
 
 func TestFailureCodingAndDecoding(t *testing.T) {
 
-	idx := make([]byte, SIZE_OF_ID)
-	if _, err := rand.Read(idx); err != nil {
+	randomBytesForID := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(randomBytesForID); err != nil {
 		panic(err.Error())
 	}
 	var i id
-	copy(i[:], idx)
+	copy(i[:], randomBytesForID)
 	thisNode.thisPeer.id = i
 
-	failureBdy := failureBody{key: i}
+	randomBytesForKey := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(randomBytesForKey); err != nil {
+		panic(err.Error())
+	}
+	var key id
+	copy(key[:], randomBytesForKey)
 
+	failureBdy := failureBody{key: key}
+
+	//first we create a dhtFailure  Message
 	failure1 := makeApiMessageOutOfBody(&failureBdy, dhtFAILURE)
 	fmt.Println("Failure1: ", failure1.toString())
 	if failure1.body == nil {
-		t.Errorf("Body of Failure message is  nil")
+		t.Errorf("[FAILURE] Body of Failure message is  nil")
 	}
 
 	fmt.Println(failure1.data)
-
+	//second we create another dhtFailure Message out of the byte representation of the first dhtFailure message
 	failure2 := makeApiMessageOutOfBytes(failure1.data)
 	fmt.Println("failure2: ", failure2.toString())
 
+	//third we compare both messages to see if they are the identical
 	if failure1.header.size != failure2.header.size {
-		t.Errorf("Parsing of Header size does not work")
+		t.Errorf("[FAILURE] Parsing of Header size does not work")
 	}
 	if failure1.header.messageType != failure2.header.messageType {
-		t.Errorf("Parsing of Header messageType does not work")
+		t.Errorf("[FAILURE] Parsing of Header messageType does not work")
 	}
 	if !reflect.DeepEqual(failure1.body, failure2.body) {
-		t.Errorf("Parsing of Body (failure)  does not work")
+		t.Errorf("[FAILURE] Parsing of Body (failure)  does not work")
 	}
 
 }
 
 func TestSuccessCodingAndDecoding(t *testing.T) {
 
-	idx := make([]byte, SIZE_OF_ID)
-	if _, err := rand.Read(idx); err != nil {
+	randomBytesForID := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(randomBytesForID); err != nil {
 		panic(err.Error())
 	}
 	var i id
-	copy(i[:], idx)
+	copy(i[:], randomBytesForID)
 	thisNode.thisPeer.id = i
+
+	randomBytesForKey := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(randomBytesForKey); err != nil {
+		panic(err.Error())
+	}
+	var key id
+	copy(key[:], randomBytesForKey)
 
 	value := make([]byte, 10)
 	if _, err := rand.Read(value); err != nil {
 		panic(err.Error())
 	}
 	successBdy := successBody{
-		key:   i,
+		key:   key,
 		value: value,
 	}
 
+	//first we create a dhtSuccess Message
 	success1 := makeApiMessageOutOfBody(&successBdy, dhtSUCCESS)
 	fmt.Println("Success1: ", success1.toString())
 	if success1.body == nil {
@@ -141,31 +167,39 @@ func TestSuccessCodingAndDecoding(t *testing.T) {
 	}
 
 	fmt.Println(success1.data)
-
+	//second we create another dhtSuccess Message out of the byte representation of the first dhtSuccess message
 	success2 := makeApiMessageOutOfBytes(success1.data)
 	fmt.Println("success2: ", success2.toString())
 
+	//third we compare both messages to see if they are the identical
 	if success1.header.size != success2.header.size {
-		t.Errorf("Parsing of Header size does not work")
+		t.Errorf("[FAILURE] Parsing of Header size does not work")
 	}
 	if success1.header.messageType != success2.header.messageType {
-		t.Errorf("Parsing of Header messageType does not work")
+		t.Errorf("[FAILURE] Parsing of Header messageType does not work")
 	}
 	if !reflect.DeepEqual(success1.body, success2.body) {
-		t.Errorf("Parsing of Body (success)  does not work")
+		t.Errorf("[FAILURE] Parsing of Body (success)  does not work")
 	}
 
 }
 
 func TestPutCodingAndDecoding(t *testing.T) {
 
-	idx := make([]byte, SIZE_OF_ID)
-	if _, err := rand.Read(idx); err != nil {
+	randomBytesForID := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(randomBytesForID); err != nil {
 		panic(err.Error())
 	}
 	var i id
-	copy(i[:], idx)
+	copy(i[:], randomBytesForID)
 	thisNode.thisPeer.id = i
+
+	randomBytesForKey := make([]byte, SIZE_OF_ID)
+	if _, err := rand.Read(randomBytesForKey); err != nil {
+		panic(err.Error())
+	}
+	var key id
+	copy(key[:], randomBytesForKey)
 
 	value := make([]byte, 10)
 	if _, err := rand.Read(value); err != nil {
@@ -175,310 +209,31 @@ func TestPutCodingAndDecoding(t *testing.T) {
 		ttl:         20,
 		reserved:    2,
 		replication: 3,
-		key:         i,
+		key:         key,
 		value:       value,
 	}
+	//first we create a dhtPut Message
 
 	put1 := makeApiMessageOutOfBody(&putBdy, dhtPUT)
 	fmt.Println("put1: ", put1.toString())
 	if put1.body == nil {
-		t.Errorf("Body of Put message is  nil")
+		t.Errorf("[FAILURE] Body of Put message is  nil")
 	}
 
 	fmt.Println(put1.data)
+	//second we create another dhtPut Message out of the byte representation of the first dhtPut message
 
 	put2 := makeApiMessageOutOfBytes(put1.data)
 	fmt.Println("put2: ", put2.toString())
 
+	//third we compare both messages to see if they are the identical
 	if put1.header.size != put2.header.size {
-		t.Errorf("Parsing of Header size does not work")
+		t.Errorf("[FAILURE] Parsing of Header size does not work")
 	}
 	if put1.header.messageType != put2.header.messageType {
-		t.Errorf("Parsing of Header messageType does not work")
+		t.Errorf("[FAILURE] Parsing of Header messageType does not work")
 	}
 	if !reflect.DeepEqual(put1.body, put2.body) {
-		t.Errorf("Parsing of Body (put)  does not work")
+		t.Errorf("[FAILURE] Parsing of Body (put)  does not work")
 	}
 }
-
-//this test function sends a dhtPUT request and then a dhtGET request to receive the fitting dhtSUCCESS message
-//afterwards it sends a second dhtGET request for a (probably) not exiting/stored key to retreive a dhtFailure message
-
-/*
-func TestAPICommunication(t *testing.T) {
-	// The following three lines of code are needed, if you want to run this Test function on its own
-	go main()
-	testMap = make(map[id][]byte)
-	time.Sleep(1 * time.Second)
-
-	waitingTime := time.Duration(ran.Intn(1000))
-
-	testAddr := Conf.apiIP + ":" + strconv.Itoa(int(Conf.apiPort))
-
-	fmt.Println("[TEST] Start of API Test-Programm...")
-	tcpAddr, err := net.ResolveTCPAddr("tcp", testAddr)
-	if err != nil {
-		fmt.Println("Resolving of TCP Address failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Resolved TCP Address: ", tcpAddr)
-
-	conn, err := net.DialTCP("tcp", nil, tcpAddr)
-	if err != nil {
-		fmt.Println("[TEST] Dial failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Connection established...")
-
-	idx := make([]byte, SIZE_OF_ID)
-	if _, err := rand.Read(idx); err != nil {
-		panic(err.Error())
-	}
-	var i id
-	copy(i[:], idx)
-	thisNode.thisPeer.id = i
-
-	value := make([]byte, 10)
-	if _, err := rand.Read(value); err != nil {
-		panic(err.Error())
-	}
-	putBdy := putBody{
-		ttl:         20,
-		reserved:    2,
-		replication: 3,
-		key:         i,
-		value:       value,
-	}
-
-	putMsg := makeApiMessageOutOfBody(&putBdy, dhtPUT)
-
-	_, err = conn.Write(putMsg.data)
-
-	if err != nil {
-		println("[TEST] Write to dhtInstance failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...", waitingTime, ": ", putMsg.body.(*putBody).value)
-	fmt.Println()
-	time.Sleep(time.Duration(waitingTime * time.Millisecond))
-	time.Sleep(1000 * time.Millisecond)
-	getBdy := getBody{key: i}
-	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
-
-	_, err = conn.Write(getMsg.data)
-
-	if err != nil {
-		println("[TEST] Write to dhtInstance failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Wrote a dhtGet request to dht Instance...", waitingTime)
-	//time.Sleep(1 * time.Second)
-	fmt.Println()
-
-	reply := make([]byte, maxMessageLength)
-	msgSize, err := conn.Read(reply)
-	if err != nil {
-		fmt.Println("[TEST] Write to server failed:", err.Error())
-		//os.Exit(1)
-		return
-	}
-	answerMsg := makeApiMessageOutOfBytes(reply[:msgSize])
-	fmt.Println()
-	//fmt.Println("[TEST] received this answer: ", answerMsg.toString(), waitingTime)
-	fmt.Println("[TEST] received an answer: ", waitingTime)
-
-	if answerMsg.header.messageType != dhtSUCCESS {
-		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer")
-	}
-	if !reflect.DeepEqual(answerMsg.body.(*successBody).value, putMsg.body.(*putBody).value) {
-		t.Errorf("[FAILURE] Returned answer value is not what we asked to be stored")
-
-	} else {
-		fmt.Println("[TEST] SUCCESS - we received the right value back", waitingTime, ": ", answerMsg.body.(*successBody).value)
-		counter++
-	}
-
-	time.Sleep(waitingTime * time.Millisecond)
-	fmt.Println()
-	getBdy.key[1] = 0
-	getBdy.key[4] = 0
-	getBdy.key[20] = 0
-	getMsg2 := makeApiMessageOutOfBody(&getBdy, dhtGET)
-	_, err = conn.Write(getMsg2.data)
-
-	if err != nil {
-		println("[TEST] Write to dhtInstance failed:", err.Error())
-		//os.Exit(1)
-		return
-	}
-	fmt.Println("[TEST] Wrote a dhtGet request (for non-existing key to dht Instance)...", waitingTime)
-	//time.Sleep(1 * time.Second)
-	fmt.Println()
-
-	reply2 := make([]byte, maxMessageLength)
-	msgSize2, err := conn.Read(reply2)
-	if err != nil {
-		fmt.Println("[TEST] Write to server failed:", err.Error())
-		//os.Exit(1)
-		return
-	}
-	answerMsg2 := makeApiMessageOutOfBytes(reply2[:msgSize2])
-	fmt.Println()
-	//fmt.Println("[TEST] received this answer: ", answerMsg2.toString())
-	fmt.Println("[TEST] received an answer (2nd): ", waitingTime)
-
-	if answerMsg2.header.messageType != dhtFAILURE {
-		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer. (there is a small probability that the sent out key equals the randomly generated key from the first run)")
-	} else {
-		counter++
-	}
-
-}
-
-*/
-
-func helpTestAPICommunication(t *testing.T) {
-	/* The following three lines of code are needed, if you want to run this Test function on its own
-	go main()
-	testMap = make(map[id][]byte)
-	time.Sleep(1 * time.Second)
-
-	*/
-
-	waitingTime := time.Duration(ran.Intn(1000))
-
-	testAddr := Conf.apiIP + ":" + strconv.Itoa(int(Conf.apiPort))
-
-	fmt.Println("[TEST] Start of API Test-Programm...")
-	tcpAddr, err := net.ResolveTCPAddr("tcp", testAddr)
-	if err != nil {
-		fmt.Println("Resolving of TCP Address failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Resolved TCP Address: ", tcpAddr)
-
-	conn, err := net.DialTCP("tcp", nil, tcpAddr)
-	if err != nil {
-		fmt.Println("[TEST] Dial failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Connection established...")
-
-	idx := make([]byte, SIZE_OF_ID)
-	if _, err := rand.Read(idx); err != nil {
-		panic(err.Error())
-	}
-	var i id
-	copy(i[:], idx)
-	thisNode.thisPeer.id = i
-
-	value := make([]byte, 10)
-	if _, err := rand.Read(value); err != nil {
-		panic(err.Error())
-	}
-	putBdy := putBody{
-		ttl:         20,
-		reserved:    2,
-		replication: 3,
-		key:         i,
-		value:       value,
-	}
-
-	putMsg := makeApiMessageOutOfBody(&putBdy, dhtPUT)
-
-	_, err = conn.Write(putMsg.data)
-
-	if err != nil {
-		println("[TEST] Write to dhtInstance failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...", waitingTime, ": ", putMsg.body.(*putBody).value)
-	fmt.Println()
-	time.Sleep(time.Duration(waitingTime * time.Millisecond))
-	time.Sleep(1000 * time.Millisecond)
-	getBdy := getBody{key: i}
-	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
-
-	_, err = conn.Write(getMsg.data)
-
-	if err != nil {
-		println("[TEST] Write to dhtInstance failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Wrote a dhtGet request to dht Instance...", waitingTime)
-	//time.Sleep(1 * time.Second)
-	fmt.Println()
-
-	reply := make([]byte, maxMessageLength)
-	msgSize, err := conn.Read(reply)
-	if err != nil {
-		fmt.Println("[TEST] Write to server failed:", err.Error())
-		//os.Exit(1)
-		return
-	}
-	answerMsg := makeApiMessageOutOfBytes(reply[:msgSize])
-	fmt.Println()
-	//fmt.Println("[TEST] received this answer: ", answerMsg.toString(), waitingTime)
-	fmt.Println("[TEST] received an answer: ", waitingTime)
-
-	if answerMsg.header.messageType != dhtSUCCESS {
-		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer")
-	}
-	if !reflect.DeepEqual(answerMsg.body.(*successBody).value, putMsg.body.(*putBody).value) {
-		t.Errorf("[FAILURE] Returned answer value is not what we asked to be stored")
-
-	} else {
-		fmt.Println("[TEST] SUCCESS - we received the right value back", waitingTime, ": ", answerMsg.body.(*successBody).value)
-		counter++
-	}
-
-	time.Sleep(waitingTime * time.Millisecond)
-	fmt.Println()
-	getBdy.key[1] = 0
-	getBdy.key[4] = 0
-	getBdy.key[20] = 0
-	getMsg2 := makeApiMessageOutOfBody(&getBdy, dhtGET)
-	_, err = conn.Write(getMsg2.data)
-
-	if err != nil {
-		println("[TEST] Write to dhtInstance failed:", err.Error())
-		//os.Exit(1)
-		return
-	}
-	fmt.Println("[TEST] Wrote a dhtGet request (for non-existing key to dht Instance)...", waitingTime)
-	//time.Sleep(1 * time.Second)
-	fmt.Println()
-
-	reply2 := make([]byte, maxMessageLength)
-	msgSize2, err := conn.Read(reply2)
-	if err != nil {
-		fmt.Println("[TEST] Write to server failed:", err.Error())
-		//os.Exit(1)
-		return
-	}
-	answerMsg2 := makeApiMessageOutOfBytes(reply2[:msgSize2])
-	fmt.Println()
-	//fmt.Println("[TEST] received this answer: ", answerMsg2.toString())
-	fmt.Println("[TEST] received an answer (2nd): ", waitingTime)
-
-	if answerMsg2.header.messageType != dhtFAILURE {
-		t.Errorf("[FAILURE] We did not receive a dhtSUCCESS answer. (there is a small probability that the sent out key equals the randomly generated key from the first run)")
-	} else {
-		counter++
-	}
-
-}
-
-func TestAPICommunicationConcurrency(t *testing.T) {
-	go main()
-	testMap = make(map[id][]byte)
-	time.Sleep(1 * time.Second)
-	numberOfConcurrentTests := 1000
-	for i := 0; i < numberOfConcurrentTests; i++ {
-		go helpTestAPICommunication(t)
-	}
-	time.Sleep(25 * time.Second)
-	fmt.Println(counter, "out of ", numberOfConcurrentTests*2, " tests did work")
-}
-
-var counter int
