@@ -327,6 +327,9 @@ func pingNode(node peer) bool {
 	sendP2PMessage(pingMessage, node)
 	// receive KDM_PONG
 	answer := readMessage(c)
+	if answer == nil {
+		return false
+	}
 	if answer.header.messageType == KDM_PONG {
 		return true
 	}
