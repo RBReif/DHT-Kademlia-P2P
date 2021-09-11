@@ -22,7 +22,10 @@ func TestDistance(t *testing.T) {
 func TestToByte(t *testing.T) {
 	// prepare random id
 	randByteArray := make([]byte, SIZE_OF_ID)
-	rand.Read(randByteArray)
+	_, err := rand.Read(randByteArray)
+	if err != nil {
+		t.Errorf("Could not generate random id")
+	}
 	var randId id
 	for i := 0; i < SIZE_OF_ID; i++ {
 		randId[i] = randByteArray[i]
@@ -60,9 +63,8 @@ func TestPingNode(t *testing.T) {
 	_, err = ln.Accept()
 	if err != nil {
 		t.Errorf("Error while listening for PING")
-	} else {
-		// no error --> PING successfully received
 	}
+	// else: no error --> PING successfully received
 
 }
 
@@ -78,8 +80,7 @@ func TestKDM_PING(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	kBucket := kBucket{}
-	kBucket = make([]peer, 0)
+	kBucket := make([]peer, 0)
 
 	thisNode.routingTree = routingTree{
 		left:    nil,
@@ -100,8 +101,8 @@ func TestKDM_PING(t *testing.T) {
 	pingMessage.data = pingMessage.header.decodeHeaderToBytes()
 	sendP2PMessage(pingMessage, thisNode.thisPeer)
 	fmt.Println("Sent Ping Message")
-	l, err := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(tmp))
-	conn, err := l.Accept()
+	l, _ := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(tmp))
+	conn, _ := l.Accept()
 
 	// receive KDM_PONG
 	answer := readMessage(conn)

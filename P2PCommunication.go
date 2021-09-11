@@ -6,7 +6,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
-	//"encoding/binary"
 	"net"
 	"strconv"
 	"strings"
@@ -16,15 +15,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// local peer in the network
 var thisNode localNode
 
+// struct which represents the local peer in the network
 type localNode struct {
 	thisPeer    peer
 	routingTree routingTree
-	// TODO: which maximum size should data have?
-	hashTable hashTable
+	hashTable   hashTable
 }
 
+// struct which represents the data storage
+// also contains information for expiration and republishing times
 type hashTable struct {
 	values            map[id][]byte
 	expirations       map[id]time.Time
@@ -32,6 +34,8 @@ type hashTable struct {
 	sync.RWMutex
 }
 
+// reads value for given key from the local data storage
+// returns the value or nil and a boolean if the value was found
 func (hashTable *hashTable) read(key id) ([]byte, bool) {
 	hashTable.RLock()
 	defer hashTable.RUnlock()
@@ -39,6 +43,7 @@ func (hashTable *hashTable) read(key id) ([]byte, bool) {
 	return value, existing
 }
 
+// writes <key, value>-pair to the local data storage
 func (hashTable *hashTable) write(key id, value []byte, expiration time.Time, republishingTime time.Time) {
 	hashTable.Lock()
 	defer hashTable.Unlock()
@@ -48,18 +53,19 @@ func (hashTable *hashTable) write(key id, value []byte, expiration time.Time, re
 	log.Debug("WE HAVE WRITTEN KEY_VALUE PAIR TO ", Conf.p2pPort, " :", key[:10], "  - ", value, " (ttl ", expiration, ")")
 }
 
+// checks for all stored <key, value>-pairs if they need to be republished to the network and republishes them if so
 func (hashTable *hashTable) republishKeys() {
 	hashTable.Lock()
 	defer hashTable.Unlock()
 	for key, value := range hashTable.republishingTimes {
 		if time.Now().After(value) {
 			log.Debug("Republishing: " + fmt.Sprint(key))
-			store(key, hashTable.values[key], uint16(hashTable.expirations[key].Sub(time.Now())))
+			store(key, hashTable.values[key], uint16(time.Until(hashTable.expirations[key])))
 		}
 	}
 }
 
-// Deletes all key/value-pairs which are expired
+// removes all key/value-pairs which are expired
 func (hashTable *hashTable) expireKeys() {
 	hashTable.Lock()
 	defer hashTable.Unlock()
@@ -72,9 +78,9 @@ func (hashTable *hashTable) expireKeys() {
 	}
 }
 
+// struct which represents a peer in the network as triple of <ip, port, id>
 type peer struct {
-	ip string
-	//isIpv4 bool
+	ip   string
 	port uint16
 	id   id
 }
@@ -83,8 +89,10 @@ func (p *peer) toString() string {
 	return "" + p.ip + ":" + strconv.Itoa(int(p.port)) + " (" + bytesToString(p.id.toByte()[:10]) + ")"
 }
 
+// type which represents the id of a peer
 type id [SIZE_OF_ID]byte
 
+// helper function for checking if id starts with given prefix
 func (id *id) startsWith(prefix string) bool {
 	idString := ""
 	for _, byte := range id {
@@ -93,6 +101,7 @@ func (id *id) startsWith(prefix string) bool {
 	return strings.HasPrefix(idString, prefix)
 }
 
+// converts id to byte slice
 func (id id) toByte() []byte {
 	var result []byte
 	for i := 0; i < SIZE_OF_ID; i++ {
@@ -101,7 +110,8 @@ func (id id) toByte() []byte {
 	return result
 }
 
-func initializeP2Pcomm() {
+// initializes P2P-Communication
+func initializeP2PCommunication() {
 	//first we read the private key
 	priv, err := ioutil.ReadFile(Conf.HostKeyFile)
 	if err != nil {
@@ -148,8 +158,7 @@ func initializeP2Pcomm() {
 	initialPeers[1] = extractPeerAddressFromString(Conf.preConfPeer2)
 	initialPeers[2] = extractPeerAddressFromString(Conf.preConfPeer3)
 
-	kBucket := kBucket{}
-	kBucket = make([]peer, 0)
+	kBucket := make([]peer, 0)
 
 	thisNode.routingTree = routingTree{
 		left:    nil,
@@ -179,6 +188,7 @@ func initializeP2Pcomm() {
 	log.Debug(thisNode.thisPeer.port, "stores: ", thisNode.routingTree.toString())
 }
 
+// TODO: comment
 func extractPeerAddressFromString(line string) peer {
 	result := peer{}
 	var ip string
@@ -199,6 +209,8 @@ func extractPeerAddressFromString(line string) peer {
 	return result
 }
 
+// starts the message dispatcher for P2P-Communication
+// listens for connections and delegates them to handleP2PConnection
 func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -216,7 +228,11 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 			log.Panic(custError)
 		}
 		log.Debug("[SUCCESS] MAIN: New Connection established, ", conn.LocalAddr(), " r:", conn.RemoteAddr())
-		conn.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
+		err = conn.SetDeadline(time.Now().Add(time.Minute * 20))
+		if err != nil {
+			custError := "[FAILURE] MAIN: Error while setting Deadline: " + err.Error()
+			log.Panic(custError)
+		} //Set Timeout
 
 		go handleP2PConnection(conn)
 
@@ -224,6 +240,7 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 
 }
 
+// handles incoming connection based on message type
 func handleP2PConnection(conn net.Conn) {
 
 	m := readMessage(conn) //todo readMap whole message
@@ -373,6 +390,7 @@ func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer {
 
 }
 
+// finds k closest nodes to given key on local node and generates body of KDM_FIND_NODE_ANSWER message
 func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
 
 	closestPeers := thisNode.findNumberOfClosestPeersOnNode(key, Conf.k)
