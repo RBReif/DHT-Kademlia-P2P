@@ -63,7 +63,7 @@ func (h *p2pHeader) decodeHeaderToBytes() []byte {
 	result := make([]byte, 4)
 	binary.BigEndian.PutUint16(result[0:2], h.size)
 	binary.BigEndian.PutUint16(result[2:4], h.messageType)
-	result = append(result, peerToByte(h.senderPeer)...)
+	result = append(result, decodePeerToByte(h.senderPeer)...)
 	result = append(result, h.nonce...)
 	return result
 }
@@ -173,13 +173,13 @@ func (b *kdmFindNodeAnswerBody) decodeBodyFromBytes(m *p2pMessage) {
 	//	valueSize := int(m.header.size)- SIZE_OF_HEADER - SIZE_OF_ID
 	var numberOfAnswerPeers = (int(m.header.size) - SIZE_OF_HEADER) / SIZE_OF_PEER
 	for i := 0; i < numberOfAnswerPeers; i++ {
-		b.answerPeers = append(b.answerPeers, parseByteToPeer(m.data[SIZE_OF_HEADER+i*SIZE_OF_PEER:SIZE_OF_HEADER+(i+1)*SIZE_OF_PEER]))
+		b.answerPeers = append(b.answerPeers, decodeBytesToPeer(m.data[SIZE_OF_HEADER+i*SIZE_OF_PEER:SIZE_OF_HEADER+(i+1)*SIZE_OF_PEER]))
 	}
 }
 func (b *kdmFindNodeAnswerBody) decodeBodyToBytes() []byte {
 	var result []byte
 	for i := 0; i < len(b.answerPeers); i++ {
-		result = append(result, peerToByte(b.answerPeers[i])...)
+		result = append(result, decodePeerToByte(b.answerPeers[i])...)
 	}
 	return result
 }
@@ -234,7 +234,7 @@ func makeP2PMessageOutOfBytes(messageData []byte) p2pMessage {
 	//extract header
 	msg.header.size = binary.BigEndian.Uint16(messageData[:2])
 	msg.header.messageType = binary.BigEndian.Uint16(messageData[2:4])
-	msg.header.senderPeer = parseByteToPeer(messageData[4 : 4+SIZE_OF_PEER])
+	msg.header.senderPeer = decodeBytesToPeer(messageData[4 : 4+SIZE_OF_PEER])
 	msg.header.nonce = messageData[4+SIZE_OF_PEER : 4+SIZE_OF_PEER+SIZE_OF_NONCE]
 
 	//store data in raw
@@ -320,8 +320,7 @@ func sendP2PMessage(m p2pMessage, receiverPeer peer) {
 }
 
 //parses a peer into byte representation
-// TODO: peerToByte and parseByteToPeer correct naming
-func peerToByte(peer peer) []byte {
+func decodePeerToByte(peer peer) []byte {
 
 	result := make([]byte, 0, SIZE_OF_PEER)
 
@@ -339,7 +338,7 @@ func peerToByte(peer peer) []byte {
 
 }
 
-func parseByteToPeer(data []byte) peer {
+func decodeBytesToPeer(data []byte) peer {
 	var id [SIZE_OF_ID]byte
 	copy(id[:], data[SIZE_OF_IP+SIZE_OF_PORT:])
 

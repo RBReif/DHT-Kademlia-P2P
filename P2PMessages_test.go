@@ -414,14 +414,14 @@ func TestParsePeerToByte(t *testing.T) {
 
 	var peer = peer{"127.0.0.1", 1234, randId}
 
-	var bytes = peerToByte(peer)
+	var bytes = decodePeerToByte(peer)
 	fmt.Println("Bytes representation: ", bytes)
 
 	if len(bytes) != 50 {
 		t.Errorf("Peer has to have length 50")
 	}
 
-	newPeer := parseByteToPeer(bytes)
+	newPeer := decodeBytesToPeer(bytes)
 
 	// check if first SIZE_OF_ID bytes are equal to id
 	for i := 0; i < SIZE_OF_ID; i++ {

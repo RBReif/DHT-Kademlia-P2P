@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"sync"
 	"testing"
 )
@@ -495,7 +494,7 @@ func TestUpdateInsertAndSplit(t *testing.T) {
 }
 
 func TestUpdateInsertAndPing(t *testing.T) {
-	log.SetLevel(log.DebugLevel) // TODO: remove
+
 	// init Conf
 	Conf.k = 5
 	Conf.p2pIP = "0.0.0.0"

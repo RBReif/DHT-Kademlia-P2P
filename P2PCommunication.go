@@ -197,7 +197,10 @@ func initializeP2PCommunication() {
 	log.Debug(thisNode.thisPeer.port, "stores: ", thisNode.routingTree.toString())
 }
 
-// TODO: comment
+/*
+This function can be used to create a peer from the ip:port format and considers both IPv4 and IPv6 formats as specified
+in the specification. The peer that is returned does not yet include an ID
+*/
 func extractPeerAddressFromString(line string) peer {
 	result := peer{}
 	var ip string
@@ -269,7 +272,7 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup, ctx context.Context) {
 // handles incoming connection based on message type
 func handleP2PConnection(conn net.Conn) {
 
-	m := readMessage(conn) //todo readMap whole message
+	m := readMessage(conn)
 	if m != nil {
 		bdyStrg := ""
 		if m.body != nil {
