@@ -1,13 +1,8 @@
 package main
 
 import (
-	"context"
 	"crypto/rand"
-	"fmt"
 	"net"
-	"strconv"
-	"strings"
-	"sync"
 	"testing"
 )
 
@@ -45,7 +40,7 @@ func TestToByte(t *testing.T) {
 // Test if pingNode successfully sends a PING request
 func TestPingNode(t *testing.T) {
 
-	if pingNode(thisNode.thisPeer) != false {
+	if pingNode(thisNode.thisPeer, thisNode.thisPeer) != false {
 		t.Errorf("Ping of unavailable Node has to be false")
 	}
 
@@ -59,65 +54,12 @@ func TestPingNode(t *testing.T) {
 	thisNode.thisPeer.port = 8080
 
 	// send Ping request
-	go pingNode(thisNode.thisPeer)
+	go pingNode(thisNode.thisPeer, thisNode.thisPeer)
 
 	_, err = ln.Accept()
 	if err != nil {
 		t.Errorf("Error while listening for PING")
 	}
 	// else: no error --> PING successfully received
-
-}
-
-// Test if node reacts correctly to PING message
-func TestKDM_PING(t *testing.T) {
-	ctx, cancelFunction := context.WithCancel(context.Background())
-
-	thisNode.thisPeer.ip = "127.0.0.1"
-	thisNode.thisPeer.port = 3011
-
-	Conf.p2pIP = "127.0.0.1"
-	Conf.p2pPort = 3011
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	kBucket := make([]peer, 0)
-
-	thisNode.routingTree = routingTree{
-		left:    nil,
-		right:   nil,
-		parent:  nil,
-		prefix:  "",
-		kBucket: kBucket,
-	}
-
-	go startP2PMessageDispatcher(&wg, ctx)
-	c, err := net.Dial("tcp", thisNode.thisPeer.ip+":"+fmt.Sprint(thisNode.thisPeer.port))
-	if err != nil {
-		t.Errorf("Error opening TCP Connection: " + err.Error())
-	}
-	pingMessage := makeP2PMessageOutOfBody(nil, KDM_PING)
-	tmp, _ := strconv.Atoi(strings.Split(c.LocalAddr().String(), ":")[1])
-	pingMessage.header.senderPeer.port = uint16(tmp) // change port to port of test case
-	pingMessage.data = pingMessage.header.decodeHeaderToBytes()
-	sendP2PMessage(pingMessage, thisNode.thisPeer)
-	fmt.Println("Sent Ping Message")
-	l, _ := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(tmp))
-	conn, _ := l.Accept()
-
-	// receive KDM_PONG
-	answer := readMessage(conn)
-	//answer := makeP2PMessageOutOfBytes(answerRaw)
-	fmt.Println("Received answer: ", answer.toString())
-	if answer.header.messageType == KDM_PONG {
-		// success
-	} else {
-		// failure
-		t.Errorf("Received no KDM_PONG after sending KDM_PING")
-	}
-	cancelFunction()
-	wg.Wait()
-	fmt.Println("finished")
 
 }
