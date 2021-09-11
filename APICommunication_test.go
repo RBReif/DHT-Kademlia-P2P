@@ -26,19 +26,20 @@ intended.
 func helpTestAPICommunication(t *testing.T) {
 
 	waitingTime := time.Duration(ran.Intn(1000))
-
-	testAddr := Conf.apiIP + ":" + strconv.Itoa(int(Conf.apiPort))
+	apiAddr := Conf.apiIP + ":" + strconv.Itoa(int(Conf.apiPort))
 
 	//First we connect to the apiAddress via tcp
-	fmt.Println("[TEST] Start of API Test-Programm...")
-	tcpAddr, err := net.ResolveTCPAddr("tcp", testAddr)
-	if err != nil {
-		fmt.Println("Resolving of TCP Address failed:", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("[TEST] Resolved TCP Address: ", tcpAddr)
+	/*
+		fmt.Println("[TEST] Start of API Test-Programm...")
+		tcpAddr, err := net.ResolveTCPAddr("tcp", testAddr)
+		if err != nil {
+			fmt.Println("Resolving of TCP Address failed:", err.Error())
+			os.Exit(1)
+		}
+		fmt.Println("[TEST] Resolved TCP Address: ", apiAddr)
+	*/
 
-	conn, err := net.DialTCP("tcp", nil, tcpAddr)
+	conn, err := net.Dial("tcp", apiAddr)
 	if err != nil {
 		fmt.Println("[TEST] Dial failed:", err.Error())
 		os.Exit(1)
@@ -66,8 +67,8 @@ func helpTestAPICommunication(t *testing.T) {
 		value:       value,
 	}
 
+	//TEST I: we generate an APIMessage and send it via our connection to the API address
 	putMsg := makeApiMessageOutOfBody(&putBdy, dhtPUT)
-
 	_, err = conn.Write(putMsg.data)
 
 	if err != nil {
@@ -76,8 +77,14 @@ func helpTestAPICommunication(t *testing.T) {
 	}
 	fmt.Println("[TEST] Wrote a dhtPUT message to dht Instance...: ", putMsg.body.(*putBody).value)
 	fmt.Println()
+	//we sleep for a short period to let the DHT do its work
 	time.Sleep(time.Duration(waitingTime * time.Millisecond))
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(4 * time.Second)
+
+	/*
+		TEST II: GET message to retreive value.
+		Now we make a dhtGET request for the just stored key and hopefully receive the right value back as answer
+	*/
 	getBdy := getBody{key: key}
 	getMsg := makeApiMessageOutOfBody(&getBdy, dhtGET)
 
@@ -113,6 +120,10 @@ func helpTestAPICommunication(t *testing.T) {
 		counter++
 	}
 
+	/*
+		TEST III: now we build a similar dhtGET message but change the key slightly. Now we should receive a dhtFAILURE message
+		back.
+	*/
 	time.Sleep(waitingTime * time.Millisecond)
 	fmt.Println()
 	getBdy.key[1] = 0
@@ -158,12 +169,12 @@ to test the ability to handle hundreds or thousands of concurrent api requests
 */
 func TestAPICommunicationConcurrency(t *testing.T) {
 	go main()
-	time.Sleep(1 * time.Second)
-	numberOfConcurrentTests := 1000
+	time.Sleep(10 * time.Second)
+	numberOfConcurrentTests := 5
 	for i := 0; i < numberOfConcurrentTests; i++ {
 		go helpTestAPICommunication(t)
 	}
-	time.Sleep(25 * time.Second) //we now wait a bit to let the multiple tests run
+	time.Sleep(30 * time.Second) //we now wait a bit to let the multiple tests run
 	fmt.Println(counter, "out of ", numberOfConcurrentTests*2, " tests did work")
 }
 

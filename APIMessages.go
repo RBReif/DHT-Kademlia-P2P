@@ -12,12 +12,20 @@ const dhtSUCCESS = 652
 const dhtFAILURE = 653
 const maxMessageLength = 65535
 
+/*
+a DhtAnswer is built from the handlePut() function and stores a key for which we just searched in the network.
+success represents if we found the coresponding value. If it is true, then the value is also stored in the DhtAnswer
+*/
 type DhtAnswer struct {
 	success bool
 	key     id
 	value   []byte
 }
 
+/*
+all apiMessages exist of a header which has the same format for all. the body is specific and varies from message type
+to message type. the data field stores all bytes of the complete message
+*/
 type apiMessage struct {
 	header apiHeader
 	body   apiBody
@@ -43,18 +51,17 @@ type apiHeader struct {
 	messageType uint16
 }
 
-func (h *apiHeader) decodeHeaderToBytes() []byte {
-	result := make([]byte, 4)
-	binary.BigEndian.PutUint16(result[0:2], h.size)
-	binary.BigEndian.PutUint16(result[2:4], h.messageType)
-	return result
-}
 func (h *apiHeader) toString() string {
 	result := "      [size = " + strconv.Itoa(int(h.size)) + "]"
 	result = result + " [type = " + strconv.Itoa(int(h.messageType)) + "] \n"
 	return result
 }
 
+/*
+decodeBodyFromBytes() takes an apiMessage that has the data field set.
+Out of this data field the body is correctly built (e.g. for a putBody).
+decodeBodyToBytes() returns the byte representation of an apiBody.
+*/
 type apiBody interface {
 	decodeBodyFromBytes(m *apiMessage)
 	decodeBodyToBytes() []byte
@@ -107,6 +114,7 @@ func (b *getBody) decodeBodyFromBytes(m *apiMessage) {
 	b.key = key
 }
 func (b *getBody) decodeBodyToBytes() []byte {
+	// implemented for testing purposes and not necessarily needed for the API communication
 	return b.key.toByte()
 }
 

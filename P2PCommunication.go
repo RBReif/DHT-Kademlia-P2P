@@ -216,8 +216,7 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 
 	l, err := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(int(Conf.p2pPort)))
 	if err != nil {
-		custError := "[FAILURE] MAIN: Error while listening for connection at" + Conf.p2pIP + ": " + strconv.Itoa(int(Conf.p2pPort)) + " - " + err.Error()
-		log.Panic(custError)
+		log.Panic("[FAILURE] MAIN: Error while listening for connection at" + Conf.p2pIP + ": " + strconv.Itoa(int(Conf.p2pPort)) + " - " + err.Error())
 	}
 	defer l.Close()
 	log.Info("[SUCCESS] MAIN: P2PMessageDispatcher Listening on ", Conf.p2pIP, ": ", Conf.p2pPort)
@@ -244,13 +243,12 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 func handleP2PConnection(conn net.Conn) {
 
 	m := readMessage(conn) //todo readMap whole message
-	//m := makeP2PMessageOutOfBytes(mRaw)
 	if m != nil {
 		bdyStrg := ""
 		if m.body != nil {
 			bdyStrg = m.body.toString()
 		}
-		log.Debug(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString(), " : ", bdyStrg)
+		log.Info(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString(), " : ", bdyStrg)
 		thisNode.updateRoutingTable(m.header.senderPeer)
 		// switch according to m type
 		switch m.header.messageType {

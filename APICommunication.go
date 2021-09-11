@@ -12,12 +12,10 @@ import (
 //listens for TCP connections for API calls
 func startAPIMessageDispatcher(wg *sync.WaitGroup) {
 	defer wg.Done()
-
 	//we listen on the specified API address from the configuration file
 	l, err := net.Listen("tcp", Conf.apiIP+":"+strconv.Itoa(int(Conf.apiPort)))
 	if err != nil {
-		custError := "[FAILURE] MAIN: Error while listening for connection at" + Conf.apiIP + ": " + strconv.Itoa(int(Conf.apiPort)) + " - " + err.Error()
-		log.Panic(custError)
+		log.Panic("[FAILURE] MAIN: Error while listening for connection at" + Conf.apiIP + ": " + strconv.Itoa(int(Conf.apiPort)) + " - " + err.Error())
 	}
 	defer l.Close()
 	log.Debug("[SUCCESS] MAIN: APIMessageDispatcher Listening on ", Conf.apiIP, ": ", Conf.apiPort)
@@ -29,10 +27,12 @@ func startAPIMessageDispatcher(wg *sync.WaitGroup) {
 			log.Panic(custError)
 		}
 		log.Debug("[SUCCESS] MAIN " + strconv.Itoa(int(Conf.apiPort)) + ": New Connection established")
-		con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
-
-		//for each newly established connection we concurrently call the handleAPIconnection() function
-		go handleAPIconnection(con)
+		err = con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
+		if err != nil {
+			custError := "[FAILURE] MAIN: Error while setting timeout: " + err.Error()
+			log.Panic(custError)
+		}
+		go handleAPIconnection(con) //for each newly established connection we concurrently call the handleAPIconnection() function
 	}
 }
 
@@ -81,11 +81,9 @@ func handleAPIconnection(con net.Conn) {
 			}
 
 			answer := handleGet(receivedMsg.body.(*getBody))
-
 			//the answerMessage will be of type dhtFailure or dhtSuccess
 			answerMessage := makeApiMessageOutOfAnswer(answer)
-
-			//we send the anwer back
+			//we send the answer back
 			_, err := con.Write(answerMessage.data)
 			if err != nil {
 				custError := "[FAILURE] MAIN:  Error while writing to connection: " + err.Error()
@@ -100,7 +98,11 @@ func handleAPIconnection(con net.Conn) {
 			return
 		}
 
-		con.SetDeadline(time.Now().Add(time.Minute * 20)) //Timeout restarted
+		err = con.SetDeadline(time.Now().Add(time.Minute * 20)) //Timeout restarted
+		if err != nil {
+			custError := "[FAILURE] MAIN: Error while setting timeout: " + err.Error()
+			log.Panic(custError)
+		}
 	}
 }
 
@@ -112,8 +114,11 @@ read the key-value pair (if it was found)
 */
 func handleGet(body *getBody) DhtAnswer {
 	key := body.key
-	thisNode.nodeLookup(key, true)
 	var value, valueFound = thisNode.hashTable.read(key)
+	if !valueFound {
+		thisNode.nodeLookup(key, true)
+	}
+	value, valueFound = thisNode.hashTable.read(key)
 	if valueFound {
 		// the value was found. A DHTsuccess message will be sent back
 		return DhtAnswer{
@@ -133,17 +138,13 @@ func handleGet(body *getBody) DhtAnswer {
 
 /*
 The handlePut() function first locates the k closest Nodes in network with the nodeLookup() function.
-Then it sends KDM_STORE messages with the key-value pair to the k closest nodes to the specified key
+Then it sends KDM_STORE messages with the key-value pair to the k closest nodes to the specified key.
+as a chaching mechanism we additionally store the key-value pair locally
+in case it is requested briefly again.
 */
 func handlePut(body *putBody) {
 	log.Debug("handlePut has received :", body.toString())
-
 	// store on network
 	store(body.key, body.value, body.ttl)
-
-	/*
-		as a chaching mechanism we additionally store the key-value pair locally
-		in case it is requested briefly again.
-	*/
 	thisNode.hashTable.write(body.key, body.value, time.Now().Add(time.Duration(body.ttl)*time.Second), time.Now().Add(time.Duration(REPUBLISH_TIME)*time.Second))
 }

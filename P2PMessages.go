@@ -308,7 +308,7 @@ func sendP2PMessage(m p2pMessage, receiverPeer peer) {
 	}
 	conn, err := net.Dial("tcp", receiverPeer.ip+":"+strconv.Itoa(int(receiverPeer.port)))
 	if err != nil {
-		custError := "[FAILURE] Error while connecting via tcp:" + err.Error()
+		custError := "[FAILURE] Error while connecting via tcp:" + err.Error() + ", for " + receiverPeer.ip + ":" + strconv.Itoa(int(receiverPeer.port))
 		log.Error(custError)
 		return
 	}
