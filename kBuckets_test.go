@@ -1,6 +1,11 @@
 package main
 
-import "testing"
+import (
+	"context"
+	log "github.com/sirupsen/logrus"
+	"sync"
+	"testing"
+)
 
 func TestContains(t *testing.T) {
 	kBucket := kBucket{}
@@ -442,19 +447,71 @@ func TestUpdateInsertAndSplit(t *testing.T) {
 	thisNode.updateRoutingTable(testPeer14)
 	thisNode.updateRoutingTable(testPeer15)
 
-	// TODO: implement correctness checks
+	failed := false
+
+	// check root node (level 0)
+	if thisNode.routingTree.left == nil || thisNode.routingTree.right == nil || thisNode.routingTree.kBucket != nil ||
+		thisNode.routingTree.prefix != "" {
+		failed = true
+	}
+
+	// check nodes on level 1
+	tmpTree := thisNode.routingTree.left
+	if tmpTree.left == nil || tmpTree.right == nil || tmpTree.kBucket != nil || tmpTree.prefix != "0" {
+		failed = true
+	}
+
+	tmpTree = thisNode.routingTree.right
+	if tmpTree.left != nil || tmpTree.right != nil || tmpTree.kBucket == nil || tmpTree.prefix != "1" {
+		failed = true
+	}
+	if tmpTree.kBucket[0] != testPeer11 && tmpTree.kBucket[1] != testPeer12 && tmpTree.kBucket[2] != testPeer13 &&
+		tmpTree.kBucket[3] != testPeer14 && tmpTree.kBucket[4] != testPeer15 {
+		failed = true
+	}
+
+	// check nodes on level 2
+	tmpTree = thisNode.routingTree.left.left
+	if tmpTree.left != nil || tmpTree.right != nil || tmpTree.kBucket == nil || tmpTree.prefix != "00" {
+		failed = true
+	}
+	if tmpTree.kBucket[0] != testPeer1 && tmpTree.kBucket[1] != testPeer2 && tmpTree.kBucket[2] != testPeer3 {
+		failed = true
+	}
+
+	tmpTree = thisNode.routingTree.left.right
+	if tmpTree.left != nil || tmpTree.right != nil || tmpTree.kBucket == nil || tmpTree.prefix != "01" {
+		failed = true
+	}
+	if tmpTree.kBucket[0] != testPeer4 && tmpTree.kBucket[1] != testPeer5 && tmpTree.kBucket[2] != testPeer6 &&
+		tmpTree.kBucket[3] != testPeer7 {
+		failed = true
+	}
+
+	if failed {
+		t.Errorf("[Failure] routing tree has not the expected structure")
+	}
 
 }
 
 func TestUpdateInsertAndPing(t *testing.T) {
+	log.SetLevel(log.DebugLevel) // TODO: remove
 	// init Conf
 	Conf.k = 5
+	Conf.p2pIP = "0.0.0.0"
+	Conf.p2pPort = 9999
+	Conf.HostKeyFile = "config/mainHostkey.pem"
+	Conf.preConfPeer1 = "127.0.0.1:3004"
+	Conf.preConfPeer2 = "127.0.0.1:3006"
+	Conf.preConfPeer3 = "127.0.0.1:3008"
 
 	// init empty routingTree
 	routingTree := buildEmptyTestRoutingTree()
 
 	// init localNode
 	thisNode := localNode{routingTree: *routingTree}
+	thisNode.thisPeer = peer{id: buildTestIdFromString("0"), port: 9999, ip: "0.0.0.0"} // own id only 0s
+
 	testPeer1 := peer{id: buildTestIdFromString("0001")}
 	testPeer2 := peer{id: buildTestIdFromString("0010")}
 	testPeer3 := peer{id: buildTestIdFromString("0011")}
@@ -463,7 +520,7 @@ func TestUpdateInsertAndPing(t *testing.T) {
 	testPeer6 := peer{id: buildTestIdFromString("0110")}
 	testPeer7 := peer{id: buildTestIdFromString("0111")}
 	testPeer8 := peer{id: buildTestIdFromString("1000")}
-	testPeer9 := peer{id: buildTestIdFromString("1001")}
+	testPeer9 := peer{id: buildTestIdFromString("1001"), ip: "127.0.0.1", port: 8000}
 	testPeer10 := peer{id: buildTestIdFromString("1010")}
 	testPeer11 := peer{id: buildTestIdFromString("1011")}
 	testPeer12 := peer{id: buildTestIdFromString("1100")}
@@ -471,7 +528,15 @@ func TestUpdateInsertAndPing(t *testing.T) {
 	testPeer14 := peer{id: buildTestIdFromString("1110")}
 	testPeer15 := peer{id: buildTestIdFromString("1111")}
 
-	thisNode.thisPeer = peer{id: buildTestIdFromString("0")} // own id only 0s
+	// make testPeer9 active
+
+	initializeP2PCommunication()
+	var wg sync.WaitGroup
+	ctx, cancelFunction := context.WithCancel(context.Background())
+	wg.Add(1)
+	Conf.p2pPort = testPeer9.port
+	Conf.p2pIP = testPeer9.ip
+	go startP2PMessageDispatcher(&wg, ctx)
 
 	thisNode.updateRoutingTable(testPeer1)
 	thisNode.updateRoutingTable(testPeer2)
@@ -489,12 +554,53 @@ func TestUpdateInsertAndPing(t *testing.T) {
 	thisNode.updateRoutingTable(testPeer14)
 	thisNode.updateRoutingTable(testPeer15)
 
-	// make one of the peers active
-	testPeer9.ip = "127.0.0.1"
-	testPeer9.port = 8000
+	failed := false
 
-	// TODO: implement correctness checks
+	// check root node (level 0)
+	if thisNode.routingTree.left == nil || thisNode.routingTree.right == nil || thisNode.routingTree.kBucket != nil ||
+		thisNode.routingTree.prefix != "" {
+		failed = true
+	}
 
+	// check nodes on level 1
+	tmpTree := thisNode.routingTree.left
+	if tmpTree.left == nil || tmpTree.right == nil || tmpTree.kBucket != nil || tmpTree.prefix != "0" {
+		failed = true
+	}
+
+	tmpTree = thisNode.routingTree.right
+	if tmpTree.left != nil || tmpTree.right != nil || tmpTree.kBucket == nil || tmpTree.prefix != "1" {
+		failed = true
+	}
+	if tmpTree.kBucket[0] != testPeer11 && tmpTree.kBucket[1] != testPeer12 && tmpTree.kBucket[2] != testPeer13 &&
+		tmpTree.kBucket[3] != testPeer9 && tmpTree.kBucket[4] != testPeer15 { // testPeer9 has to be active and therefore on position [3] here
+		failed = true
+	}
+
+	// check nodes on level 2
+	tmpTree = thisNode.routingTree.left.left
+	if tmpTree.left != nil || tmpTree.right != nil || tmpTree.kBucket == nil || tmpTree.prefix != "00" {
+		failed = true
+	}
+	if tmpTree.kBucket[0] != testPeer1 && tmpTree.kBucket[1] != testPeer2 && tmpTree.kBucket[2] != testPeer3 {
+		failed = true
+	}
+
+	tmpTree = thisNode.routingTree.left.right
+	if tmpTree.left != nil || tmpTree.right != nil || tmpTree.kBucket == nil || tmpTree.prefix != "01" {
+		failed = true
+	}
+	if tmpTree.kBucket[0] != testPeer4 && tmpTree.kBucket[1] != testPeer5 && tmpTree.kBucket[2] != testPeer6 &&
+		tmpTree.kBucket[3] != testPeer7 {
+		failed = true
+	}
+
+	if failed {
+		t.Errorf("[Failure] routing tree has not the expected structure")
+	}
+
+	cancelFunction()
+	wg.Wait()
 }
 
 func buildEmptyTestRoutingTree() *routingTree {

@@ -135,9 +135,8 @@ func (thisNode *localNode) findResponsibleRoutingTree(key id) *routingTree {
 
 // inserts new peer into k-Bucket of given routingTree node
 func (routingTable *routingTree) insert(peer peer) {
-	// TODO: only insert if not already in bucket
-	// only insert if not already full
-	if len(routingTable.kBucket) < routingTable.maxSize() {
+	// only insert if id of peer is not already in bucket and if bucket is not already full
+	if !routingTable.kBucket.contains(peer.id) && len(routingTable.kBucket) < routingTable.maxSize() {
 		routingTable.kBucket = append(routingTable.kBucket, peer)
 	}
 }
@@ -308,7 +307,7 @@ func (thisNode *localNode) updateRoutingTable(p peer) {
 				thisNode.updateRoutingTable(p)
 			} else {
 				// else ping least-recently seen node
-				nodeActive := pingNode(routingTree.kBucket[0])
+				nodeActive := pingNode(routingTree.kBucket[0], thisNode.thisPeer)
 
 				if !nodeActive {
 					// if node is inactive, discard least-recently seen node and insert the new peer at the tail

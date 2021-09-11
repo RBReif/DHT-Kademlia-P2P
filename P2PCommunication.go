@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
@@ -274,7 +275,8 @@ func handleP2PConnection(conn net.Conn) {
 		case KDM_PING: // ping
 			// respond with KDM_PONG
 			pongMessage := makeP2PMessageOutOfBody(nil, KDM_PONG)
-			sendP2PMessage(pongMessage, m.header.senderPeer)
+			//sendP2PMessage(pongMessage, m.header.senderPeer)
+			conn.Write(pongMessage.data)
 			err := conn.Close()
 			if err != nil {
 				return
@@ -340,15 +342,34 @@ func distance(id1 id, id2 id) id {
 }
 
 // probes a node to check if it is online
-func pingNode(node peer) bool {
+func pingNode(receiverPeer peer, senderPeer peer) bool {
 
-	c, err := net.Dial("tcp", node.ip+":"+fmt.Sprint(node.port))
+	c, err := net.Dial("tcp", receiverPeer.ip+":"+fmt.Sprint(receiverPeer.port))
 	if err != nil {
 		log.Error(err)
 		return false
 	}
-	pingMessage := makeP2PMessageOutOfBody(nil, KDM_PING)
-	sendP2PMessage(pingMessage, node)
+
+	pingMessage := p2pMessage{}
+	pingMessage.header.messageType = KDM_PING
+
+	pingMessage.header.senderPeer = senderPeer
+	nonce := make([]byte, SIZE_OF_NONCE)
+	if _, err := rand.Read(nonce); err != nil {
+		panic(err.Error())
+	}
+	pingMessage.header.nonce = nonce
+	log.Debug(pingMessage.header.messageType, pingMessage.header.nonce)
+	log.Debug(pingMessage.header.senderPeer)
+	pingMessage.header.size = uint16(SIZE_OF_HEADER)
+	pingMessage.data = pingMessage.header.decodeHeaderToBytes()
+
+	_, err = c.Write(pingMessage.data)
+	if err != nil {
+		custError := "[FAILURE] Writing to connection failed:" + err.Error()
+		log.Error(custError)
+	}
+
 	// receive KDM_PONG
 	answer := readMessage(c)
 	if answer == nil {
