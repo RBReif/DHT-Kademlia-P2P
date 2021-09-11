@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestDistance(t *testing.T) {
@@ -74,10 +75,10 @@ func TestKDM_PING(t *testing.T) {
 	ctx, cancelFunction := context.WithCancel(context.Background())
 
 	thisNode.thisPeer.ip = "127.0.0.1"
-	thisNode.thisPeer.port = 3011
+	thisNode.thisPeer.port = 3312
 
 	Conf.p2pIP = "127.0.0.1"
-	Conf.p2pPort = 3011
+	Conf.p2pPort = 3312
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -93,6 +94,7 @@ func TestKDM_PING(t *testing.T) {
 	}
 
 	go startP2PMessageDispatcher(&wg, ctx)
+	time.Sleep(1 * time.Second)
 	c, err := net.Dial("tcp", thisNode.thisPeer.ip+":"+fmt.Sprint(thisNode.thisPeer.port))
 	if err != nil {
 		t.Errorf("Error opening TCP Connection: " + err.Error())

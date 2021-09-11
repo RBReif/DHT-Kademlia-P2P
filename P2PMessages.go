@@ -59,7 +59,6 @@ type p2pHeader struct {
 	nonce       []byte
 }
 
-// TODO: unify "decode" and "parse"
 func (h *p2pHeader) decodeHeaderToBytes() []byte {
 	result := make([]byte, 4)
 	binary.BigEndian.PutUint16(result[0:2], h.size)
