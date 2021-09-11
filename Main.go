@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/ini.v1"
+	"os"
 	"strconv"
 	"sync"
 )
@@ -61,17 +63,36 @@ func parseConfig() configuraton {
 }
 
 func main() {
+	ctx := context.Background()
+	mainWithContext(ctx)
+}
+
+func mainWithContext(ctx context.Context) {
+	initLogging()
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 	Conf = parseConfig()
-	go startAPIMessageDispatcher(&wg)
-	go startP2PMessageDispatcher(&wg)
+	go startAPIMessageDispatcher(&wg, ctx)
+	go startP2PMessageDispatcher(&wg, ctx)
 	initializeP2PCommunication()
-	go startTimers()
+	go startTimers(ctx)
 
 	log.Info("Program started")
 	wg.Wait()
 	log.Info("Program stopped")
+}
+
+func initLogging() {
+	lvl, ok := os.LookupEnv("LOG_LEVEL")
+	if !ok {
+		lvl = "info"
+	}
+	ll, err := log.ParseLevel(lvl)
+	if err != nil {
+		ll = log.DebugLevel
+	}
+	log.SetLevel(ll)
 }
 
 type configuraton struct {

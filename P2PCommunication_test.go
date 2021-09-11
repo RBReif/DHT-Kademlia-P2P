@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	"net"
@@ -70,6 +71,7 @@ func TestPingNode(t *testing.T) {
 
 // Test if node reacts correctly to PING message
 func TestKDM_PING(t *testing.T) {
+	ctx, cancelFunction := context.WithCancel(context.Background())
 
 	thisNode.thisPeer.ip = "127.0.0.1"
 	thisNode.thisPeer.port = 3011
@@ -90,7 +92,7 @@ func TestKDM_PING(t *testing.T) {
 		kBucket: kBucket,
 	}
 
-	go startP2PMessageDispatcher(&wg)
+	go startP2PMessageDispatcher(&wg, ctx)
 	c, err := net.Dial("tcp", thisNode.thisPeer.ip+":"+fmt.Sprint(thisNode.thisPeer.port))
 	if err != nil {
 		t.Errorf("Error opening TCP Connection: " + err.Error())
@@ -114,7 +116,8 @@ func TestKDM_PING(t *testing.T) {
 		// failure
 		t.Errorf("Received no KDM_PONG after sending KDM_PING")
 	}
-	wg.Done()
+	cancelFunction()
+	wg.Wait()
 	fmt.Println("finished")
 
 }

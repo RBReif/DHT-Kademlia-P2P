@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
@@ -211,7 +212,7 @@ func extractPeerAddressFromString(line string) peer {
 
 // starts the message dispatcher for P2P-Communication
 // listens for connections and delegates them to handleP2PConnection
-func startP2PMessageDispatcher(wg *sync.WaitGroup) {
+func startP2PMessageDispatcher(wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
 
 	l, err := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(int(Conf.p2pPort)))
@@ -220,21 +221,39 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup) {
 	}
 	defer l.Close()
 	log.Info("[SUCCESS] MAIN: P2PMessageDispatcher Listening on ", Conf.p2pIP, ": ", Conf.p2pPort)
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			custError := "[FAILURE] MAIN: Error while accepting: " + err.Error()
-			log.Panic(custError)
+
+	go func() {
+		for {
+			conn, err := l.Accept()
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					// program canceled, no error
+					return
+				default:
+					custError := "[FAILURE] MAIN: Error while accepting: " + err.Error()
+					log.Panic(custError)
+				}
+			}
+			log.Debug("[SUCCESS] MAIN: New Connection established, ", conn.LocalAddr(), " r:", conn.RemoteAddr())
+			err = conn.SetDeadline(time.Now().Add(time.Minute * 20))
+			if err != nil {
+				custError := "[FAILURE] MAIN: Error while setting Deadline: " + err.Error()
+				log.Panic(custError)
+			} //Set Timeout
+
+			go handleP2PConnection(conn)
+
 		}
-		log.Debug("[SUCCESS] MAIN: New Connection established, ", conn.LocalAddr(), " r:", conn.RemoteAddr())
-		err = conn.SetDeadline(time.Now().Add(time.Minute * 20))
-		if err != nil {
-			custError := "[FAILURE] MAIN: Error while setting Deadline: " + err.Error()
-			log.Panic(custError)
-		} //Set Timeout
+	}()
 
-		go handleP2PConnection(conn)
-
+	for {
+		select {
+		case <-ctx.Done():
+			log.Debug("[DEBUG] P2PMessageDispatcher received stoppingSignal")
+			l.Close()
+			return
+		}
 	}
 
 }
@@ -413,13 +432,19 @@ func store(key id, value []byte, ttl uint16) {
 }
 
 // checks every second if keys are expired or should be republished
-func startTimers() {
+func startTimers(ctx context.Context) {
 	ticker := time.NewTicker(time.Second)
-	for range ticker.C {
-		// expire keys
-		thisNode.hashTable.expireKeys()
+	for {
+		select {
+		case <-ctx.Done():
+			log.Debug("[DEBUG] Timer received stoppingSignal")
+			return
+		case <-ticker.C:
+			// expire keys
+			thisNode.hashTable.expireKeys()
 
-		// republish keys
-		thisNode.hashTable.republishKeys()
+			// republish keys
+			thisNode.hashTable.republishKeys()
+		}
 	}
 }

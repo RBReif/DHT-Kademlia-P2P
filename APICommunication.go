@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/binary"
 	log "github.com/sirupsen/logrus"
 	"net"
@@ -10,7 +11,7 @@ import (
 )
 
 //listens for TCP connections for API calls
-func startAPIMessageDispatcher(wg *sync.WaitGroup) {
+func startAPIMessageDispatcher(wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
 	//we listen on the specified API address from the configuration file
 	l, err := net.Listen("tcp", Conf.apiIP+":"+strconv.Itoa(int(Conf.apiPort)))
@@ -20,19 +21,37 @@ func startAPIMessageDispatcher(wg *sync.WaitGroup) {
 	defer l.Close()
 	log.Debug("[SUCCESS] MAIN: APIMessageDispatcher Listening on ", Conf.apiIP, ": ", Conf.apiPort)
 
+	go func() {
+		for {
+			con, err := l.Accept()
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					// program canceled, no error
+					return
+				default:
+					custError := "[FAILURE] MAIN: Error while accepting: " + err.Error()
+					log.Panic(custError)
+				}
+			}
+			log.Debug("[SUCCESS] MAIN " + strconv.Itoa(int(Conf.apiPort)) + ": New Connection established")
+			err = con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
+			if err != nil {
+				custError := "[FAILURE] MAIN: Error while setting timeout: " + err.Error()
+				log.Panic(custError)
+			}
+			go handleAPIconnection(con) //for each newly established connection we concurrently call the handleAPIconnection() function
+		}
+
+	}()
+
 	for {
-		con, err := l.Accept()
-		if err != nil {
-			custError := "[FAILURE] MAIN: Error while accepting: " + err.Error()
-			log.Panic(custError)
+		select {
+		case <-ctx.Done():
+			log.Debug("[DEBUG] APIMessageDispatcher received stoppingSignal")
+			l.Close()
+			return
 		}
-		log.Debug("[SUCCESS] MAIN " + strconv.Itoa(int(Conf.apiPort)) + ": New Connection established")
-		err = con.SetDeadline(time.Now().Add(time.Minute * 20)) //Set Timeout
-		if err != nil {
-			custError := "[FAILURE] MAIN: Error while setting timeout: " + err.Error()
-			log.Panic(custError)
-		}
-		go handleAPIconnection(con) //for each newly established connection we concurrently call the handleAPIconnection() function
 	}
 }
 

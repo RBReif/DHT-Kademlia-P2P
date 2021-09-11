@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	ran "math/rand"
@@ -159,7 +160,8 @@ TestAPICommunciationConcurrency runs multiple (e.g. 1000) instances of the helpT
 to test the ability to handle hundreds or thousands of concurrent api requests
 */
 func TestAPICommunicationConcurrency(t *testing.T) {
-	go main()
+	ctx, cancelFunction := context.WithCancel(context.Background())
+	go mainWithContext(ctx)
 	time.Sleep(10 * time.Second)
 	numberOfConcurrentTests := 5
 	for i := 0; i < numberOfConcurrentTests; i++ {
@@ -167,6 +169,8 @@ func TestAPICommunicationConcurrency(t *testing.T) {
 	}
 	time.Sleep(30 * time.Second) //we now wait a bit to let the multiple tests run
 	fmt.Println(counter, "out of ", numberOfConcurrentTests*2, " tests did work")
+	cancelFunction()
+	time.Sleep(10 * time.Second) //we now wait a bit to let the goroutines stop
 }
 
 var counter int
