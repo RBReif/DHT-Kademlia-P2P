@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"net"
 	"testing"
-	"time"
 )
 
 func TestDistance(t *testing.T) {

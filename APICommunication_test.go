@@ -163,7 +163,7 @@ func TestAPICommunicationConcurrency(t *testing.T) {
 	ctx, cancelFunction := context.WithCancel(context.Background())
 	go mainWithContext(ctx)
 	time.Sleep(10 * time.Second)
-	numberOfConcurrentTests := 5
+	numberOfConcurrentTests := 40
 	for i := 0; i < numberOfConcurrentTests; i++ {
 		go helpTestAPICommunication(t)
 	}

@@ -149,6 +149,7 @@ func (kBucket *kBucket) remove(id id) {
 
 // splits given routingTree node into two new routingTree nodes
 func (routingTable *routingTree) split() error {
+
 	if len(routingTable.prefix) == SIZE_OF_ID*8 {
 		return errors.New("Tried to split k-Bucket with maximum size of 1")
 	}
@@ -296,6 +297,7 @@ func (thisNode *localNode) updateRoutingTable(p peer) {
 	} else { // else
 		if !routingTree.isFull() {
 			// if k-Bucket is not already full, insert peer
+
 			routingTree.insert(p)
 		} else { // if k-Bucket is already full
 			// if range of k-Bucket includes own id, split bucket and repeat insertion attempt
@@ -312,6 +314,7 @@ func (thisNode *localNode) updateRoutingTable(p peer) {
 				if !nodeActive {
 					// if node is inactive, discard least-recently seen node and insert the new peer at the tail
 					routingTree.kBucket.remove(routingTree.kBucket[0].id)
+
 					routingTree.insert(p)
 
 				} else {

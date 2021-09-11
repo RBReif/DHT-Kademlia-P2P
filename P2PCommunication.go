@@ -171,9 +171,16 @@ func initializeP2PCommunication() {
 	}
 	time.Sleep(1 * time.Second)
 	for _, p := range initialPeers {
-		msg := makeP2PMessageOutOfBody(nil, KDM_PING)
-		log.Debug("MESSAGE: ", msg.toString())
-		sendP2PMessage(msg, p)
+		if pingNode(p, thisNode.thisPeer) {
+			thisNode.updateRoutingTable(p)
+		}
+		/*
+			msg := makeP2PMessageOutOfBody(nil, KDM_PING)
+			log.Debug("MESSAGE: ", msg.toString())
+			sendP2PMessage(msg, p)
+
+		*/
+
 		//time.Sleep(1)
 
 	}
@@ -275,7 +282,7 @@ func handleP2PConnection(conn net.Conn) {
 		case KDM_PING: // ping
 			// respond with KDM_PONG
 			pongMessage := makeP2PMessageOutOfBody(nil, KDM_PONG)
-			//sendP2PMessage(pongMessage, m.header.senderPeer)
+			sendP2PMessage(pongMessage, m.header.senderPeer)
 			conn.Write(pongMessage.data)
 			err := conn.Close()
 			if err != nil {
