@@ -29,15 +29,6 @@ func helpTestAPICommunication(t *testing.T) {
 	apiAddr := Conf.apiIP + ":" + strconv.Itoa(int(Conf.apiPort))
 
 	//First we connect to the apiAddress via tcp
-	/*
-		fmt.Println("[TEST] Start of API Test-Programm...")
-		tcpAddr, err := net.ResolveTCPAddr("tcp", testAddr)
-		if err != nil {
-			fmt.Println("Resolving of TCP Address failed:", err.Error())
-			os.Exit(1)
-		}
-		fmt.Println("[TEST] Resolved TCP Address: ", apiAddr)
-	*/
 
 	conn, err := net.Dial("tcp", apiAddr)
 	if err != nil {
