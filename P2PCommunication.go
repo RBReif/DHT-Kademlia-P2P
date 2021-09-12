@@ -60,9 +60,9 @@ func (hashTable *hashTable) republishKeys() {
 	hashTable.Lock()
 	defer hashTable.Unlock()
 	for key, value := range hashTable.republishingTimes {
-		if time.Now().After(value) {
+		if time.Now().After(value) { // if republishingTime lies in the past
 			log.Debug("Republishing: " + fmt.Sprint(key))
-			store(key, hashTable.values[key], uint16(time.Until(hashTable.expirations[key])))
+			store(key, hashTable.values[key], uint16(time.Until(hashTable.expirations[key]))) // republish
 		}
 	}
 }
@@ -72,7 +72,8 @@ func (hashTable *hashTable) expireKeys() {
 	hashTable.Lock()
 	defer hashTable.Unlock()
 	for key, value := range hashTable.expirations {
-		if time.Now().After(value) {
+		if time.Now().After(value) { // if expiration time lies in the past
+			// remove <key, value>-pair completely from the hashTable
 			delete(hashTable.values, key)
 			delete(hashTable.expirations, key)
 			delete(hashTable.republishingTimes, key)
@@ -174,15 +175,6 @@ func initializeP2PCommunication() {
 		if pingNode(p, thisNode.thisPeer) {
 			thisNode.updateRoutingTable(p)
 		}
-		/*
-			msg := makeP2PMessageOutOfBody(nil, KDM_PING)
-			log.Debug("MESSAGE: ", msg.toString())
-			sendP2PMessage(msg, p)
-
-		*/
-
-		//time.Sleep(1)
-
 	}
 
 	thisNode.hashTable = hashTable{
@@ -226,6 +218,7 @@ func extractPeerAddressFromString(line string) peer {
 func startP2PMessageDispatcher(wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
 
+	// start listening on ip and port
 	l, err := net.Listen("tcp", Conf.p2pIP+":"+strconv.Itoa(int(Conf.p2pPort)))
 	if err != nil {
 		log.Panic("[FAILURE] MAIN: Error while listening for connection at" + Conf.p2pIP + ": " + strconv.Itoa(int(Conf.p2pPort)) + " - " + err.Error())
@@ -235,6 +228,7 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup, ctx context.Context) {
 
 	go func() {
 		for {
+			// accept connections
 			conn, err := l.Accept()
 			if err != nil {
 				select {
@@ -247,17 +241,21 @@ func startP2PMessageDispatcher(wg *sync.WaitGroup, ctx context.Context) {
 				}
 			}
 			log.Debug("[SUCCESS] MAIN: New Connection established, ", conn.LocalAddr(), " r:", conn.RemoteAddr())
+
+			// set timeout
 			err = conn.SetDeadline(time.Now().Add(time.Minute * 20))
 			if err != nil {
 				custError := "[FAILURE] MAIN: Error while setting Deadline: " + err.Error()
 				log.Panic(custError)
-			} //Set Timeout
+			}
 
+			// delegate handling of incoming connection
 			go handleP2PConnection(conn)
 
 		}
 	}()
 
+	// listen for program to stop
 	for {
 		select {
 		case <-ctx.Done():
@@ -279,20 +277,26 @@ func handleP2PConnection(conn net.Conn) {
 			bdyStrg = m.body.toString()
 		}
 		log.Info(thisNode.thisPeer.ip, ":", thisNode.thisPeer.port, " has received this message: ", m.header.toString(), " : ", bdyStrg)
+
+		// update routing table
 		thisNode.updateRoutingTable(m.header.senderPeer)
-		// switch according to m type
+
+		// switch according to message type
 		switch m.header.messageType {
-		case KDM_PING: // ping
+		case KDM_PING:
 			// respond with KDM_PONG
 			pongMessage := makeP2PMessageOutOfBody(nil, KDM_PONG)
 			sendP2PMessage(pongMessage, m.header.senderPeer)
-			conn.Write(pongMessage.data)
-			err := conn.Close()
+			_, err := conn.Write(pongMessage.data)
+			if err != nil {
+				return
+			}
+			err = conn.Close()
 			if err != nil {
 				return
 			}
 		case KDM_STORE:
-			// write (key, value) to hashTable
+			// write <key, value>-pair to hashTable
 			ttl := int(m.body.(*kdmStoreBody).ttl)
 			if ttl > Conf.maxTTL {
 				ttl = Conf.maxTTL
@@ -301,17 +305,20 @@ func handleP2PConnection(conn net.Conn) {
 			return
 
 		case KDM_FOUND_VALUE:
+			// write found <key, value>-pair to hashTable
 			thisNode.hashTable.write(m.body.(*kdmFoundValueBody).key, m.body.(*kdmFoundValueBody).value, time.Now().Add(time.Duration(15)*time.Second), time.Now().Add(time.Duration(REPUBLISH_TIME)*time.Second))
 
 		case KDM_FIND_NODE:
 			key := m.body.(*kdmFindNodeBody).id
 
+			// find k closest nodes to given id on local node and return them to sender
 			answerBody := thisNode.FIND_NODE(key)
 			answer := makeP2PMessageOutOfBody(&answerBody, KDM_FIND_NODE_ANSWER)
 			sendP2PMessage(answer, m.header.senderPeer)
 			return
 
 		case KDM_FIND_NODE_ANSWER:
+			// extract found peers and update routingTable accordingly
 			newPeers := m.body.(*kdmFindNodeAnswerBody).answerPeers
 			for i := 0; i < len(newPeers); i++ {
 				thisNode.updateRoutingTable(newPeers[i])
@@ -320,6 +327,8 @@ func handleP2PConnection(conn net.Conn) {
 
 		case KDM_FIND_VALUE:
 			key := m.body.(*kdmFindValueBody).id
+
+			// look for value to given key in local hashTable
 			var value, existing = thisNode.hashTable.read(key)
 			if existing {
 				// reply with value
@@ -398,22 +407,30 @@ func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer {
 	waitingTime := 10
 	for {
 		if findValue {
+			// if findValue is set, search in local hashTable
 			_, ok := thisNode.hashTable.read(key)
 			if ok {
-				// value found, halt lookup
+				// value found, halt lookup process
 				log.Debug("VALUE WAS FOUND IN LOCAL HASH TABLE OF ", Conf.apiPort)
 				return nil
 			}
 		}
+
+		// find k closest peers on local node
 		closestPeersNew := thisNode.findNumberOfClosestPeersOnNode(key, Conf.k)
 		if !wasAnyNewPeerAdded(closestPeersOld, closestPeersNew) {
+			// if no new closer peer was found, check if waitingTime exceeds timeout
 			if waitingTime > 1000 {
 				break
 			}
+			// if not, increase waitingTime
 			waitingTime = waitingTime * 10
 		} else {
+			// if new closer peer was found, reset waitingTime
 			waitingTime = 10
 		}
+
+		// to every newly added close node, send KDM_FIND_VALUE or KDM_FIND_NODE (depending on boolean findValue)
 		for _, p := range thisNode.findNumberOfClosestPeersOnNode(key, Conf.a) {
 			if wasANewPeerAdded(closestPeersOld, p) {
 				if findValue {
@@ -432,6 +449,8 @@ func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer {
 			}
 		}
 		closestPeersOld = closestPeersNew
+
+		// give remote peers time to answer and give routing table time to update (at maximum ~1110 ms)
 		time.Sleep(time.Duration(waitingTime) * time.Millisecond)
 	}
 	return closestPeersOld
@@ -449,8 +468,11 @@ func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody {
 
 // locates k closest Nodes in network and sends KDM_STORE messages to them
 func store(key id, value []byte, ttl uint16) {
+	// locate k closest nodes in network
 	kClosestPeers := thisNode.nodeLookup(key, false)
 	log.Debug("FINAL : number of k CLOSEST PEERS", len(kClosestPeers))
+
+	// send KDM_STORE messages to each of them
 	for _, p := range kClosestPeers {
 		storeBdy := kdmStoreBody{
 			key:   key,
