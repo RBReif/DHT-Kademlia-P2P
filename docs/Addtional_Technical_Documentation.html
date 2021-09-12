@@ -1,0 +1,2460 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html class=" riaoeze idc0_332"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#375EAB">
+
+  <title>main - Go Documentation Server</title>
+
+<link type="text/css" rel="stylesheet" href="./Technical_Documentation_files/style.css">
+
+<script>window.initFuncs = [];</script>
+<script src="./Technical_Documentation_files/jquery.js.Download" defer=""></script>
+
+
+
+<script>var goVersion = "go1.16.4";</script>
+<script src="./Technical_Documentation_files/godocs.js.Download" defer=""></script>
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="http://localhost:6060/pkg/">Go Documentation Server</a></div>
+<div class="top-heading" id="heading-narrow"><a href="http://localhost:6060/pkg/">GoDoc</a></div>
+<a href="http://localhost:6060/pkg/DHT-16/?m=all#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+<form method="GET" action="http://localhost:6060/search">
+<div id="menu" style="min-width: 60px;">
+
+<span class="search-box"><input type="search" id="search" name="q" placeholder="Search" aria-label="Search" required=""><button type="submit"><span><!-- magnifying glass: --><svg width="24" height="24" viewBox="0 0 24 24"><title>submit search</title><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg></span></button></span>
+</div>
+</form>
+
+</div></div>
+
+
+
+<div id="page" class="wide" tabindex="-1" style="outline: 0px;">
+<div class="container">
+
+
+  <h1>
+    Package main
+    <span class="text-muted"></span>
+  </h1>
+
+
+
+
+
+
+
+<div id="nav"></div>
+
+
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+	<script>
+	document.ANALYSIS_DATA = null;
+	document.CALLGRAPH = null;
+	</script>
+
+	
+		
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "DHT-16"</code></dd>
+			</dl>
+			<dl>
+			<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#pkg-index" class="indexLink">Index</a></dd>
+			
+			
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+			</div>
+			<div class="expanded">
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+				
+				
+			</div>
+		</div>
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+		</div>
+		<div class="expanded">
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#pkg-constants">Constants</a></dd>
+			
+			
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#bytesToString">func bytesToString(b []byte) string</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#decodePeerToByte">func decodePeerToByte(peer peer) []byte</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#findIndexOfFarestPeerInSlice">func findIndexOfFarestPeerInSlice(peers []peer, key id) int</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#handleAPIconnection">func handleAPIconnection(con net.Conn)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#handleP2PConnection">func handleP2PConnection(conn net.Conn)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#handlePut">func handlePut(body *putBody)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#initLogging">func initLogging()</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#initializeP2PCommunication">func initializeP2PCommunication()</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#main">func main()</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#mainWithContext">func mainWithContext(ctx context.Context)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#pingNode">func pingNode(receiverPeer peer, senderPeer peer) bool</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#sendP2PMessage">func sendP2PMessage(m p2pMessage, receiverPeer peer)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#startAPIMessageDispatcher">func startAPIMessageDispatcher(wg *sync.WaitGroup, ctx context.Context)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#startP2PMessageDispatcher">func startP2PMessageDispatcher(wg *sync.WaitGroup, ctx context.Context)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#startTimers">func startTimers(ctx context.Context)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#store">func store(key id, value []byte, ttl uint16)</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#wasANewPeerAdded">func wasANewPeerAdded(oldPeers []peer, newPeer peer) bool</a></dd>
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#wasAnyNewPeerAdded">func wasAnyNewPeerAdded(oldPeers []peer, newPeers []peer) bool</a></dd>
+			
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#DhtAnswer">type DhtAnswer</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#handleGet">func handleGet(body *getBody) DhtAnswer</a></dd>
+				
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#apiBody">type apiBody</a></dd>
+				
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#apiHeader">type apiHeader</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#apiHeader.toString">func (h *apiHeader) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#apiMessage">type apiMessage</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#makeApiMessageOutOfAnswer">func makeApiMessageOutOfAnswer(answer DhtAnswer) apiMessage</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#makeApiMessageOutOfBytes">func makeApiMessageOutOfBytes(messageData []byte) apiMessage</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#apiMessage.toString">func (m *apiMessage) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#configuraton">type configuraton</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#parseConfig">func parseConfig() configuraton</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#configuraton.toString">func (c *configuraton) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#failureBody">type failureBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#failureBody.decodeBodyFromBytes">func (b *failureBody) decodeBodyFromBytes(m *apiMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#failureBody.decodeBodyToBytes">func (b *failureBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#failureBody.toString">func (b *failureBody) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#getBody">type getBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#getBody.decodeBodyFromBytes">func (b *getBody) decodeBodyFromBytes(m *apiMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#getBody.decodeBodyToBytes">func (b *getBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#getBody.toString">func (b *getBody) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable">type hashTable</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable.expireKeys">func (hashTable *hashTable) expireKeys()</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable.read">func (hashTable *hashTable) read(key id) ([]byte, bool)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable.republishKeys">func (hashTable *hashTable) republishKeys()</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable.write">func (hashTable *hashTable) write(key id, value []byte, expiration time.Time, republishingTime time.Time)</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#id">type id</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#distance">func distance(id1 id, id2 id) id</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#id.startsWith">func (id *id) startsWith(prefix string) bool</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#id.toByte">func (id id) toByte() []byte</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket">type kBucket</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.contains">func (kBucket *kBucket) contains(id id) bool</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.findNumberOfClosestPeersInOneBucket">func (kBucket *kBucket) findNumberOfClosestPeersInOneBucket(key id, number int) []peer</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.indexOf">func (kBucket *kBucket) indexOf(id id) int</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.moveToTail">func (kBucket *kBucket) moveToTail(id id)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.remove">func (kBucket *kBucket) remove(id id)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.toString">func (kBucket *kBucket) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeAnswerBody">type kdmFindNodeAnswerBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeAnswerBody.decodeBodyFromBytes">func (b *kdmFindNodeAnswerBody) decodeBodyFromBytes(m *p2pMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeAnswerBody.decodeBodyToBytes">func (b *kdmFindNodeAnswerBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeAnswerBody.toString">func (b *kdmFindNodeAnswerBody) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeBody">type kdmFindNodeBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeBody.decodeBodyFromBytes">func (b *kdmFindNodeBody) decodeBodyFromBytes(m *p2pMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeBody.decodeBodyToBytes">func (b *kdmFindNodeBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeBody.toString">func (b *kdmFindNodeBody) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindValueBody">type kdmFindValueBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindValueBody.decodeBodyFromBytes">func (b *kdmFindValueBody) decodeBodyFromBytes(m *p2pMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindValueBody.decodeBodyToBytes">func (b *kdmFindValueBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindValueBody.toString">func (b *kdmFindValueBody) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFoundValueBody">type kdmFoundValueBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFoundValueBody.decodeBodyFromBytes">func (b *kdmFoundValueBody) decodeBodyFromBytes(m *p2pMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFoundValueBody.decodeBodyToBytes">func (b *kdmFoundValueBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFoundValueBody.toString">func (b *kdmFoundValueBody) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmStoreBody">type kdmStoreBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmStoreBody.decodeBodyFromBytes">func (b *kdmStoreBody) decodeBodyFromBytes(m *p2pMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmStoreBody.decodeBodyToBytes">func (b *kdmStoreBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#kdmStoreBody.toString">func (b *kdmStoreBody) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#localNode">type localNode</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.FIND_NODE">func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.findNumberOfClosestPeersOnNode">func (thisNode *localNode) findNumberOfClosestPeersOnNode(key id, number int) []peer</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.findResponsibleRoutingTree">func (thisNode *localNode) findResponsibleRoutingTree(key id) *routingTree</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.nodeLookup">func (thisNode *localNode) nodeLookup(key id, findValue bool) []peer</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.updateRoutingTable">func (thisNode *localNode) updateRoutingTable(p peer)</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#p2pBody">type p2pBody</a></dd>
+				
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#p2pHeader">type p2pHeader</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#p2pHeader.decodeHeaderToBytes">func (h *p2pHeader) decodeHeaderToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#p2pHeader.toString">func (h *p2pHeader) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#p2pMessage">type p2pMessage</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#makeP2PMessageOutOfBody">func makeP2PMessageOutOfBody(body p2pBody, msgType uint16) p2pMessage</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#makeP2PMessageOutOfBytes">func makeP2PMessageOutOfBytes(messageData []byte) p2pMessage</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#readMessage">func readMessage(conn net.Conn) *p2pMessage</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#p2pMessage.toString">func (m *p2pMessage) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#peer">type peer</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#decodeBytesToPeer">func decodeBytesToPeer(data []byte) peer</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#extractPeerAddressFromString">func extractPeerAddressFromString(line string) peer</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#peer.toString">func (p *peer) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#putBody">type putBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#putBody.decodeBodyFromBytes">func (b *putBody) decodeBodyFromBytes(m *apiMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#putBody.decodeBodyToBytes">func (b *putBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#putBody.toString">func (b *putBody) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree">type routingTree</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.getNumberOfClosestPeers">func (routingTable *routingTree) getNumberOfClosestPeers(key id, number int) []peer</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.getSibling">func (routingTable *routingTree) getSibling() *routingTree</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.inRange">func (routingTable *routingTree) inRange(id id) bool</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.insert">func (routingTable *routingTree) insert(peer peer)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.isFull">func (routingTable *routingTree) isFull() bool</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.maxSize">func (routingTable *routingTree) maxSize() int</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.split">func (routingTable *routingTree) split() error</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.toString">func (r *routingTree) toString() string</a></dd>
+				
+			
+				
+				<dd><a href="http://localhost:6060/pkg/DHT-16/?m=all#successBody">type successBody</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#successBody.decodeBodyFromBytes">func (b *successBody) decodeBodyFromBytes(m *apiMessage)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#successBody.decodeBodyToBytes">func (b *successBody) decodeBodyToBytes() []byte</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:6060/pkg/DHT-16/?m=all#successBody.toString">func (b *successBody) toString() string</a></dd>
+				
+			
+			
+			</dl>
+			</div><!-- #manual-nav -->
+
+		
+
+		
+			<h3>Package files</h3>
+			<p>
+			<span style="font-size:90%">
+			
+				<a href="http://localhost:6060/src/DHT-16/APICommunication.go">APICommunication.go</a>
+			
+				<a href="http://localhost:6060/src/DHT-16/APIMessages.go">APIMessages.go</a>
+			
+				<a href="http://localhost:6060/src/DHT-16/Main.go">Main.go</a>
+			
+				<a href="http://localhost:6060/src/DHT-16/P2PCommunication.go">P2PCommunication.go</a>
+			
+				<a href="http://localhost:6060/src/DHT-16/P2PMessages.go">P2PMessages.go</a>
+			
+				<a href="http://localhost:6060/src/DHT-16/kBuckets.go">kBuckets.go</a>
+			
+			</span>
+			</p>
+		
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		
+
+		
+			<h2 id="pkg-constants">Constants <a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#pkg-constants">¶</a></h2>
+			
+				
+				<pre>const <span id="KDM_FIND_NODE">KDM_FIND_NODE</span> <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a> = 657</pre>
+			
+				
+				<pre>const <span id="KDM_FIND_NODE_ANSWER">KDM_FIND_NODE_ANSWER</span> <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a> = 658</pre>
+			
+				
+				<pre>const <span id="KDM_FIND_VALUE">KDM_FIND_VALUE</span> <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a> = 659</pre>
+			
+				<p>
+const KDM_FIND_VALUE_ANSWER uint16 = 660  //KDM_FIND_VALUE_ANSWER is  same as KDM_FIND_NODE_ANSWER
+</p>
+
+				<pre>const <span id="KDM_FOUND_VALUE">KDM_FOUND_VALUE</span> <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a> = 661</pre>
+			
+				
+				<pre>const <span id="KDM_PING">KDM_PING</span> <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a> = 654</pre>
+			
+				
+				<pre>const <span id="KDM_PONG">KDM_PONG</span> <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a> = 655</pre>
+			
+				
+				<pre>const <span id="KDM_STORE">KDM_STORE</span> <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a> = 656</pre>
+			
+				
+				<pre>const <span id="REPUBLISH_TIME">REPUBLISH_TIME</span> <a href="http://localhost:6060/pkg/builtin/#int">int</a> = 3600 <span class="comment">// republish every 3600s</span>
+</pre>
+			
+				
+				<pre>const <span id="SIZE_OF_HEADER">SIZE_OF_HEADER</span> = 4 + <a href="http://localhost:6060/pkg/DHT-16/?m=all#SIZE_OF_PEER">SIZE_OF_PEER</a> + <a href="http://localhost:6060/pkg/DHT-16/?m=all#SIZE_OF_NONCE">SIZE_OF_NONCE</a></pre>
+			
+				
+				<pre>const <span id="SIZE_OF_ID">SIZE_OF_ID</span> <a href="http://localhost:6060/pkg/builtin/#int">int</a> = 32</pre>
+			
+				
+				<pre>const <span id="SIZE_OF_IP">SIZE_OF_IP</span> <a href="http://localhost:6060/pkg/builtin/#int">int</a> = 16</pre>
+			
+				
+				<pre>const <span id="SIZE_OF_NONCE">SIZE_OF_NONCE</span> <a href="http://localhost:6060/pkg/builtin/#int">int</a> = 20</pre>
+			
+				
+				<pre>const <span id="SIZE_OF_PEER">SIZE_OF_PEER</span> <a href="http://localhost:6060/pkg/builtin/#int">int</a> = <a href="http://localhost:6060/pkg/DHT-16/?m=all#SIZE_OF_ID">SIZE_OF_ID</a> + <a href="http://localhost:6060/pkg/DHT-16/?m=all#SIZE_OF_IP">SIZE_OF_IP</a> + <a href="http://localhost:6060/pkg/DHT-16/?m=all#SIZE_OF_PORT">SIZE_OF_PORT</a></pre>
+			
+				
+				<pre>const <span id="SIZE_OF_PORT">SIZE_OF_PORT</span> <a href="http://localhost:6060/pkg/builtin/#int">int</a> = 2</pre>
+			
+				
+				<pre>const <span id="dhtFAILURE">dhtFAILURE</span> = 653</pre>
+			
+				
+				<pre>const <span id="dhtGET">dhtGET</span> = 651</pre>
+			
+				
+				<pre>const <span id="dhtPUT">dhtPUT</span> = 650</pre>
+			
+				
+				<pre>const <span id="dhtSUCCESS">dhtSUCCESS</span> = 652</pre>
+			
+				
+				<pre>const <span id="maxMessageLength">maxMessageLength</span> = 65535</pre>
+			
+		
+		
+		
+			
+			
+			<h2 id="bytesToString">func <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=10475:10510#L343">bytesToString</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#bytesToString">¶</a>
+				
+				
+			</h2>
+			<pre>func bytesToString(b []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>) <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+			
+			
+			
+
+		
+			
+			
+			<h2 id="decodePeerToByte">func <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=9787:9826#L313">decodePeerToByte</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#decodePeerToByte">¶</a>
+				
+				
+			</h2>
+			<pre>func decodePeerToByte(peer peer) []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+			<p>
+parses a peer into byte representation
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="findIndexOfFarestPeerInSlice">func <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=6301:6360#L224">findIndexOfFarestPeerInSlice</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#findIndexOfFarestPeerInSlice">¶</a>
+				
+				
+			</h2>
+			<pre>func findIndexOfFarestPeerInSlice(peers []peer, key id) <a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+			<p>
+returns index of the peer from a slice of peers that is the farest away from a given id
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="handleAPIconnection">func <a href="http://localhost:6060/src/DHT-16/APICommunication.go?s=1643:1681#L49">handleAPIconnection</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#handleAPIconnection">¶</a>
+				
+				
+			</h2>
+			<pre>func handleAPIconnection(con <a href="http://localhost:6060/pkg/net/">net</a>.<a href="http://localhost:6060/pkg/net/#Conn">Conn</a>)</pre>
+			<p>
+listens on one connection for new messages
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="handleP2PConnection">func <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=7953:7992#L261">handleP2PConnection</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#handleP2PConnection">¶</a>
+				
+				
+			</h2>
+			<pre>func handleP2PConnection(conn <a href="http://localhost:6060/pkg/net/">net</a>.<a href="http://localhost:6060/pkg/net/#Conn">Conn</a>)</pre>
+			<p>
+handles incoming connection based on message type
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="handlePut">func <a href="http://localhost:6060/src/DHT-16/APICommunication.go?s=5552:5581#L158">handlePut</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#handlePut">¶</a>
+				
+				
+			</h2>
+			<pre>func handlePut(body *putBody)</pre>
+			<p>
+The handlePut() function first locates the k closest Nodes in network with the nodeLookup() function.
+Then it sends KDM_STORE messages with the key-value pair to the k closest nodes to the specified key.
+as a chaching mechanism we additionally store the key-value pair locally
+in case it is requested briefly again.
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="initLogging">func <a href="http://localhost:6060/src/DHT-16/Main.go?s=2257:2275#L76">initLogging</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#initLogging">¶</a>
+				
+				
+			</h2>
+			<pre>func initLogging()</pre>
+			
+			
+			
+
+		
+			
+			
+			<h2 id="initializeP2PCommunication">func <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=3245:3278#L107">initializeP2PCommunication</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#initializeP2PCommunication">¶</a>
+				
+				
+			</h2>
+			<pre>func initializeP2PCommunication()</pre>
+			<p>
+initializes P2P-Communication
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="main">func <a href="http://localhost:6060/src/DHT-16/Main.go?s=1848:1859#L55">main</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#main">¶</a>
+				
+				
+			</h2>
+			<pre>func main()</pre>
+			
+			
+			
+
+		
+			
+			
+			<h2 id="mainWithContext">func <a href="http://localhost:6060/src/DHT-16/Main.go?s=1921:1962#L60">mainWithContext</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#mainWithContext">¶</a>
+				
+				
+			</h2>
+			<pre>func mainWithContext(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>)</pre>
+			
+			
+			
+
+		
+			
+			
+			<h2 id="pingNode">func <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=10799:10853#L354">pingNode</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#pingNode">¶</a>
+				
+				
+			</h2>
+			<pre>func pingNode(receiverPeer peer, senderPeer peer) <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+			<p>
+probes a node to check if it is online
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="sendP2PMessage">func <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=8769:8821#L286">sendP2PMessage</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#sendP2PMessage">¶</a>
+				
+				
+			</h2>
+			<pre>func sendP2PMessage(m p2pMessage, receiverPeer peer)</pre>
+			<p>
+sends the data of message m to the receiver peer
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="startAPIMessageDispatcher">func <a href="http://localhost:6060/src/DHT-16/APICommunication.go?s=181:252#L4">startAPIMessageDispatcher</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#startAPIMessageDispatcher">¶</a>
+				
+				
+			</h2>
+			<pre>func startAPIMessageDispatcher(wg *<a href="http://localhost:6060/pkg/sync/">sync</a>.<a href="http://localhost:6060/pkg/sync/#WaitGroup">WaitGroup</a>, ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>)</pre>
+			<p>
+listens for TCP connections for API calls
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="startP2PMessageDispatcher">func <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=6486:6557#L208">startP2PMessageDispatcher</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#startP2PMessageDispatcher">¶</a>
+				
+				
+			</h2>
+			<pre>func startP2PMessageDispatcher(wg *<a href="http://localhost:6060/pkg/sync/">sync</a>.<a href="http://localhost:6060/pkg/sync/#WaitGroup">WaitGroup</a>, ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>)</pre>
+			<p>
+starts the message dispatcher for P2P-Communication
+listens for connections and delegates them to handleP2PConnection
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="startTimers">func <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=14561:14598#L478">startTimers</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#startTimers">¶</a>
+				
+				
+			</h2>
+			<pre>func startTimers(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>)</pre>
+			<p>
+checks every second if keys are expired or should be republished
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="store">func <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=14031:14075#L460">store</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#store">¶</a>
+				
+				
+			</h2>
+			<pre>func store(key id, value []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>, ttl <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>)</pre>
+			<p>
+locates k closest Nodes in network and sends KDM_STORE messages to them
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="wasANewPeerAdded">func <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=7565:7622#L271">wasANewPeerAdded</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#wasANewPeerAdded">¶</a>
+				
+				
+			</h2>
+			<pre>func wasANewPeerAdded(oldPeers []peer, newPeer peer) <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+			<p>
+checks if given peer was added to given slice of peers
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="wasAnyNewPeerAdded">func <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=7174:7236#L252">wasAnyNewPeerAdded</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#wasAnyNewPeerAdded">¶</a>
+				
+				
+			</h2>
+			<pre>func wasAnyNewPeerAdded(oldPeers []peer, newPeers []peer) <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+			<p>
+returns whether there was any new peer added in newPeers that has not been there before in oldPeers
+</p>
+
+			
+			
+
+		
+		
+			
+			
+			<h2 id="DhtAnswer">type <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=458:529#L9">DhtAnswer</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#DhtAnswer">¶</a>
+				
+				
+			</h2>
+			<p>
+a DhtAnswer is built from the handlePut() function and stores a key for which we just searched in the network.
+success represents if we found the coresponding value. If it is true, then the value is also stored in the DhtAnswer
+</p>
+
+			<pre>type DhtAnswer struct {
+<span id="DhtAnswer.success"></span>    success <a href="http://localhost:6060/pkg/builtin/#bool">bool</a>
+<span id="DhtAnswer.key"></span>    key     id
+<span id="DhtAnswer.value"></span>    value   []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="handleGet">func <a href="http://localhost:6060/src/DHT-16/APICommunication.go?s=4570:4609#L124">handleGet</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#handleGet">¶</a>
+					
+					
+				</h3>
+				<pre>func handleGet(body *getBody) <a href="http://localhost:6060/pkg/DHT-16/?m=all#DhtAnswer">DhtAnswer</a></pre>
+				<p>
+The handleGet function calls the nodeLookup() function according to the Kademlia protocol. In multiple rounds nodeLookup() contacts
+peers it believes to be close to the specified key for which we shall retreive the value. In case the value is retreived, nodeLookup()
+stores the key-value pair in the local hashTable of this peer. After performing the nodeLookup() this peer can thus
+read the key-value pair (if it was found)
+</p>
+
+				
+				
+			
+
+			
+		
+			
+			
+			<h2 id="apiBody">type <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=1653:1766#L55">apiBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#apiBody">¶</a>
+				
+				
+			</h2>
+			<p>
+decodeBodyFromBytes() takes an apiMessage that has the data field set.
+Out of this data field the body is correctly built (e.g. for a putBody).
+decodeBodyToBytes() returns the byte representation of an apiBody.
+</p>
+
+			<pre>type apiBody interface {
+    decodeBodyFromBytes(m *apiMessage)
+    decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+    toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+}</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="apiHeader">type <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=1158:1226#L39">apiHeader</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#apiHeader">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type apiHeader struct {
+<span id="apiHeader.size"></span>    size        <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+<span id="apiHeader.messageType"></span>    messageType <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="apiHeader.toString">func (*apiHeader) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=1230:1267#L44">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#apiHeader.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (h *apiHeader) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="apiMessage">type <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=735:814#L19">apiMessage</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#apiMessage">¶</a>
+				
+				
+			</h2>
+			<p>
+all apiMessages exist of a header which has the same format for all. the body is specific and varies from message type
+to message type. the data field stores all bytes of the complete message
+</p>
+
+			<pre>type apiMessage struct {
+<span id="apiMessage.header"></span>    header apiHeader
+<span id="apiMessage.body"></span>    body   apiBody
+<span id="apiMessage.data"></span>    data   []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="makeApiMessageOutOfAnswer">func <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=5482:5541#L194">makeApiMessageOutOfAnswer</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#makeApiMessageOutOfAnswer">¶</a>
+					
+					
+				</h3>
+				<pre>func makeApiMessageOutOfAnswer(answer <a href="http://localhost:6060/pkg/DHT-16/?m=all#DhtAnswer">DhtAnswer</a>) apiMessage</pre>
+				<p>
+makeApiMessageOutOfAnswer builds a dhtFailure or a dhtSuccess message out of a received DhtAnswer
+</p>
+
+				
+				
+			
+				
+				<h3 id="makeApiMessageOutOfBytes">func <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=4441:4501#L153">makeApiMessageOutOfBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#makeApiMessageOutOfBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func makeApiMessageOutOfBytes(messageData []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>) apiMessage</pre>
+				<p>
+makeApiMessageOutOfBytes builds an instance of received bytes of e.g. a dhtGet or a dhtPut message
+</p>
+
+				
+				
+			
+
+			
+				
+				<h3 id="apiMessage.toString">func (*apiMessage) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=818:856#L25">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#apiMessage.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (m *apiMessage) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="configuraton">type <a href="http://localhost:6060/src/DHT-16/Main.go?s=2451:2732#L88">configuraton</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#configuraton">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type configuraton struct {
+    <span class="comment">//general</span>
+<span id="configuraton.HostKeyFile"></span>    HostKeyFile <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+    <span class="comment">//dht</span>
+<span id="configuraton.apiIP"></span>    apiIP        <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+<span id="configuraton.apiPort"></span>    apiPort      <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+<span id="configuraton.p2pIP"></span>    p2pIP        <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+<span id="configuraton.p2pPort"></span>    p2pPort      <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+<span id="configuraton.maxTTL"></span>    maxTTL       <a href="http://localhost:6060/pkg/builtin/#int">int</a>
+<span id="configuraton.preConfPeer1"></span>    preConfPeer1 <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+<span id="configuraton.preConfPeer2"></span>    preConfPeer2 <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+<span id="configuraton.preConfPeer3"></span>    preConfPeer3 <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+    <span class="comment">//kademlia specific</span>
+<span id="configuraton.k"></span>    k <a href="http://localhost:6060/pkg/builtin/#int">int</a>
+<span id="configuraton.a"></span>    a <a href="http://localhost:6060/pkg/builtin/#int">int</a>
+}
+</pre>
+
+			
+
+			
+				
+				<pre>var <span id="Conf">Conf</span> configuraton</pre>
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="parseConfig">func <a href="http://localhost:6060/src/DHT-16/Main.go?s=242:273#L6">parseConfig</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#parseConfig">¶</a>
+					
+					
+				</h3>
+				<pre>func parseConfig() configuraton</pre>
+				<p>
+This function parses the configuration file that was provided with the -c flag
+</p>
+
+				
+				
+			
+
+			
+				
+				<h3 id="configuraton.toString">func (*configuraton) <a href="http://localhost:6060/src/DHT-16/Main.go?s=2736:2776#L105">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#configuraton.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (c *configuraton) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="failureBody">type <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=3900:3937#L133">failureBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#failureBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type failureBody struct {
+<span id="failureBody.key"></span>    key id
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="failureBody.decodeBodyFromBytes">func (*failureBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=4043:4099#L140">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#failureBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *failureBody) decodeBodyFromBytes(m *apiMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="failureBody.decodeBodyToBytes">func (*failureBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=4252:4300#L146">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#failureBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *failureBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="failureBody.toString">func (*failureBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=3941:3980#L137">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#failureBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *failureBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="getBody">type <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=2876:2909#L94">getBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#getBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type getBody struct {
+<span id="getBody.key"></span>    key id
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="getBody.decodeBodyFromBytes">func (*getBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=3011:3063#L101">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#getBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *getBody) decodeBodyFromBytes(m *apiMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="getBody.decodeBodyToBytes">func (*getBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=3150:3194#L106">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#getBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *getBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="getBody.toString">func (*getBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=2913:2948#L98">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#getBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *getBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="hashTable">type <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=545:694#L22">hashTable</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable">¶</a>
+				
+				
+			</h2>
+			<p>
+struct which represents the data storage
+also contains information for expiration and republishing times
+</p>
+
+			<pre>type hashTable struct {
+<span id="hashTable.values"></span>    values            map[id][]<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+<span id="hashTable.expirations"></span>    expirations       map[id]<a href="http://localhost:6060/pkg/time/">time</a>.<a href="http://localhost:6060/pkg/time/#Time">Time</a>
+<span id="hashTable.republishingTimes"></span>    republishingTimes map[id]<a href="http://localhost:6060/pkg/time/">time</a>.<a href="http://localhost:6060/pkg/time/#Time">Time</a>
+    <a href="http://localhost:6060/pkg/sync/">sync</a>.<a href="http://localhost:6060/pkg/sync/#RWMutex">RWMutex</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="hashTable.expireKeys">func (*hashTable) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=2022:2062#L61">expireKeys</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable.expireKeys">¶</a>
+					
+					
+				</h3>
+				<pre>func (hashTable *hashTable) expireKeys()</pre>
+				<p>
+removes all key/value-pairs which are expired
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="hashTable.read">func (*hashTable) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=822:877#L31">read</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable.read">¶</a>
+					
+					
+				</h3>
+				<pre>func (hashTable *hashTable) read(key id) ([]<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>, <a href="http://localhost:6060/pkg/builtin/#bool">bool</a>)</pre>
+				<p>
+reads value for given key from the local data storage
+returns the value or nil and a boolean if the value was found
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="hashTable.republishKeys">func (*hashTable) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=1588:1631#L49">republishKeys</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable.republishKeys">¶</a>
+					
+					
+				</h3>
+				<pre>func (hashTable *hashTable) republishKeys()</pre>
+				<p>
+checks for all stored &lt;key, value&gt;-pairs if they need to be republished to the network and republishes them if so
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="hashTable.write">func (*hashTable) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=1060:1165#L39">write</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#hashTable.write">¶</a>
+					
+					
+				</h3>
+				<pre>func (hashTable *hashTable) write(key id, value []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>, expiration <a href="http://localhost:6060/pkg/time/">time</a>.<a href="http://localhost:6060/pkg/time/#Time">Time</a>, republishingTime <a href="http://localhost:6060/pkg/time/">time</a>.<a href="http://localhost:6060/pkg/time/#Time">Time</a>)</pre>
+				<p>
+writes &lt;key, value&gt;-pair to the local data storage
+</p>
+
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="id">type <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=2754:2778#L86">id</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#id">¶</a>
+				
+				
+			</h2>
+			<p>
+type which represents the id of a peer
+</p>
+
+			<pre>type id [<a href="http://localhost:6060/pkg/DHT-16/?m=all#SIZE_OF_ID">SIZE_OF_ID</a>]<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="distance">func <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=10616:10648#L342">distance</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#distance">¶</a>
+					
+					
+				</h3>
+				<pre>func distance(id1 id, id2 id) id</pre>
+				<p>
+distance function of kademlia
+</p>
+
+				
+				
+			
+
+			
+				
+				<h3 id="id.startsWith">func (*id) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=2846:2890#L89">startsWith</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#id.startsWith">¶</a>
+					
+					
+				</h3>
+				<pre>func (id *id) startsWith(prefix <a href="http://localhost:6060/pkg/builtin/#string">string</a>) <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+				<p>
+helper function for checking if id starts with given prefix
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="id.toByte">func (id) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=3064:3092#L98">toByte</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#id.toByte">¶</a>
+					
+					
+				</h3>
+				<pre>func (id id) toByte() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				<p>
+converts id to byte slice
+</p>
+
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="kBucket">type <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=117:136#L2">kBucket</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type kBucket []peer</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="kBucket.contains">func (*kBucket) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=787:831#L30">contains</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.contains">¶</a>
+					
+					
+				</h3>
+				<pre>func (kBucket *kBucket) contains(id id) <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+				<p>
+returns if kBucket contains id
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="kBucket.findNumberOfClosestPeersInOneBucket">func (*kBucket) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=4906:4992#L186">findNumberOfClosestPeersInOneBucket</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.findNumberOfClosestPeersInOneBucket">¶</a>
+					
+					
+				</h3>
+				<pre>func (kBucket *kBucket) findNumberOfClosestPeersInOneBucket(key id, number <a href="http://localhost:6060/pkg/builtin/#int">int</a>) []peer</pre>
+				<p>
+returns a number of the closest peers in a given bucket to a given id ordered by distance (closest at the beginning)
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="kBucket.indexOf">func (*kBucket) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=1378:1420#L58">indexOf</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.indexOf">¶</a>
+					
+					
+				</h3>
+				<pre>func (kBucket *kBucket) indexOf(id id) <a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+				<p>
+returns index of id in k-Bucket or -1 if not containing
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="kBucket.moveToTail">func (*kBucket) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=1583:1624#L71">moveToTail</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.moveToTail">¶</a>
+					
+					
+				</h3>
+				<pre>func (kBucket *kBucket) moveToTail(id id)</pre>
+				<p>
+moves id stored in k-Bucket to tail of k-Bucket
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="kBucket.remove">func (*kBucket) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=3288:3325#L135">remove</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.remove">¶</a>
+					
+					
+				</h3>
+				<pre>func (kBucket *kBucket) remove(id id)</pre>
+				<p>
+removes id from given k-Bucket
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="kBucket.toString">func (*kBucket) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=948:989#L42">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kBucket.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (kBucket *kBucket) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="kdmFindNodeAnswerBody">type <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=4597:4656#L158">kdmFindNodeAnswerBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeAnswerBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type kdmFindNodeAnswerBody struct {
+<span id="kdmFindNodeAnswerBody.answerPeers"></span>    answerPeers []peer
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="kdmFindNodeAnswerBody.decodeBodyFromBytes">func (*kdmFindNodeAnswerBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=4660:4726#L162">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeAnswerBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindNodeAnswerBody) decodeBodyFromBytes(m *p2pMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmFindNodeAnswerBody.decodeBodyToBytes">func (*kdmFindNodeAnswerBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=5062:5120#L169">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeAnswerBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindNodeAnswerBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmFindNodeAnswerBody.toString">func (*kdmFindNodeAnswerBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=5279:5328#L177">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeAnswerBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindNodeAnswerBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="kdmFindNodeBody">type <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2589:2629#L90">kdmFindNodeBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type kdmFindNodeBody struct {
+<span id="kdmFindNodeBody.id"></span>    id id
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="kdmFindNodeBody.decodeBodyFromBytes">func (*kdmFindNodeBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2633:2693#L94">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindNodeBody) decodeBodyFromBytes(m *p2pMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmFindNodeBody.decodeBodyToBytes">func (*kdmFindNodeBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2802:2854#L99">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindNodeBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmFindNodeBody.toString">func (*kdmFindNodeBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2884:2927#L102">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindNodeBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindNodeBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="kdmFindValueBody">type <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2184:2225#L74">kdmFindValueBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindValueBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type kdmFindValueBody struct {
+<span id="kdmFindValueBody.id"></span>    id id
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="kdmFindValueBody.decodeBodyFromBytes">func (*kdmFindValueBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2229:2290#L78">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindValueBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindValueBody) decodeBodyFromBytes(m *p2pMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmFindValueBody.decodeBodyToBytes">func (*kdmFindValueBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2399:2452#L83">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindValueBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindValueBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmFindValueBody.toString">func (*kdmFindValueBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2482:2526#L86">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFindValueBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFindValueBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="kdmFoundValueBody">type <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2990:3050#L106">kdmFoundValueBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFoundValueBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type kdmFoundValueBody struct {
+<span id="kdmFoundValueBody.key"></span>    key   id
+<span id="kdmFoundValueBody.value"></span>    value []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="kdmFoundValueBody.decodeBodyFromBytes">func (*kdmFoundValueBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=3054:3116#L111">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFoundValueBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFoundValueBody) decodeBodyFromBytes(m *p2pMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmFoundValueBody.decodeBodyToBytes">func (*kdmFoundValueBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=3317:3371#L119">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFoundValueBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFoundValueBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmFoundValueBody.toString">func (*kdmFoundValueBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=3459:3504#L124">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmFoundValueBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmFoundValueBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="kdmStoreBody">type <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=3608:3678#L128">kdmStoreBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmStoreBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type kdmStoreBody struct {
+<span id="kdmStoreBody.key"></span>    key   id
+<span id="kdmStoreBody.ttl"></span>    ttl   <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+<span id="kdmStoreBody.value"></span>    value []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="kdmStoreBody.decodeBodyFromBytes">func (*kdmStoreBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=3682:3739#L134">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmStoreBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmStoreBody) decodeBodyFromBytes(m *p2pMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmStoreBody.decodeBodyToBytes">func (*kdmStoreBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=4109:4158#L144">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmStoreBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmStoreBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="kdmStoreBody.toString">func (*kdmStoreBody) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=4413:4453#L154">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#kdmStoreBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *kdmStoreBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="localNode">type <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=333:428#L14">localNode</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#localNode">¶</a>
+				
+				
+			</h2>
+			<p>
+struct which represents the local peer in the network
+</p>
+
+			<pre>type localNode struct {
+<span id="localNode.thisPeer"></span>    thisPeer    peer
+<span id="localNode.routingTree"></span>    routingTree routingTree
+<span id="localNode.hashTable"></span>    hashTable   hashTable
+}
+</pre>
+
+			
+
+			
+				<p>
+local peer in the network
+</p>
+
+				<pre>var <span id="thisNode">thisNode</span> localNode</pre>
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="localNode.FIND_NODE">func (*localNode) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=13698:13764#L451">FIND_NODE</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.FIND_NODE">¶</a>
+					
+					
+				</h3>
+				<pre>func (thisNode *localNode) FIND_NODE(key id) kdmFindNodeAnswerBody</pre>
+				<p>
+finds k closest nodes to given key on local node and generates body of KDM_FIND_NODE_ANSWER message
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="localNode.findNumberOfClosestPeersOnNode">func (*localNode) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=6683:6767#L238">findNumberOfClosestPeersOnNode</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.findNumberOfClosestPeersOnNode">¶</a>
+					
+					
+				</h3>
+				<pre>func (thisNode *localNode) findNumberOfClosestPeersOnNode(key id, number <a href="http://localhost:6060/pkg/builtin/#int">int</a>) []peer</pre>
+				<p>
+returns a specified amount of peers that are the closest to a specified id on a node
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="localNode.findResponsibleRoutingTree">func (*localNode) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=2414:2488#L104">findResponsibleRoutingTree</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.findResponsibleRoutingTree">¶</a>
+					
+					
+				</h3>
+				<pre>func (thisNode *localNode) findResponsibleRoutingTree(key id) *routingTree</pre>
+				<p>
+finds responsible routingTree node for given id
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="localNode.nodeLookup">func (*localNode) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=11919:11987#L394">nodeLookup</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.nodeLookup">¶</a>
+					
+					
+				</h3>
+				<pre>func (thisNode *localNode) nodeLookup(key id, findValue <a href="http://localhost:6060/pkg/builtin/#bool">bool</a>) []peer</pre>
+				<p>
+finds k closest peers to given key
+if flag findValue ist set, then it searches for the stored value to the given key
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="localNode.updateRoutingTable">func (*localNode) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=7840:7893#L281">updateRoutingTable</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#localNode.updateRoutingTable">¶</a>
+					
+					
+				</h3>
+				<pre>func (thisNode *localNode) updateRoutingTable(p peer)</pre>
+				<p>
+updates routingTable of local node when it made contact with given peer
+</p>
+
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="p2pBody">type <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=2067:2180#L68">p2pBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#p2pBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type p2pBody interface {
+    decodeBodyFromBytes(m *p2pMessage)
+    decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+    toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+}</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="p2pHeader">type <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=1301:1409#L45">p2pHeader</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#p2pHeader">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type p2pHeader struct {
+<span id="p2pHeader.size"></span>    size        <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+<span id="p2pHeader.messageType"></span>    messageType <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+<span id="p2pHeader.senderPeer"></span>    senderPeer  peer
+<span id="p2pHeader.nonce"></span>    nonce       []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="p2pHeader.decodeHeaderToBytes">func (*p2pHeader) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=1413:1461#L52">decodeHeaderToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#p2pHeader.decodeHeaderToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (h *p2pHeader) decodeHeaderToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="p2pHeader.toString">func (*p2pHeader) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=1718:1755#L60">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#p2pHeader.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (h *p2pHeader) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="p2pMessage">type <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=878:957#L25">p2pMessage</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#p2pMessage">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type p2pMessage struct {
+<span id="p2pMessage.header"></span>    header p2pHeader
+<span id="p2pMessage.body"></span>    body   p2pBody
+<span id="p2pMessage.data"></span>    data   []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="makeP2PMessageOutOfBody">func <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=7840:7909#L257">makeP2PMessageOutOfBody</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#makeP2PMessageOutOfBody">¶</a>
+					
+					
+				</h3>
+				<pre>func makeP2PMessageOutOfBody(body p2pBody, msgType <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>) p2pMessage</pre>
+				
+				
+				
+			
+				
+				<h3 id="makeP2PMessageOutOfBytes">func <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=6739:6799#L218">makeP2PMessageOutOfBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#makeP2PMessageOutOfBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func makeP2PMessageOutOfBytes(messageData []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>) p2pMessage</pre>
+				
+				
+				
+			
+				
+				<h3 id="readMessage">func <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=5513:5556#L186">readMessage</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#readMessage">¶</a>
+					
+					
+				</h3>
+				<pre>func readMessage(conn <a href="http://localhost:6060/pkg/net/">net</a>.<a href="http://localhost:6060/pkg/net/#Conn">Conn</a>) *p2pMessage</pre>
+				
+				
+				
+			
+
+			
+				
+				<h3 id="p2pMessage.toString">func (*p2pMessage) <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=961:999#L31">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#p2pMessage.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (m *p2pMessage) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="peer">type <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=2505:2564#L75">peer</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#peer">¶</a>
+				
+				
+			</h2>
+			<p>
+struct which represents a peer in the network as triple of &lt;ip, port, id&gt;
+</p>
+
+			<pre>type peer struct {
+<span id="peer.ip"></span>    ip   <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+<span id="peer.port"></span>    port <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+<span id="peer.id"></span>    id   id
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="decodeBytesToPeer">func <a href="http://localhost:6060/src/DHT-16/P2PMessages.go?s=10188:10228#L331">decodeBytesToPeer</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#decodeBytesToPeer">¶</a>
+					
+					
+				</h3>
+				<pre>func decodeBytesToPeer(data []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>) peer</pre>
+				
+				
+				
+			
+				
+				<h3 id="extractPeerAddressFromString">func <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=5830:5881#L186">extractPeerAddressFromString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#extractPeerAddressFromString">¶</a>
+					
+					
+				</h3>
+				<pre>func extractPeerAddressFromString(line <a href="http://localhost:6060/pkg/builtin/#string">string</a>) peer</pre>
+				<p>
+This function can be used to create a peer from the ip:port format and considers both IPv4 and IPv6 formats as specified
+in the specification. The peer that is returned does not yet include an ID
+</p>
+
+				
+				
+			
+
+			
+				
+				<h3 id="peer.toString">func (*peer) <a href="http://localhost:6060/src/DHT-16/P2PCommunication.go?s=2568:2600#L81">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#peer.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (p *peer) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="putBody">type <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=1770:1893#L61">putBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#putBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type putBody struct {
+<span id="putBody.ttl"></span>    ttl         <a href="http://localhost:6060/pkg/builtin/#uint16">uint16</a>
+<span id="putBody.replication"></span>    replication <a href="http://localhost:6060/pkg/builtin/#uint8">uint8</a>
+<span id="putBody.reserved"></span>    reserved    <a href="http://localhost:6060/pkg/builtin/#uint8">uint8</a>
+<span id="putBody.key"></span>    key         id
+<span id="putBody.value"></span>    value       []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="putBody.decodeBodyFromBytes">func (*putBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=2230:2282#L74">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#putBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *putBody) decodeBodyFromBytes(m *apiMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="putBody.decodeBodyToBytes">func (*putBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=2503:2547#L83">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#putBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *putBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="putBody.toString">func (*putBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=1897:1932#L69">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#putBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *putBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="routingTree">type <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=247:409#L6">routingTree</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree">¶</a>
+				
+				
+			</h2>
+			<p>
+struct for routing table binary tree
+if it has children, then kBucket has to be nil and vice versa
+</p>
+
+			<pre>type routingTree struct {
+<span id="routingTree.left"></span>    left    *routingTree
+<span id="routingTree.right"></span>    right   *routingTree
+<span id="routingTree.parent"></span>    parent  *routingTree <span class="comment">// nil if routingTree is root</span>
+<span id="routingTree.prefix"></span>    prefix  <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+<span id="routingTree.kBucket"></span>    kBucket kBucket
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="routingTree.getNumberOfClosestPeers">func (*routingTree) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=5744:5827#L212">getNumberOfClosestPeers</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.getNumberOfClosestPeers">¶</a>
+					
+					
+				</h3>
+				<pre>func (routingTable *routingTree) getNumberOfClosestPeers(key id, number <a href="http://localhost:6060/pkg/builtin/#int">int</a>) []peer</pre>
+				<p>
+returns given number of closest peers to given id available in subtree with given routingTree node as root node
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="routingTree.getSibling">func (*routingTree) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=4533:4591#L174">getSibling</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.getSibling">¶</a>
+					
+					
+				</h3>
+				<pre>func (routingTable *routingTree) getSibling() *routingTree</pre>
+				<p>
+returns the corresponding sibling (left child if routingTree is right child and vice versa)
+or nil if current routingTree is root
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="routingTree.inRange">func (*routingTree) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=1213:1265#L53">inRange</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.inRange">¶</a>
+					
+					
+				</h3>
+				<pre>func (routingTable *routingTree) inRange(id id) <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+				<p>
+checks if k-Bucket of given routingTree node is responsible for given id
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="routingTree.insert">func (*routingTree) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=2938:2988#L127">insert</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.insert">¶</a>
+					
+					
+				</h3>
+				<pre>func (routingTable *routingTree) insert(peer peer)</pre>
+				<p>
+inserts new peer into k-Bucket of given routingTree node
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="routingTree.isFull">func (*routingTree) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=1860:1906#L84">isFull</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.isFull">¶</a>
+					
+					
+				</h3>
+				<pre>func (routingTable *routingTree) isFull() <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+				<p>
+checks if k-Bucket of given routingTree node is full
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="routingTree.maxSize">func (*routingTree) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=2039:2085#L89">maxSize</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.maxSize">¶</a>
+					
+					
+				</h3>
+				<pre>func (routingTable *routingTree) maxSize() <a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+				<p>
+returns maximum size of k-Bucket of given routingTree node
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="routingTree.split">func (*routingTree) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=3483:3529#L141">split</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.split">¶</a>
+					
+					
+				</h3>
+				<pre>func (routingTable *routingTree) split() <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+				<p>
+splits given routingTree node into two new routingTree nodes
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="routingTree.toString">func (*routingTree) <a href="http://localhost:6060/src/DHT-16/kBuckets.go?s=413:452#L14">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#routingTree.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (r *routingTree) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="successBody">type <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=3318:3372#L111">successBody</a>
+				<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#successBody">¶</a>
+				
+				
+			</h2>
+			
+			<pre>type successBody struct {
+<span id="successBody.key"></span>    key   id
+<span id="successBody.value"></span>    value []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="successBody.decodeBodyFromBytes">func (*successBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=3517:3573#L119">decodeBodyFromBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#successBody.decodeBodyFromBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *successBody) decodeBodyFromBytes(m *apiMessage)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="successBody.decodeBodyToBytes">func (*successBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=3762:3810#L127">decodeBodyToBytes</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#successBody.decodeBodyToBytes">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *successBody) decodeBodyToBytes() []<a href="http://localhost:6060/pkg/builtin/#byte">byte</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="successBody.toString">func (*successBody) <a href="http://localhost:6060/src/DHT-16/APIMessages.go?s=3376:3415#L116">toString</a>
+					<a class="permalink" href="http://localhost:6060/pkg/DHT-16/?m=all#successBody.toString">¶</a>
+					
+					
+				</h3>
+				<pre>func (b *successBody) toString() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+		
+	
+
+	
+
+
+
+
+
+
+
+<div id="footer">
+Build version go1.16.4.<br>
+Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+the content of this page is licensed under the
+Creative Commons Attribution 3.0 License,
+and code is licensed under a <a href="http://localhost:6060/LICENSE">BSD license</a>.<br>
+<a href="https://golang.org/doc/tos.html">Terms of Service</a> |
+<a href="https://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>
