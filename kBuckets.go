@@ -172,6 +172,7 @@ func (routingTable *routingTree) split() error {
 		}
 	}
 
+	// reset kBucket of routingTree node
 	routingTable.kBucket = nil
 
 	return nil

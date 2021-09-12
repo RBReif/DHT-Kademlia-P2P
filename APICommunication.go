@@ -133,11 +133,15 @@ read the key-value pair (if it was found)
 */
 func handleGet(body *getBody) DhtAnswer {
 	key := body.key
+	// look for value in local hashTable
 	var value, valueFound = thisNode.hashTable.read(key)
 	if !valueFound {
+		// if not found, run nodeLookup
 		thisNode.nodeLookup(key, true)
+		value, valueFound = thisNode.hashTable.read(key)
 	}
-	value, valueFound = thisNode.hashTable.read(key)
+
+	// if value found
 	if valueFound {
 		// the value was found. A DHTsuccess message will be sent back
 		return DhtAnswer{
